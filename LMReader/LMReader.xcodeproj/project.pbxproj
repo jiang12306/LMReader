@@ -1,0 +1,465 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F262784C201EEFE700D33722 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F262784B201EEFE700D33722 /* AppDelegate.m */; };
+		F2627854201EEFE700D33722 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F2627853201EEFE700D33722 /* Assets.xcassets */; };
+		F2627857201EEFE700D33722 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F2627855201EEFE700D33722 /* LaunchScreen.storyboard */; };
+		F262785A201EEFE800D33722 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627859201EEFE800D33722 /* main.m */; };
+		F2627863201EF10500D33722 /* LMBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627862201EF10500D33722 /* LMBaseViewController.m */; };
+		F2627867201EF24500D33722 /* LMRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627866201EF24500D33722 /* LMRootViewController.m */; };
+		F262786A201EF29200D33722 /* LMBaseNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627869201EF29200D33722 /* LMBaseNavigationController.m */; };
+		F2627871201EF89E00D33722 /* LMBaseTabBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627870201EF89E00D33722 /* LMBaseTabBarController.m */; };
+		F2627875201F063700D33722 /* LMTool.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627874201F063700D33722 /* LMTool.m */; };
+		F2627879201F071900D33722 /* LMFirstLaunchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627878201F071900D33722 /* LMFirstLaunchViewController.m */; };
+		F262787F201F162F00D33722 /* LMBookShelfViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F262787E201F162F00D33722 /* LMBookShelfViewController.m */; };
+		F2627882201F163C00D33722 /* LMChoiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627881201F163C00D33722 /* LMChoiceViewController.m */; };
+		F2627886201F165400D33722 /* LMProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2627885201F165400D33722 /* LMProfileViewController.m */; };
+		F262788C201F1CBA00D33722 /* tabBar_Profile@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2627889201F1CBA00D33722 /* tabBar_Profile@2x.png */; };
+		F262788F201F1F1D00D33722 /* navigationItem_Back@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F262788E201F1F1D00D33722 /* navigationItem_Back@2x.png */; };
+		F2627892201F274300D33722 /* tabBar_BookShelf@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2627890201F274300D33722 /* tabBar_BookShelf@2x.png */; };
+		F2627893201F274300D33722 /* tabBar_Choice@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2627891201F274300D33722 /* tabBar_Choice@2x.png */; };
+		F276E01220203D5300B0C0C8 /* LMBaseTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F276E01120203D5300B0C0C8 /* LMBaseTableViewCell.m */; };
+		F276E0152020427200B0C0C8 /* LMBookShelfTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F276E0142020427200B0C0C8 /* LMBookShelfTableViewCell.m */; };
+		F276E01820207A8100B0C0C8 /* LMProfileTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F276E01720207A8100B0C0C8 /* LMProfileTableViewCell.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F2627847201EEFE700D33722 /* LMReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LMReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F262784A201EEFE700D33722 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		F262784B201EEFE700D33722 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		F2627853201EEFE700D33722 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F2627856201EEFE700D33722 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F2627858201EEFE700D33722 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F2627859201EEFE800D33722 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		F2627861201EF10500D33722 /* LMBaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBaseViewController.h; sourceTree = "<group>"; };
+		F2627862201EF10500D33722 /* LMBaseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBaseViewController.m; sourceTree = "<group>"; };
+		F2627865201EF24500D33722 /* LMRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMRootViewController.h; sourceTree = "<group>"; };
+		F2627866201EF24500D33722 /* LMRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMRootViewController.m; sourceTree = "<group>"; };
+		F2627868201EF29200D33722 /* LMBaseNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBaseNavigationController.h; sourceTree = "<group>"; };
+		F2627869201EF29200D33722 /* LMBaseNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBaseNavigationController.m; sourceTree = "<group>"; };
+		F262786F201EF89E00D33722 /* LMBaseTabBarController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBaseTabBarController.h; sourceTree = "<group>"; };
+		F2627870201EF89E00D33722 /* LMBaseTabBarController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBaseTabBarController.m; sourceTree = "<group>"; };
+		F2627873201F063700D33722 /* LMTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMTool.h; sourceTree = "<group>"; };
+		F2627874201F063700D33722 /* LMTool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMTool.m; sourceTree = "<group>"; };
+		F2627877201F071900D33722 /* LMFirstLaunchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMFirstLaunchViewController.h; sourceTree = "<group>"; };
+		F2627878201F071900D33722 /* LMFirstLaunchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMFirstLaunchViewController.m; sourceTree = "<group>"; };
+		F262787D201F162F00D33722 /* LMBookShelfViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookShelfViewController.h; sourceTree = "<group>"; };
+		F262787E201F162F00D33722 /* LMBookShelfViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBookShelfViewController.m; sourceTree = "<group>"; };
+		F2627880201F163C00D33722 /* LMChoiceViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMChoiceViewController.h; sourceTree = "<group>"; };
+		F2627881201F163C00D33722 /* LMChoiceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMChoiceViewController.m; sourceTree = "<group>"; };
+		F2627884201F165400D33722 /* LMProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileViewController.h; sourceTree = "<group>"; };
+		F2627885201F165400D33722 /* LMProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileViewController.m; sourceTree = "<group>"; };
+		F2627889201F1CBA00D33722 /* tabBar_Profile@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tabBar_Profile@2x.png"; sourceTree = "<group>"; };
+		F262788E201F1F1D00D33722 /* navigationItem_Back@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "navigationItem_Back@2x.png"; sourceTree = "<group>"; };
+		F2627890201F274300D33722 /* tabBar_BookShelf@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tabBar_BookShelf@2x.png"; sourceTree = "<group>"; };
+		F2627891201F274300D33722 /* tabBar_Choice@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tabBar_Choice@2x.png"; sourceTree = "<group>"; };
+		F276E01020203D5300B0C0C8 /* LMBaseTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBaseTableViewCell.h; sourceTree = "<group>"; };
+		F276E01120203D5300B0C0C8 /* LMBaseTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBaseTableViewCell.m; sourceTree = "<group>"; };
+		F276E0132020427200B0C0C8 /* LMBookShelfTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookShelfTableViewCell.h; sourceTree = "<group>"; };
+		F276E0142020427200B0C0C8 /* LMBookShelfTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBookShelfTableViewCell.m; sourceTree = "<group>"; };
+		F276E01620207A8100B0C0C8 /* LMProfileTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileTableViewCell.h; sourceTree = "<group>"; };
+		F276E01720207A8100B0C0C8 /* LMProfileTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileTableViewCell.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F2627844201EEFE700D33722 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F262783E201EEFE700D33722 = {
+			isa = PBXGroup;
+			children = (
+				F2627849201EEFE700D33722 /* LMReader */,
+				F2627848201EEFE700D33722 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F2627848201EEFE700D33722 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F2627847201EEFE700D33722 /* LMReader.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F2627849201EEFE700D33722 /* LMReader */ = {
+			isa = PBXGroup;
+			children = (
+				F262787C201F161300D33722 /* BookShelf */,
+				F262787B201F15F600D33722 /* Choice */,
+				F262787A201F15EF00D33722 /* Profile */,
+				F2627876201F070000D33722 /* FitstLaunch */,
+				F2627872201F062200D33722 /* Tool */,
+				F2627864201EF22D00D33722 /* Root */,
+				F2627860201EF0E500D33722 /* Base */,
+				F2627887201F1C8E00D33722 /* Resources */,
+				F262784A201EEFE700D33722 /* AppDelegate.h */,
+				F262784B201EEFE700D33722 /* AppDelegate.m */,
+				F2627853201EEFE700D33722 /* Assets.xcassets */,
+				F2627855201EEFE700D33722 /* LaunchScreen.storyboard */,
+				F2627858201EEFE700D33722 /* Info.plist */,
+				F2627859201EEFE800D33722 /* main.m */,
+			);
+			path = LMReader;
+			sourceTree = "<group>";
+		};
+		F2627860201EF0E500D33722 /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				F2627861201EF10500D33722 /* LMBaseViewController.h */,
+				F2627862201EF10500D33722 /* LMBaseViewController.m */,
+				F2627868201EF29200D33722 /* LMBaseNavigationController.h */,
+				F2627869201EF29200D33722 /* LMBaseNavigationController.m */,
+				F262786F201EF89E00D33722 /* LMBaseTabBarController.h */,
+				F2627870201EF89E00D33722 /* LMBaseTabBarController.m */,
+				F276E01020203D5300B0C0C8 /* LMBaseTableViewCell.h */,
+				F276E01120203D5300B0C0C8 /* LMBaseTableViewCell.m */,
+			);
+			path = Base;
+			sourceTree = "<group>";
+		};
+		F2627864201EF22D00D33722 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				F2627865201EF24500D33722 /* LMRootViewController.h */,
+				F2627866201EF24500D33722 /* LMRootViewController.m */,
+			);
+			path = Root;
+			sourceTree = "<group>";
+		};
+		F2627872201F062200D33722 /* Tool */ = {
+			isa = PBXGroup;
+			children = (
+				F2627873201F063700D33722 /* LMTool.h */,
+				F2627874201F063700D33722 /* LMTool.m */,
+			);
+			path = Tool;
+			sourceTree = "<group>";
+		};
+		F2627876201F070000D33722 /* FitstLaunch */ = {
+			isa = PBXGroup;
+			children = (
+				F2627877201F071900D33722 /* LMFirstLaunchViewController.h */,
+				F2627878201F071900D33722 /* LMFirstLaunchViewController.m */,
+			);
+			path = FitstLaunch;
+			sourceTree = "<group>";
+		};
+		F262787A201F15EF00D33722 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				F2627884201F165400D33722 /* LMProfileViewController.h */,
+				F2627885201F165400D33722 /* LMProfileViewController.m */,
+				F276E01620207A8100B0C0C8 /* LMProfileTableViewCell.h */,
+				F276E01720207A8100B0C0C8 /* LMProfileTableViewCell.m */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		F262787B201F15F600D33722 /* Choice */ = {
+			isa = PBXGroup;
+			children = (
+				F2627880201F163C00D33722 /* LMChoiceViewController.h */,
+				F2627881201F163C00D33722 /* LMChoiceViewController.m */,
+			);
+			path = Choice;
+			sourceTree = "<group>";
+		};
+		F262787C201F161300D33722 /* BookShelf */ = {
+			isa = PBXGroup;
+			children = (
+				F262787D201F162F00D33722 /* LMBookShelfViewController.h */,
+				F262787E201F162F00D33722 /* LMBookShelfViewController.m */,
+				F276E0132020427200B0C0C8 /* LMBookShelfTableViewCell.h */,
+				F276E0142020427200B0C0C8 /* LMBookShelfTableViewCell.m */,
+			);
+			path = BookShelf;
+			sourceTree = "<group>";
+		};
+		F2627887201F1C8E00D33722 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F262788E201F1F1D00D33722 /* navigationItem_Back@2x.png */,
+				F2627890201F274300D33722 /* tabBar_BookShelf@2x.png */,
+				F2627891201F274300D33722 /* tabBar_Choice@2x.png */,
+				F2627889201F1CBA00D33722 /* tabBar_Profile@2x.png */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F2627846201EEFE700D33722 /* LMReader */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F262785D201EEFE800D33722 /* Build configuration list for PBXNativeTarget "LMReader" */;
+			buildPhases = (
+				F2627843201EEFE700D33722 /* Sources */,
+				F2627844201EEFE700D33722 /* Frameworks */,
+				F2627845201EEFE700D33722 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LMReader;
+			productName = LMReader;
+			productReference = F2627847201EEFE700D33722 /* LMReader.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F262783F201EEFE700D33722 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0920;
+				ORGANIZATIONNAME = tkmob;
+				TargetAttributes = {
+					F2627846201EEFE700D33722 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F2627842201EEFE700D33722 /* Build configuration list for PBXProject "LMReader" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F262783E201EEFE700D33722;
+			productRefGroup = F2627848201EEFE700D33722 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F2627846201EEFE700D33722 /* LMReader */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F2627845201EEFE700D33722 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2627857201EEFE700D33722 /* LaunchScreen.storyboard in Resources */,
+				F262788C201F1CBA00D33722 /* tabBar_Profile@2x.png in Resources */,
+				F2627892201F274300D33722 /* tabBar_BookShelf@2x.png in Resources */,
+				F262788F201F1F1D00D33722 /* navigationItem_Back@2x.png in Resources */,
+				F2627854201EEFE700D33722 /* Assets.xcassets in Resources */,
+				F2627893201F274300D33722 /* tabBar_Choice@2x.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F2627843201EEFE700D33722 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F276E01820207A8100B0C0C8 /* LMProfileTableViewCell.m in Sources */,
+				F2627882201F163C00D33722 /* LMChoiceViewController.m in Sources */,
+				F2627875201F063700D33722 /* LMTool.m in Sources */,
+				F262787F201F162F00D33722 /* LMBookShelfViewController.m in Sources */,
+				F276E01220203D5300B0C0C8 /* LMBaseTableViewCell.m in Sources */,
+				F262785A201EEFE800D33722 /* main.m in Sources */,
+				F262786A201EF29200D33722 /* LMBaseNavigationController.m in Sources */,
+				F2627886201F165400D33722 /* LMProfileViewController.m in Sources */,
+				F2627879201F071900D33722 /* LMFirstLaunchViewController.m in Sources */,
+				F2627871201EF89E00D33722 /* LMBaseTabBarController.m in Sources */,
+				F2627867201EF24500D33722 /* LMRootViewController.m in Sources */,
+				F2627863201EF10500D33722 /* LMBaseViewController.m in Sources */,
+				F262784C201EEFE700D33722 /* AppDelegate.m in Sources */,
+				F276E0152020427200B0C0C8 /* LMBookShelfTableViewCell.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		F2627855201EEFE700D33722 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F2627856201EEFE700D33722 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		F262785B201EEFE800D33722 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		F262785C201EEFE800D33722 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F262785E201EEFE800D33722 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = GW558FF7ET;
+				INFOPLIST_FILE = LMReader/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tkmob.LMReader;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F262785F201EEFE800D33722 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = GW558FF7ET;
+				INFOPLIST_FILE = LMReader/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tkmob.LMReader;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F2627842201EEFE700D33722 /* Build configuration list for PBXProject "LMReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F262785B201EEFE800D33722 /* Debug */,
+				F262785C201EEFE800D33722 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F262785D201EEFE800D33722 /* Build configuration list for PBXNativeTarget "LMReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F262785E201EEFE800D33722 /* Debug */,
+				F262785F201EEFE800D33722 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F262783F201EEFE700D33722 /* Project object */;
+}
