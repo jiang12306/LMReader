@@ -10,12 +10,13 @@
 
 @interface LMProfileTableViewCell ()
 
-@property (nonatomic, strong) UILabel* nameLab;//label
 @property (nonatomic, strong) UIImageView* arrowIV;//箭头
 
 @end
 
 @implementation LMProfileTableViewCell
+
+static CGFloat spaceX = 10;
 
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
@@ -29,7 +30,18 @@
 
 -(void)setupSubviews {
     CGRect screenRect = [UIScreen mainScreen].bounds;
-    
+    if (!self.nameLab) {
+        self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(spaceX, spaceX, 200, 30)];
+        self.nameLab.font = [UIFont systemFontOfSize:16];
+        [self.contentView addSubview:self.nameLab];
+    }
+    if (!self.arrowIV) {
+        self.arrowIV = [[UIImageView alloc]initWithFrame:CGRectMake(screenRect.size.width - 10 - 15, spaceX, 15, 20)];
+        self.arrowIV.image = [UIImage imageNamed:@"navigationItem_Back"];
+        self.arrowIV.layer.borderWidth = 1;
+        self.arrowIV.layer.borderColor = [UIColor grayColor].CGColor;
+        [self.contentView addSubview:self.arrowIV];
+    }
 }
 
 - (void)awakeFromNib {

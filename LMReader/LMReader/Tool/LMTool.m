@@ -49,4 +49,29 @@ static NSString* launchCount = @"launchCount";
     [defaults synchronize];
 }
 
+//iPhone X ?
++(BOOL )isIPhoneX {
+    CGRect rect = CGRectMake(0, 0, 375, 812);
+    CGRect deviceRect = [UIScreen mainScreen].bounds;
+    return CGRectEqualToRect(deviceRect, rect);
+}
+
+//机型 4、4s,5、5c、5s,6、7、8,6p、7p、8p,x
++(NSString *)deviceType {
+    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+    if (screenHeight == 480) {
+        return @"4";
+    }else if (screenHeight == 568) {
+        return @"5";
+    }else if (screenHeight == 667) {
+        return @"6";
+    }else if (screenHeight == 736) {
+        return @"6p";
+    }else if (screenHeight == 812) {
+        return @"x";
+    }
+    return @"unknow";
+}
+
+
 @end

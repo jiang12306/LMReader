@@ -14,6 +14,30 @@
 
 @implementation LMBaseNavigationController
 
+-(instancetype)initWithRootViewController:(UIViewController *)rootViewController {
+    self = [super initWithRootViewController:rootViewController];
+    if (self) {
+        CGRect screenRect = [UIScreen mainScreen].bounds;
+        UIImage* img = [self createImageWithColor:THEMECOLOR size:CGSizeMake(screenRect.size.width, 100)];
+        [self.navigationBar setBackgroundImage:img forBarMetrics:UIBarMetricsDefault];
+        
+        [self.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}];
+    }
+    return self;
+}
+
+-(UIImage *)createImageWithColor:(UIColor *)color size:(CGSize)size {
+    CGRect rect = CGRectMake(0.0f, 0.0f, size.width, size.height);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [color CGColor]);
+    CGContextFillRect(context, rect);
+    UIImage *theImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return theImage;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -25,13 +49,13 @@
         UIImage* image = [UIImage imageNamed:@"navigationItem_Back"];
         UIImage* tintImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         UIButton* leftButton = [[UIButton alloc]initWithFrame:vi.frame];
-        [leftButton setTintColor:[UIColor blueColor]];
+        [leftButton setTintColor:BACKCOLOR];
         [leftButton setImage:tintImage forState:UIControlStateNormal];
         [leftButton setImageEdgeInsets:UIEdgeInsetsMake(5, 0, 5, 40)];
         [leftButton addTarget:self action:@selector(popViewControllerAnimated:) forControlEvents:UIControlEventTouchUpInside];
         leftButton.titleLabel.font = [UIFont systemFontOfSize:16];
         [leftButton setTitle:@"返回" forState:UIControlStateNormal];
-        [leftButton setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+        [leftButton setTitleColor:BACKCOLOR forState:UIControlStateNormal];
         [vi addSubview:leftButton];
         viewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:vi];
         

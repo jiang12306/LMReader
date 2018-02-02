@@ -18,7 +18,7 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
+    //清理启动次数
 //    [LMTool clearLaunchCount];
     
     LMRootViewController* rootVC = [LMRootViewController sharedRootViewController];

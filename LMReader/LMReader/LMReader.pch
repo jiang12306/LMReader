@@ -1,0 +1,24 @@
+//
+//  LMReader.pch
+//  LMReader
+//
+//  Created by Jiang Kuan on 2018/2/1.
+//  Copyright © 2018年 tkmob. All rights reserved.
+//
+
+#ifndef LMReader_pch
+#define LMReader_pch
+
+//app显示名称
+#define APPNAME @"Kindle"
+
+//主题色 蓝色
+#define THEMECOLOR [UIColor colorWithRed:40/255.f green:147/255.f blue:232/255.f alpha:1]
+
+//返回 按钮 颜色 白色
+#define BACKCOLOR [UIColor whiteColor]
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#endif /* LMReader_pch */

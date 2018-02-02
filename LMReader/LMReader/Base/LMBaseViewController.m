@@ -8,7 +8,7 @@
 
 #import "LMBaseViewController.h"
 
-@interface LMBaseViewController ()
+@interface LMBaseViewController () <UIGestureRecognizerDelegate>
 
 @end
 
@@ -16,7 +16,19 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+    
+    //背景颜色
+    self.view.backgroundColor = [UIColor whiteColor];
+    
+    //配置右滑返回
+    self.navigationController.interactivePopGestureRecognizer.delegate = self;
+    
+    //标题颜色
+    [self.navigationController.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName : THEMECOLOR}];
+    
+    //表头 半透明
+    self.navigationController.navigationBar.translucent = YES;
+    
 }
 
 - (void)didReceiveMemoryWarning {

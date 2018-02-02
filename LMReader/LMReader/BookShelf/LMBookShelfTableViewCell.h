@@ -13,7 +13,7 @@
 @protocol LMBookShelfTableViewCellDelegate <NSObject>
 
 @optional
--(void)didScrollCell:(LMBookShelfTableViewCell* )selectedCell;//滑动cell
+-(void)didStartScrollCell:(LMBookShelfTableViewCell* )selectedCell;//滑动cell 开始
 -(void)didClickCell:(LMBookShelfTableViewCell* )cell deleteButton:(UIButton* )btn;//点击 删除 按钮
 -(void)didClickCell:(LMBookShelfTableViewCell* )cell upsideButton:(UIButton* )btn;//点击 置顶 按钮
 
@@ -23,7 +23,7 @@
 
 @property (nonatomic, weak) id<LMBookShelfTableViewCellDelegate> delegate;
 
--(void)resetScrollViewAnimation:(BOOL )animation;//复原scrollView  animation 默认为NO
--(void)editScrollViewAnimation:(BOOL )animation;//编辑模式，显示 删除 置顶 按钮 animation 默认为NO
+//显示/不显示 删除 置顶 按钮
+-(void)showUpsideAndDelete:(BOOL )isShow animation:(BOOL)animation;
 
 @end

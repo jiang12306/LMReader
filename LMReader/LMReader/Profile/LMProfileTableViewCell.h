@@ -10,4 +10,6 @@
 
 @interface LMProfileTableViewCell : LMBaseTableViewCell
 
+@property (nonatomic, strong) UILabel* nameLab;//label
+
 @end
