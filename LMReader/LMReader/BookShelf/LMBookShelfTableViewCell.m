@@ -7,18 +7,14 @@
 //
 
 #import "LMBookShelfTableViewCell.h"
+#import "UIImageView+WebCache.h"
+#import "LMTool.h"
 
 @interface LMBookShelfTableViewCell () <UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) UIView* cellView;//内容视图
 @property (nonatomic, strong) UIButton* deleteBtn;//删除 按钮
 @property (nonatomic, strong) UIButton* upsideBtn;//置顶 按钮
-
-@property (nonatomic, strong) UIImageView* coverIV;//小说封面
-@property (nonatomic, strong) UILabel* nameLab;//书名 label
-@property (nonatomic, strong) UILabel* timeLab;//更新时间 label
-@property (nonatomic, strong) UILabel* chapterLab;//章节 label
-@property (nonatomic, strong) UILabel* updateLab;//更新标识 label
 
 @property (nonatomic, strong) UIPanGestureRecognizer* panGestureRecognizer;
 @property (nonatomic, assign) CGFloat startPanX;
@@ -69,11 +65,37 @@ static CGFloat spaceX = 10;
         [self.contentView insertSubview:self.deleteBtn belowSubview:self.upsideBtn];
     }
     if (!self.coverIV) {
-        self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(spaceX, spaceX, 50, 40)];
+        self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(spaceX, spaceX, 55, 75)];
         self.coverIV.image = [UIImage imageNamed:@"navigationItem_Back"];
-        self.coverIV.layer.borderWidth = 1;
-        self.coverIV.layer.borderColor = [UIColor grayColor].CGColor;
         [self.cellView addSubview:self.coverIV];
+    }
+    if (!self.nameLab) {
+        self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + spaceX, self.coverIV.frame.origin.y, 100, 20)];
+        self.nameLab.font = [UIFont systemFontOfSize:20];
+        [self.cellView addSubview:self.nameLab];
+    }
+    if (!self.updateLab) {
+        self.updateLab = [[UILabel alloc]initWithFrame:CGRectMake(self.nameLab.frame.origin.x + self.nameLab.frame.size.width + spaceX, self.nameLab.frame.origin.y, 100, 20)];
+        self.updateLab.layer.cornerRadius = 3;
+        self.updateLab.layer.masksToBounds = YES;
+        self.updateLab.layer.borderColor = [UIColor redColor].CGColor;
+        self.updateLab.layer.borderWidth = 1;
+        self.updateLab.font = [UIFont systemFontOfSize:18];
+        self.updateLab.textColor = [UIColor redColor];
+        self.updateLab.textAlignment = NSTextAlignmentCenter;
+        [self.cellView addSubview:self.updateLab];
+    }
+    if (!self.timeLab) {
+        self.timeLab = [[UILabel alloc]initWithFrame:CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + spaceX, self.nameLab.frame.origin.y + self.nameLab.frame.size.height, 200, 20)];
+        self.timeLab.font = [UIFont systemFontOfSize:16];
+        self.timeLab.textColor = [UIColor grayColor];
+        [self.cellView addSubview:self.timeLab];
+    }
+    if (!self.briefLab) {
+        self.briefLab = [[UILabel alloc]initWithFrame:CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + spaceX, self.timeLab.frame.origin.y + self.timeLab.frame.size.height, 200, 20)];
+        self.briefLab.font = [UIFont systemFontOfSize:18];
+        self.briefLab.textColor = UIColorFromRGB(0xcd9321);
+        [self.cellView addSubview:self.briefLab];
     }
 }
 
@@ -125,6 +147,10 @@ static CGFloat spaceX = 10;
     self.cellView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
     self.upsideBtn.frame = CGRectMake(screenRect.size.width, 0, upsideWidth, self.frame.size.height);
     self.deleteBtn.frame = CGRectMake(screenRect.size.width, 0, deleteWidth, self.frame.size.height);
+//    self.coverIV.frame = CGRectMake(spaceX, spaceX, 55, 75);
+//    self.nameLab.frame = CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + spaceX, self.coverIV.frame.origin.y, 100, 20);
+//    self.updateLab.frame = CGRectMake(self.nameLab.frame.origin.x + self.nameLab.frame.size.width + spaceX, self.nameLab.frame.origin.y, 100, 20);
+//    self.timeLab.frame = CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + spaceX, self.nameLab.frame.origin.y + self.nameLab.frame.size.height, 200, 20);
 }
 
 -(BOOL )gestureRecognizerShouldBegin:(UIGestureRecognizer* )gestureRecognizer {
@@ -157,6 +183,50 @@ static CGFloat spaceX = 10;
             [self showUpsideAndDelete:YES animation:YES];
         }
     }
+}
+
+-(void)setupContentUserBook:(UserBook* )userBook {
+    CGRect screenRect = [UIScreen mainScreen].bounds;
+    
+    Book* book = userBook.book;
+    UInt32 isTop = userBook.isTop;
+    if (isTop) {
+        [self.upsideBtn setTitle:@"取消置顶" forState:UIControlStateNormal];
+    }else {
+        [self.upsideBtn setTitle:@"置顶" forState:UIControlStateNormal];
+    }
+    
+    NSURL* picUrl = [NSURL URLWithString:book.pic];
+    [self.coverIV sd_setImageWithURL:picUrl placeholderImage:[UIImage imageNamed:@"firstLaunch1"] options:SDWebImageRefreshCached];
+    
+    self.nameLab.text = book.name;
+    CGRect nameFrame = self.nameLab.frame;
+    CGSize nameSize = [self.nameLab sizeThatFits:CGSizeMake(9999, nameFrame.size.height)];
+    self.nameLab.frame = CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + spaceX, self.coverIV.frame.origin.y, nameSize.width, nameFrame.size.height);
+    
+    NSString* updateStr = [NSString stringWithFormat:@"%llu", book.lastChapter.updatedAt];
+    NSLog(@"updateStr = %@", updateStr);
+    
+    NSString* str = [LMTool convertTimeStampToTime:book.lastChapter.updatedAt];
+    self.updateLab.text = str;
+    CGRect updateFrame = self.updateLab.frame;
+    CGSize updateSize = [self.updateLab sizeThatFits:CGSizeMake(9999, updateFrame.size.height)];
+    self.updateLab.frame = CGRectMake(self.nameLab.frame.origin.x + self.nameLab.frame.size.width + spaceX, self.nameLab.frame.origin.y, updateSize.width, updateFrame.size.height);
+    
+    NSString* stateStr = @"未知";
+    BookState state = book.bookState;
+    if (state == BookStateStateFinished) {
+        stateStr = @"已完结";
+    }else if (state == BookStateStateUnknown) {
+        stateStr = @"未知";
+    }else if (state == BookStateStateWriting) {
+        stateStr = @"更新中";
+    }else if (state == BookStateStatePause) {
+        stateStr = @"暂停";
+    }
+    self.timeLab.text = stateStr;
+    
+    self.briefLab.text = book.abstract;
 }
 
 - (void)awakeFromNib {

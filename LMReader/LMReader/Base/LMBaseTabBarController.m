@@ -24,17 +24,22 @@
         NSArray* titleArr = @[@"书架", @"精选", @"我的"];
         NSArray* imagesArr = @[@"tabBar_BookShelf", @"tabBar_Choice", @"tabBar_Profile"];
         
+        [self.tabBar setTintColor:THEMECOLOR];
+        
         LMBookShelfViewController* shelfVC = [[LMBookShelfViewController alloc]init];
-//        shelfVC.navigationItem.title = titleArr[0];
-        shelfVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[0] image:[UIImage imageNamed:imagesArr[0]] tag:0];
+        UIImage* shelfImage = [UIImage imageNamed:imagesArr[0]];
+        UIImage* tintShelfImage = [shelfImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        shelfVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[0] image:tintShelfImage tag:0];
         
         LMChoiceViewController* choiceVC = [[LMChoiceViewController alloc]init];
-//        choiceVC.navigationItem.title = titleArr[1];
-        choiceVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[1] image:[UIImage imageNamed:imagesArr[1]] tag:1];
+        UIImage* choiceImage = [UIImage imageNamed:imagesArr[1]];
+        UIImage* tintChoiceImage = [choiceImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        choiceVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[1] image:tintChoiceImage tag:1];
         
         LMProfileViewController* profileVC = [[LMProfileViewController alloc]init];
-//        profileVC.navigationItem.title = titleArr[2];
-        profileVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[2] image:[UIImage imageNamed:imagesArr[2]] tag:2];
+        UIImage* profileImage = [UIImage imageNamed:imagesArr[2]];
+        UIImage* tintProfileImage = [profileImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        profileVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[2] image:tintProfileImage tag:2];
         
         LMBaseNavigationController* shelfNVC = [[LMBaseNavigationController alloc]initWithRootViewController:shelfVC];
         LMBaseNavigationController* choiceNVC = [[LMBaseNavigationController alloc]initWithRootViewController:choiceVC];

@@ -8,12 +8,12 @@
 
 #import "LMBaseViewController.h"
 
-typedef void (^Launch3Block) (BOOL didClick);
+typedef void (^Launch3Block) (BOOL didClick, NSArray* bookArr);
 
 @interface LMFirstLaunch3ViewController : LMBaseViewController
 
 @property (nonatomic, copy) Launch3Block callBlock;
 
--(void) loadInterestData;
+-(void) loadInterestDataWithDic:(NSDictionary* )dic;
 
 @end

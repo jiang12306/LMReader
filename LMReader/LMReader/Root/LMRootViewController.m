@@ -24,7 +24,6 @@ static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (sharedVC == nil) {
             sharedVC = [super allocWithZone:zone];
-            
         }
     });
     return sharedVC;

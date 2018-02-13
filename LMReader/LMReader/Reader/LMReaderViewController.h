@@ -10,4 +10,6 @@
 
 @interface LMReaderViewController : LMBaseViewController
 
+@property (nonatomic, assign) Book* book;
+
 @end

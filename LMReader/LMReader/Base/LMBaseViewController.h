@@ -7,7 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Ftbook.pb.h"
+#import "LMNetworkTool.h"
 
 @interface LMBaseViewController : UIViewController
+
+@property (nonatomic, strong) UIActivityIndicatorView* loadingView;//
+
+-(void)showNetworkLoadingView;//显示 网络加载 视图
+-(void)hideNetworkLoadingView;//隐藏 网络加载 视图
 
 @end

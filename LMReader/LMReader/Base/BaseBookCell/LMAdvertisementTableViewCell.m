@@ -8,7 +8,32 @@
 
 #import "LMAdvertisementTableViewCell.h"
 
+@interface LMAdvertisementTableViewCell ()
+
+@property (nonatomic, strong) UILabel* adLab;//
+
+@end
+
 @implementation LMAdvertisementTableViewCell
+
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        self.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        [self setupAdvertisement];
+    }
+    return self;
+}
+
+-(void)setupAdvertisement {
+    if (!self.adLab) {
+        self.adLab = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, 100, 50)];
+        self.adLab.font = [UIFont systemFontOfSize:20];
+        [self.contentView addSubview:self.adLab];
+        self.adLab.text = @"广告";
+    }
+}
 
 - (void)awakeFromNib {
     [super awakeFromNib];

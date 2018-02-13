@@ -21,6 +21,10 @@
     //清理启动次数
 //    [LMTool clearLaunchCount];
     
+    //初始化用户数据
+    [LMTool initFirstLaunchData];
+    
+    
     LMRootViewController* rootVC = [LMRootViewController sharedRootViewController];
     
     UIWindow* window = [[UIWindow alloc]init];

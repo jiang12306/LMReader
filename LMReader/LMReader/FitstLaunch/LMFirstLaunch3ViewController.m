@@ -20,7 +20,7 @@
 @implementation LMFirstLaunch3ViewController
 
 static NSString* cellIdentifier = @"cellIdentifier";
-static CGFloat cellHeight = 100;
+static CGFloat cellHeight = 95;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -41,9 +41,9 @@ static CGFloat cellHeight = 100;
     self.tableView.tableHeaderView = headerView;
     
     UIView* footerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 100)];
-    self.startBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    self.startBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, footerView.frame.size.width/2, 40)];
     self.startBtn.backgroundColor = THEMECOLOR;
-    [self.startBtn setTitle:@"开始阅读" forState:UIControlStateNormal];
+    [self.startBtn setTitle:@"提交" forState:UIControlStateNormal];
     self.startBtn.titleLabel.font = [UIFont systemFontOfSize:20];
     self.startBtn.center = footerView.center;
     [self.startBtn addTarget:self action:@selector(clcikedStartButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -53,14 +53,64 @@ static CGFloat cellHeight = 100;
     self.tableView.tableFooterView = footerView;
 }
 
--(void)loadInterestData {
-    self.dataArray = [NSMutableArray array];
-    [self.dataArray addObjectsFromArray:@[@"1", @"2", @"3", @"4", @"5", @"6"]];
-    [self.tableView reloadData];
+-(void)loadInterestDataWithDic:(NSDictionary* )dic {
+    
+    [self showNetworkLoadingView];//loadingView
+    
+    FirstBookReqBuilder* builder = [FirstBookReq builder];
+    
+    GenderType genderType = GenderTypeGenderUnknown;
+    NSInteger maleInteger = [[dic objectForKey:@"male"] integerValue];
+    NSInteger femaleInteger = [[dic objectForKey:@"female"] integerValue];
+    if (maleInteger == 1) {
+        genderType = GenderTypeGenderMale;
+    }else if (maleInteger == 0) {
+        if (femaleInteger == 1) {
+            genderType = GenderTypeGenderFemale;
+        }
+    }
+    NSArray* interestArr = [dic objectForKey:@"interest"];
+    if (interestArr != nil && ![interestArr isKindOfClass:[NSNull class]] && interestArr.count > 0) {
+        [builder setBookTypeArray:interestArr];
+    }
+    
+    [builder setGender:genderType];
+    FirstBookReq* req = [builder build];
+    
+    NSData* reqData = [req data];
+    
+    [[LMNetworkTool sharedNetworkTool] postWithCmd:2 ReqData:reqData successBlock:^(NSData *successData) {
+        if (![successData isKindOfClass:[NSNull class]] && successData.length > 0) {
+            FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+            if (apiRes.cmd == 2) {
+                ErrCode err = apiRes.err;
+                if (err == ErrCodeErrNone) {
+                    
+                    FirstBookRes* res = [FirstBookRes parseFromData:apiRes.body];
+                    NSArray* booksArr = res.books;
+                    
+                    if (booksArr != nil && ![booksArr isKindOfClass:[NSNull class]] && booksArr.count > 0) {
+                        self.dataArray = [NSMutableArray arrayWithArray:booksArr];
+                        [self.tableView reloadData];
+                    }
+                    
+                    [self hideNetworkLoadingView];
+                }else {
+                    [self hideNetworkLoadingView];
+                }
+            }else {
+                [self hideNetworkLoadingView];
+            }
+        }else {
+            [self hideNetworkLoadingView];
+        }
+    } failureBlock:^(NSError *failureError) {
+        [self hideNetworkLoadingView];
+    }];
 }
 
 -(void)clcikedStartButton:(UIButton* )sender {
-    self.callBlock(YES);
+    self.callBlock(YES, [self.dataArray mutableCopy]);
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -89,7 +139,9 @@ static CGFloat cellHeight = 100;
         cell = [[LMBaseBookTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
     
-    cell.nameLab.text = [self.dataArray objectAtIndex:indexPath.row];
+    Book* book = [self.dataArray objectAtIndex:indexPath.row];
+    
+    [cell setupContentBook:book];
     
     return cell;
 }

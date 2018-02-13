@@ -12,11 +12,14 @@
 #import "LMFirstLaunch2ViewController.h"
 #import "LMFirstLaunch3ViewController.h"
 #import "LMTool.h"
+#import "LMDatabaseTool.h"
 
 @interface LMFirstLaunchViewController () <UIScrollViewDelegate>
 
 @property (nonatomic, strong) UIScrollView* scrollView;
 @property (nonatomic, strong) UIPageControl* pageControl;
+@property (nonatomic, strong) NSMutableDictionary* interestDic;//性别、感兴趣的小说类型
+@property (nonatomic, strong) NSMutableArray* dataArr;//服务端根据兴趣返回的5本小说
 
 @end
 
@@ -46,6 +49,9 @@
     
     LMFirstLaunch2ViewController* launch2 = [[LMFirstLaunch2ViewController alloc]init];
     launch2.callBlock = ^(NSDictionary *blockDic) {
+        if (blockDic != nil && ![blockDic isKindOfClass:[NSNull class]] && blockDic.count > 0) {
+            weakSelf.interestDic = [NSMutableDictionary dictionaryWithDictionary:blockDic];
+        }
         //将兴趣传值过来
     };
     [self addChildViewController:launch2];
@@ -53,8 +59,12 @@
     [self.scrollView addSubview:launch2.view];
     
     LMFirstLaunch3ViewController* launch3 = [[LMFirstLaunch3ViewController alloc]init];
-    launch3.callBlock = ^(BOOL didClick) {
+    launch3.callBlock = ^(BOOL didClick, NSArray* bookArr) {
         if (didClick) {
+            if (bookArr != nil &&![bookArr isKindOfClass:[NSNull class]] && bookArr.count > 0) {
+                
+                weakSelf.dataArr = [NSMutableArray arrayWithArray:bookArr];
+            }
             [weakSelf didLaunch];
         }
     };
@@ -65,8 +75,8 @@
     self.pageControl = [[UIPageControl alloc]initWithFrame:CGRectMake(0, 0, 40, 20)];
     self.pageControl.numberOfPages = 3;
     self.pageControl.currentPage = 0;
-    self.pageControl.pageIndicatorTintColor = [UIColor grayColor];
-    self.pageControl.currentPageIndicatorTintColor = [UIColor blackColor];
+    self.pageControl.pageIndicatorTintColor = [UIColor lightGrayColor];
+    self.pageControl.currentPageIndicatorTintColor = [UIColor grayColor];
     CGFloat pageCenterY = self.view.frame.size.height - 20;
     if ([LMTool isIPhoneX]) {
         pageCenterY -= 20;
@@ -90,13 +100,30 @@
         for (UIViewController* vc in self.childViewControllers) {
             if ([vc isKindOfClass:[LMFirstLaunch3ViewController class]]) {
                 LMFirstLaunch3ViewController* launch3VC = (LMFirstLaunch3ViewController* )vc;
-                [launch3VC loadInterestData];
+                [launch3VC loadInterestDataWithDic:[self.interestDic mutableCopy]];
             }
         }
     }
 }
 
 -(void)didLaunch {
+    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+    
+    //测试 删除 表
+//    [tool deleteBookShelfTable];
+//    [tool deleteSourceTable];
+//    [tool deleteLastChapterTable];
+    
+    [tool createBookShelfTable];
+    [tool createSourceTable];
+    [tool createLastChapterTable];
+    
+    if (self.dataArr != nil && ![self.dataArr isKindOfClass:[NSNull class]] && self.dataArr.count > 0) {
+        
+        [tool saveBooksWithArray:self.dataArr];
+    }
+    
+    
     [[LMRootViewController sharedRootViewController] exchangeLaunchState:NO];
 }
 

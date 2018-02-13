@@ -8,6 +8,13 @@
 
 #import "LMBaseViewController.h"
 
+typedef void (^LMCatalogViewControllerBlock) (Chapter* selectedChapter);
+
 @interface LMCatalogViewController : LMBaseViewController
+
+@property (nonatomic, assign) UInt32 bookId;
+@property (nonatomic, copy) LMCatalogViewControllerBlock callBlock;
+
+@property (nonatomic, strong) NSMutableArray* dataArray;//目录 章节列表
 
 @end

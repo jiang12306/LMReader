@@ -7,8 +7,7 @@
 //
 
 #import "LMContentViewController.h"
-
-#define kRandomColor ([UIColor colorWithRed:arc4random_uniform(256)/255.0 green:arc4random_uniform(256)/255.0 blue:arc4random_uniform(256)/255.0 alpha:1.0f])
+#import "LMTool.h"
 
 @interface LMContentViewController ()
 
@@ -18,14 +17,42 @@
 
 @implementation LMContentViewController
 
+-(instancetype)initWithReadModel:(LMReadModel)readModel fontSize:(CGFloat)fontSize content:(NSString *)content {
+    self = [super init];
+    if (self) {
+        self.readModel = readModel;
+        self.fontSize = fontSize;
+        self.content = content;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
+    if (@available(ios 11.0, *)) {
+        
+    }else {
+        //表头底下不算面积
+        self.automaticallyAdjustsScrollViewInsets = YES;
+    }
     
-    self.view.backgroundColor = kRandomColor;
-    _contentLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 50, self.view.bounds.size.width, 100)];
-    _contentLabel.numberOfLines = 0;
-    _contentLabel.backgroundColor = kRandomColor;
-    [self.view addSubview:_contentLabel];
+    self.contentLabel = [[UILabel alloc]initWithFrame:contentRect];
+//    self.contentLabel.backgroundColor = [UIColor greenColor];
+    self.contentLabel.backgroundColor = [UIColor clearColor];
+    self.contentLabel.font = [UIFont systemFontOfSize:self.fontSize];
+    self.contentLabel.numberOfLines = 0;
+    self.contentLabel.lineBreakMode = NSLineBreakByCharWrapping;
+    if (self.readModel == LMReadModelDay) {
+        self.view.backgroundColor = [UIColor whiteColor];
+        self.contentLabel.textColor = [UIColor blackColor];
+    }else {
+        self.view.backgroundColor = [UIColor colorWithRed:15/255.f green:15/255.f blue:15/255.f alpha:1];
+        self.contentLabel.textColor = [UIColor colorWithRed:80/255.f green:80/255.f blue:80/255.f alpha:1];
+    }
+    [self.view addSubview:self.contentLabel];
+    
+    self.contentLabel.text = self.content;
+    
 }
 
 - (void)didReceiveMemoryWarning {

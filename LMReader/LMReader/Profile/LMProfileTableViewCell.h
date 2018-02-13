@@ -6,9 +6,9 @@
 //  Copyright © 2018年 tkmob. All rights reserved.
 //
 
-#import "LMBaseTableViewCell.h"
+#import "LMBaseArrowTableViewCell.h"
 
-@interface LMProfileTableViewCell : LMBaseTableViewCell
+@interface LMProfileTableViewCell : LMBaseArrowTableViewCell
 
 @property (nonatomic, strong) UILabel* nameLab;//label
 

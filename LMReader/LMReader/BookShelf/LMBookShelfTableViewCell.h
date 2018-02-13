@@ -21,9 +21,17 @@
 
 @interface LMBookShelfTableViewCell : LMBaseTableViewCell
 
+@property (nonatomic, strong) UIImageView* coverIV;//小说封面
+@property (nonatomic, strong) UILabel* nameLab;//书名 label
+@property (nonatomic, strong) UILabel* timeLab;//更新时间 label
+@property (nonatomic, strong) UILabel* briefLab;//简介 label
+@property (nonatomic, strong) UILabel* updateLab;//更新标识 label
+
 @property (nonatomic, weak) id<LMBookShelfTableViewCellDelegate> delegate;
 
 //显示/不显示 删除 置顶 按钮
 -(void)showUpsideAndDelete:(BOOL )isShow animation:(BOOL)animation;
+
+-(void)setupContentUserBook:(UserBook* )userBook;
 
 @end

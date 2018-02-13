@@ -22,13 +22,43 @@
     
     //配置右滑返回
     self.navigationController.interactivePopGestureRecognizer.delegate = self;
+    self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     
     //标题颜色
-    [self.navigationController.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName : THEMECOLOR}];
+    [self.navigationController.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}];
     
     //表头 半透明
     self.navigationController.navigationBar.translucent = YES;
     
+}
+
+//显示 网络加载 视图
+-(void)showNetworkLoadingView {
+    if (!self.loadingView) {
+        self.loadingView = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        self.loadingView.frame = CGRectMake(0, 0, 30, 30);
+        self.loadingView.hidesWhenStopped = YES;
+        self.loadingView.center = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height/2);
+        [self.view insertSubview:self.loadingView atIndex:999];
+        
+        self.loadingView.hidden = YES;
+    }
+    self.loadingView.hidden = NO;
+    [self.loadingView startAnimating];
+    [self.view bringSubviewToFront:self.loadingView];
+}
+
+//隐藏 网络加载 视图
+-(void)hideNetworkLoadingView {
+    [self.loadingView stopAnimating];
+    self.loadingView.hidden = YES;
+}
+
+-(void)dealloc {
+//    [self.loadingView removeFromSuperview];
+//    self.loadingView = nil;
+    
+    NSLog(@"---------dealloc---------");
 }
 
 - (void)didReceiveMemoryWarning {
