@@ -10,4 +10,6 @@
 
 @interface LMRangeDetailViewController : LMBaseViewController
 
+@property (nonatomic, assign) UInt32 rangeId;
+
 @end

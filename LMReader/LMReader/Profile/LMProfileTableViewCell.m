@@ -10,8 +10,6 @@
 
 @interface LMProfileTableViewCell ()
 
-@property (nonatomic, strong) UIImageView* arrowIV;//箭头
-
 @end
 
 @implementation LMProfileTableViewCell

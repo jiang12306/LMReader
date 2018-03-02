@@ -17,4 +17,9 @@
  */
 -(void)exchangeLaunchState:(BOOL)isFirstLaunch;
 
+/** 更改当前显示vc
+ *  @param index 当前item的角标 0：书架  1：精选  2：我的
+ */
+-(void)setCurrentViewControllerIndex:(NSInteger )index;
+
 @end

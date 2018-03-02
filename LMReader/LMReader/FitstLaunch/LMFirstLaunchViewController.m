@@ -12,14 +12,13 @@
 #import "LMFirstLaunch2ViewController.h"
 #import "LMFirstLaunch3ViewController.h"
 #import "LMTool.h"
-#import "LMDatabaseTool.h"
 
 @interface LMFirstLaunchViewController () <UIScrollViewDelegate>
 
 @property (nonatomic, strong) UIScrollView* scrollView;
 @property (nonatomic, strong) UIPageControl* pageControl;
 @property (nonatomic, strong) NSMutableDictionary* interestDic;//性别、感兴趣的小说类型
-@property (nonatomic, strong) NSMutableArray* dataArr;//服务端根据兴趣返回的5本小说
+//@property (nonatomic, strong) NSMutableArray* dataArr;//服务端根据兴趣返回的5本小说
 
 @end
 
@@ -27,10 +26,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-//    if (@available(iOS 9.0, *)) {
-//        [[UIApplication sharedApplication] setStatusBarHidden:YES];
-//    }
     
     self.scrollView = [[UIScrollView alloc]initWithFrame:self.view.frame];
     self.scrollView.showsVerticalScrollIndicator = NO;
@@ -61,10 +56,10 @@
     LMFirstLaunch3ViewController* launch3 = [[LMFirstLaunch3ViewController alloc]init];
     launch3.callBlock = ^(BOOL didClick, NSArray* bookArr) {
         if (didClick) {
-            if (bookArr != nil &&![bookArr isKindOfClass:[NSNull class]] && bookArr.count > 0) {
-                
-                weakSelf.dataArr = [NSMutableArray arrayWithArray:bookArr];
-            }
+//            if (bookArr != nil &&![bookArr isKindOfClass:[NSNull class]] && bookArr.count > 0) {
+//
+//                weakSelf.dataArr = [NSMutableArray arrayWithArray:bookArr];
+//            }
             [weakSelf didLaunch];
         }
     };
@@ -86,10 +81,6 @@
     
 }
 
-//隐藏状态栏
-//-(BOOL)prefersStatusBarHidden {
-//    return YES;
-//}
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
     //首先通过tag值得到pageControl
@@ -107,22 +98,6 @@
 }
 
 -(void)didLaunch {
-    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-    
-    //测试 删除 表
-//    [tool deleteBookShelfTable];
-//    [tool deleteSourceTable];
-//    [tool deleteLastChapterTable];
-    
-    [tool createBookShelfTable];
-    [tool createSourceTable];
-    [tool createLastChapterTable];
-    
-    if (self.dataArr != nil && ![self.dataArr isKindOfClass:[NSNull class]] && self.dataArr.count > 0) {
-        
-        [tool saveBooksWithArray:self.dataArr];
-    }
-    
     
     [[LMRootViewController sharedRootViewController] exchangeLaunchState:NO];
 }

@@ -17,4 +17,6 @@
 -(void)showNetworkLoadingView;//显示 网络加载 视图
 -(void)hideNetworkLoadingView;//隐藏 网络加载 视图
 
+-(void)showMBProgressHUDWithText:(NSString* )hudText;
+
 @end

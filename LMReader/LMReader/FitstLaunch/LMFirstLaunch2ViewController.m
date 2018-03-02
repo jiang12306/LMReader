@@ -184,19 +184,13 @@
                         //
                         [self setupInterestButton];
                         
-                        [self hideNetworkLoadingView];
-                    }else {
-                        [self hideNetworkLoadingView];
                     }
-                }else {
-                    [self hideNetworkLoadingView];
                 }
-            }else {
-                [self hideNetworkLoadingView];
             }
-        }else {
-            [self hideNetworkLoadingView];
         }
+        
+        [self hideNetworkLoadingView];
+        
     } failureBlock:^(NSError *failureError) {
         [self hideNetworkLoadingView];
     }];

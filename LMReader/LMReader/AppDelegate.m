@@ -16,6 +16,11 @@
 
 @implementation AppDelegate
 
+//用户id，全局唯一标识，切换登录账号时跟着变
+-(NSString *)userId {
+    NSString* uuidStr = [LMTool getAppUserId];
+    return uuidStr;
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     //清理启动次数

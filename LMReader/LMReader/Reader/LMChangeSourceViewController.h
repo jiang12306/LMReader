@@ -10,4 +10,6 @@
 
 @interface LMChangeSourceViewController : LMBaseViewController
 
+@property (nonatomic, strong) NSMutableArray* sourceArr;
+
 @end

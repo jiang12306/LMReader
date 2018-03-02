@@ -10,6 +10,7 @@
 #import "LMBaseRefreshTableView.h"
 #import "LMBaseBookTableViewCell.h"
 #import "LMAdvertisementTableViewCell.h"
+#import "LMBookDetailViewController.h"
 
 @interface LMSearchViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate, UITextFieldDelegate>
 
@@ -58,7 +59,11 @@ static CGFloat cellHeight = 95;
     self.searchTF.layer.cornerRadius = 5;
     self.searchTF.layer.masksToBounds = YES;
     self.searchTF.keyboardType = UIKeyboardTypeWebSearch;
+    self.searchTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     self.searchTF.delegate = self;
+    if (self.searchStr.length > 0) {
+        self.searchTF.text = self.searchStr;
+    }
     [headerView addSubview:self.searchTF];
     self.tableView.tableHeaderView = headerView;
     
@@ -93,7 +98,11 @@ static CGFloat cellHeight = 95;
 
 -(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
     UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
-    vi.backgroundColor = [UIColor grayColor];
+    UIColor* viBGColor = [UIColor whiteColor];
+    if (section == 2) {
+        viBGColor = [UIColor grayColor];
+    }
+    vi.backgroundColor = viBGColor;
     return vi;
 }
 
@@ -171,7 +180,15 @@ static CGFloat cellHeight = 95;
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:NO];
     
-    
+    Book* book;
+    if (indexPath.section == 0) {
+        book = [self.resultArray objectAtIndex:indexPath.row];
+    }else if (indexPath.section == 2) {
+        book = [self.relatedArray objectAtIndex:indexPath.row];
+    }
+    LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
+    detailVC.book = book;
+    [self.navigationController pushViewController:detailVC animated:YES];
 }
 
 //

@@ -12,6 +12,7 @@
 #import "LMTool.h"
 #import "LMSearchBarView.h"
 #import "LMSearchViewController.h"
+#import "LMBookDetailViewController.h"
 
 typedef enum {
     LMBookStoreStateAll = 0,//全部
@@ -55,6 +56,7 @@ CGFloat filterBtnMargin = 10;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    
     UIView* rightView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 55, 30)];
     UIImage* rightImage = [UIImage imageNamed:@"navigationItem_More"];
     UIButton* rightButton = [[UIButton alloc]initWithFrame:rightView.frame];
@@ -67,6 +69,7 @@ CGFloat filterBtnMargin = 10;
     [rightButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [rightView addSubview:rightButton];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:rightView];
+    
     
     LMSearchBarView* titleView = [[LMSearchBarView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width - 80 - rightView.frame.size.width - 60, 25)];
     titleView.delegate = self;
@@ -84,15 +87,13 @@ CGFloat filterBtnMargin = 10;
     self.femaleTypeArray = [NSMutableArray array];
     self.typeArray = [NSMutableArray array];
     self.filterTypeArray = [NSMutableArray array];
+    self.dataArray = [NSMutableArray array];
     self.page = 0;
+    self.isEnd = NO;
     
     self.genderType = GenderTypeGenderOther;
     self.bookState = LMBookStoreStateAll;
     self.bookRange = LMBookStoreRangeHot;
-    
-    //tableHeaderView
-//    [self createTableHeaderView];
-//    [self setupTypeFilterView];
     
     //置顶按钮
     [self.view addSubview:self.upsideView];
@@ -255,7 +256,7 @@ CGFloat filterBtnMargin = 10;
     [self setupTypeFilterView];
     
     self.page = 0;
-    [self loadBookStoreDataWithPage:self.page];
+    [self loadBookStoreDataWithPage:self.page isLoadMoreData:NO];
 }
 
 //小说 类型
@@ -289,7 +290,7 @@ CGFloat filterBtnMargin = 10;
     }
     
     self.page = 0;
-    [self loadBookStoreDataWithPage:self.page];
+    [self loadBookStoreDataWithPage:self.page isLoadMoreData:NO];
 }
 
 //小说状态
@@ -336,7 +337,7 @@ CGFloat filterBtnMargin = 10;
     }
     
     self.page = 0;
-    [self loadBookStoreDataWithPage:self.page];
+    [self loadBookStoreDataWithPage:self.page isLoadMoreData:NO];
 }
 
 //人气 最新上架
@@ -369,7 +370,7 @@ CGFloat filterBtnMargin = 10;
     }
     
     self.page = 0;
-    [self loadBookStoreDataWithPage:self.page];
+    [self loadBookStoreDataWithPage:self.page isLoadMoreData:NO];
 }
 
 //置顶按钮
@@ -443,6 +444,11 @@ CGFloat filterBtnMargin = 10;
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:NO];
     
+    Book* book = [self.dataArray objectAtIndex:indexPath.row];
+    
+    LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
+    detailVC.book = book;
+    [self.navigationController pushViewController:detailVC animated:YES];
 }
 
 //加载男生 小说类型 列表
@@ -471,7 +477,7 @@ CGFloat filterBtnMargin = 10;
                             [self createTableHeaderView];
                             [self setupTypeFilterView];
                             
-                            [self loadBookStoreDataWithPage:0];
+                            [self loadBookStoreDataWithPage:0 isLoadMoreData:NO];
                         }
                     }
                 }
@@ -509,7 +515,7 @@ CGFloat filterBtnMargin = 10;
                             [self createTableHeaderView];
                             [self setupTypeFilterView];
                             
-                            [self loadBookStoreDataWithPage:0];
+                            [self loadBookStoreDataWithPage:0 isLoadMoreData:NO];
                         }
                     }
                 }
@@ -522,10 +528,13 @@ CGFloat filterBtnMargin = 10;
 }
 
 //根据类型筛选
--(void)loadBookStoreDataWithPage:(NSInteger )page {
+-(void)loadBookStoreDataWithPage:(NSInteger )page isLoadMoreData:(BOOL )loadMore {
     if (self.filterTypeArray.count == 0) {
         return;
     }
+    
+    self.isEnd = NO;
+    
     UInt32 isNew = 1;
     if (self.bookRange == LMBookStoreRangeNew) {
         isNew = 2;
@@ -568,8 +577,18 @@ CGFloat filterBtnMargin = 10;
                 }
             }
         }
+        if (loadMore) {
+            [self.tableView stopLoadMoreData];
+        }else {
+            [self.tableView stopRefresh];
+        }
         [self hideNetworkLoadingView];
     } failureBlock:^(NSError *failureError) {
+        if (loadMore) {
+            [self.tableView stopLoadMoreData];
+        }else {
+            [self.tableView stopRefresh];
+        }
         [self hideNetworkLoadingView];
     }];
 }
@@ -580,7 +599,7 @@ CGFloat filterBtnMargin = 10;
     self.isEnd = NO;
     [self.tableView cancelNoMoreData];
     
-    [self loadBookStoreDataWithPage:self.page];
+    [self loadBookStoreDataWithPage:self.page isLoadMoreData:NO];
 }
 
 -(void)refreshTableViewDidStartLoadMoreData:(LMBaseRefreshTableView *)tv {
@@ -588,7 +607,7 @@ CGFloat filterBtnMargin = 10;
         return;
     }
     
-    [self loadBookStoreDataWithPage:self.page];
+    [self loadBookStoreDataWithPage:self.page isLoadMoreData:YES];
 }
 
 #pragma mark -LMSearchBarViewDelegate

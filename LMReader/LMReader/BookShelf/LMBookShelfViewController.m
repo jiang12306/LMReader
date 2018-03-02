@@ -14,6 +14,8 @@
 #import "LMBaseRefreshTableView.h"
 #import "LMSearchViewController.h"
 #import "LMSearchBarView.h"
+#import "LMDatabaseTool.h"
+#import "LMRootViewController.h"
 
 @interface LMBookShelfViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate, LMBookShelfTableViewCellDelegate, LMSearchBarViewDelegate>
 
@@ -80,19 +82,11 @@ static CGFloat cellHeight = 95;
     self.cycleAddBtn.hidden = NO;
     
     self.page = 0;
+    self.isEnd = NO;
+    self.isRefreshing = NO;
     self.dataArray = [NSMutableArray array];
     
-//    self.dataArray = [NSMutableArray arrayWithObjects:@"1", @"2",@"3", @"4",@"5", @"6",@"7", @"8",@"9", @"10", @"11",@"12", @"13", @"14",@"15", @"16", nil];
-//    [self.tableView reloadData];
-    if (self.dataArray.count * cellHeight < self.tableView.frame.size.height) {
-        self.tableView.tableFooterView = self.footerView;
-        self.cycleAddBtn.hidden = YES;
-    }else {
-        self.tableView.tableFooterView = self.footerView;
-        self.rectAddBtn.hidden = YES;
-        self.cycleAddBtn.hidden = NO;
-    }
-    
+    //初始化数据
     [self loadDataWithPage:self.page isRefreshingOrLoadMoreData:NO];
 }
 
@@ -137,7 +131,7 @@ static CGFloat cellHeight = 95;
 
 //+图书
 -(void)clickedAddButton:(UIButton* )sender {
-    
+    [[LMRootViewController sharedRootViewController] setCurrentViewControllerIndex:1];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -171,8 +165,6 @@ static CGFloat cellHeight = 95;
     UserBook* userBook = [self.dataArray objectAtIndex:indexPath.row];
     [cell setupContentUserBook:userBook];
     
-//    NSLog(@"-----row = %ld, bookId = %u, bookId = %u", indexPath.row, userBook.book.bookId, userBook.book.lastChapter.book.bookId);
-    
     return cell;
 }
 
@@ -189,6 +181,10 @@ static CGFloat cellHeight = 95;
 }
 
 -(void)loadDataWithPage:(NSInteger )page isRefreshingOrLoadMoreData:(BOOL )loadMore {
+    if (self.isRefreshing) {
+        return;
+    }
+    
     [self showNetworkLoadingView];
     self.isRefreshing = YES;
     
@@ -211,8 +207,21 @@ static CGFloat cellHeight = 95;
                 if (self.page == 0) {//第一页
                     [self.dataArray removeAllObjects];
                 }
-                
-                [self.dataArray addObjectsFromArray:arr];
+                if (arr.count > 0) {
+                    [self.dataArray addObjectsFromArray:arr];
+                    //存入数据库
+                    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+                    [tool saveUserBooksWithArray:arr];
+                }
+                //设置 添加图书 按钮
+                if (self.dataArray.count * cellHeight < self.tableView.frame.size.height) {
+                    self.tableView.tableFooterView = self.footerView;
+                    self.cycleAddBtn.hidden = YES;
+                }else {
+                    self.tableView.tableFooterView = self.footerView;
+                    self.rectAddBtn.hidden = YES;
+                    self.cycleAddBtn.hidden = NO;
+                }
                 
                 if (arr.count < currentSize) {//最后一页
                     self.isEnd = YES;
@@ -220,6 +229,7 @@ static CGFloat cellHeight = 95;
                 }
                 self.page ++;
                 [self.tableView reloadData];
+                
             }
         }
         self.isRefreshing = NO;
@@ -229,6 +239,18 @@ static CGFloat cellHeight = 95;
             [self.tableView stopRefresh];
         }
     } failureBlock:^(NSError *failureError) {
+        
+        //取数据库 图书
+        if (self.page == 0) {
+            NSArray* arr = [[LMDatabaseTool sharedDatabaseTool] queryAllUserBooks];
+            if (arr != nil && arr.count > 0) {
+                [self.dataArray removeAllObjects];
+                [self.dataArray addObjectsFromArray:arr];
+                
+                [self.tableView reloadData];
+            }
+        }
+        
         self.isRefreshing = NO;
         if (loadMore) {
             [self.tableView stopLoadMoreData];
@@ -308,8 +330,14 @@ static CGFloat cellHeight = 95;
         FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
         if (apiRes.cmd == 4) {
             ErrCode err = apiRes.err;
-            if (err == ErrCodeErrNone) {
-                //成功
+            if (err == ErrCodeErrNone) {//成功
+                LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+                BOOL delResult = [tool deleteUserBookWithBook:userBook.book];
+                
+                NSLog(@"deleteResult = %d", delResult);
+                
+                [self.dataArray removeObjectAtIndex:indexPath.row];
+                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
             }else if (err == ErrCodeErrCannotadddelmodify) {//无法增删改
                 
             }else if (err == ErrCodeErrBooknotexist) {//书本不存在
@@ -329,11 +357,9 @@ static CGFloat cellHeight = 95;
     NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
     UserBook* userBook = [self.dataArray objectAtIndex:indexPath.row];
     UInt32 isTop = userBook.isTop;
-    UserBookStoreOperateType type = UserBookStoreOperateTypeOperateUntop;
+    UserBookStoreOperateType type = UserBookStoreOperateTypeOperateTop;
     if (isTop) {
         type = UserBookStoreOperateTypeOperateUntop;
-    }else {
-        type = UserBookStoreOperateTypeOperateTop;
     }
     UserBookStoreOperateReqBuilder* builder = [UserBookStoreOperateReq builder];
     [builder setBookId:userBook.book.bookId];
@@ -346,8 +372,43 @@ static CGFloat cellHeight = 95;
         FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
         if (apiRes.cmd == 4) {
             ErrCode err = apiRes.err;
-            if (err == ErrCodeErrNone) {
-                //成功
+            if (err == ErrCodeErrNone) {//成功
+                LMDatabaseTool* dbTool = [LMDatabaseTool sharedDatabaseTool];
+                if (type == UserBookStoreOperateTypeOperateUntop) {//取消置顶
+                    [dbTool setUpside:NO book:userBook.book];
+                    
+                    UserBookBuilder* builder = [UserBook builder];
+                    [builder setIsTop:0];
+                    [builder setBook:userBook.book];
+                    UserBook* upsideUserBook = [builder build];
+                    
+                    [self.dataArray removeObject:userBook];
+                    for (NSInteger i = 0; i < self.dataArray.count; i ++) {
+                        UserBook* tempUserBook = [self.dataArray objectAtIndex:i];
+                        
+                        if (tempUserBook.isTop == 0) {
+                            [self.dataArray insertObject:upsideUserBook atIndex:i];
+                            break;
+                        }
+                    }
+                    
+                    [self.tableView reloadData];
+                    
+                }else {//置顶
+                    [dbTool setUpside:YES book:userBook.book];
+                    
+                    UserBookBuilder* builder = [UserBook builder];
+                    [builder setIsTop:1];
+                    [builder setBook:userBook.book];
+                    UserBook* upsideUserBook = [builder build];
+                    
+                    [self.dataArray removeObject:userBook];
+                    [self.dataArray insertObject:upsideUserBook atIndex:0];
+                    
+                    [self.tableView reloadData];
+                }
+                
+                
             }else if (err == ErrCodeErrCannotadddelmodify) {//无法增删改
                 
             }else if (err == ErrCodeErrBooknotexist) {//书本不存在

@@ -10,15 +10,20 @@
 #import "sys/utsname.h"
 #import "LMNetworkTool.h"
 #import "LMDatabaseTool.h"
+#import "AppDelegate.h"
+#import <CommonCrypto/CommonCrypto.h>
 
 @implementation LMTool
 
 static NSString* launchCount = @"launchCount";
+static NSString* currentUserId = @"currentUserId";
 
 //是否第一次launch
 +(BOOL)isFirstLaunch {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* keyStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, launchCount];
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    NSNumber* count = [defaults objectForKey:launchCount];
+    NSNumber* count = [defaults objectForKey:keyStr];
     if (count == nil) {
         return YES;
     }
@@ -33,47 +38,81 @@ static NSString* launchCount = @"launchCount";
 
 //删除启动次数
 +(void)clearLaunchCount {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* keyStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, launchCount];
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    [defaults removeObjectForKey:launchCount];
+    [defaults removeObjectForKey:keyStr];
     [defaults synchronize];
 }
 
 //启动次数+1
 +(void)incrementLaunchCount {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* keyStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, launchCount];
     NSInteger countInteger = 0;
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    NSNumber* count = [defaults objectForKey:launchCount];
+    NSNumber* count = [defaults objectForKey:keyStr];
     if (count != nil && [count isKindOfClass:[NSNull class]]) {
         countInteger = [count integerValue];
     }
     countInteger ++;
     
-    [defaults setObject:[NSNumber numberWithInteger:countInteger] forKey:launchCount];
+    [defaults setObject:[NSNumber numberWithInteger:countInteger] forKey:keyStr];
     [defaults synchronize];
 }
 
 //初始化第一次启动用户数据
 +(void)initFirstLaunchData {
-    //创建 表
-    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-    [tool createBookShelfTable];
-    [tool createSourceTable];
-    [tool createLastChapterTable];
-    
+    //创建用户文件夹
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    NSString* userFilePath = [LMTool getUserFilePath];
     
     //阅读器界面 配置 初始化
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *plistPath = [paths objectAtIndex:0];
-    plistPath = [plistPath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
-    NSMutableDictionary* configDic = [NSMutableDictionary dictionary];
-    [configDic setObject:@1 forKey:@"readerModelDay"];
-    [configDic setObject:@16 forKey:@"readerFont"];
-    [configDic setObject:@"目录" forKey:@"readerCatalog"];
-    [configDic setObject:@"下载" forKey:@"readerDownload"];
-    [configDic setObject:@"分享" forKey:@"readerShare"];
-    [configDic writeToFile:plistPath atomically:YES];
+    NSString* plistPath = [userFilePath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
+    if (![fileManager fileExistsAtPath:plistPath]) {
+        NSMutableDictionary* configDic = [NSMutableDictionary dictionary];
+        [configDic setObject:@1 forKey:@"readerModelDay"];
+        [configDic setObject:@18 forKey:@"readerFont"];
+        [configDic setObject:@"目录" forKey:@"readerCatalog"];
+        [configDic setObject:@"下载" forKey:@"readerDownload"];
+        [configDic setObject:@"分享" forKey:@"readerShare"];
+        [configDic writeToFile:plistPath atomically:YES];
+    }
+    
+    
+    
+    //创建 表
+    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+    [tool createAllFirstLaunchTable];
+    
+    
     
     [LMNetworkTool sharedNetworkTool];
+}
+
+//获取用户文件夹目录
++(NSString* )getUserFilePath {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    
+    NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentPath = [pathsArr objectAtIndex:0];
+    NSString* userFilePath = [documentPath stringByAppendingPathComponent:appDelegate.userId];
+    BOOL isDir;
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:userFilePath isDirectory:&isDir]) {
+        [fileManager createDirectoryAtPath:userFilePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    return userFilePath;
+}
+
+//获取 阅读界面 配置
++(void)getReaderConfig:(void (^) (CGFloat fontSize, NSInteger modelInteger))block {
+    NSString* userFilePath = [LMTool getUserFilePath];
+    NSString* plistPath = [userFilePath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
+    NSDictionary* configDic = [NSDictionary dictionaryWithContentsOfFile:plistPath];
+    CGFloat fontSize = [[configDic objectForKey:@"readerFont"] floatValue];
+    NSInteger modelInteger = [[configDic objectForKey:@"readerModelDay"] integerValue];
+    block(fontSize, modelInteger);
 }
 
 //修改阅读器 配置
@@ -86,15 +125,153 @@ static NSString* launchCount = @"launchCount";
     if (fontSize) {
         fontNum = [NSNumber numberWithFloat:fontSize];
     }
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *plistPath = [paths objectAtIndex:0];
-    plistPath = [plistPath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
+    NSString* userFilePath = [LMTool getUserFilePath];
+    NSString* plistPath = [userFilePath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
     NSMutableDictionary* configDic = [NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
     [configDic setObject:modelNum forKey:@"readerModelDay"];
     [configDic setObject:fontNum forKey:@"readerFont"];
     
     [configDic writeToFile:plistPath atomically:YES];
 }
+
+//
++(BOOL )deviceIsBinding {
+    NSString* uuidStr = [LMTool uuid];
+    uuidStr = [uuidStr stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSString* userId = [defaults objectForKey:uuidStr];
+    if (userId != nil && ![userId isKindOfClass:[NSNull class]] && userId.length > 0) {
+        return YES;
+    }
+    return NO;
+}
+
+//获取当前userId
++(NSString* )getAppUserId {
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    
+    if ([LMTool deviceIsBinding]) {
+        NSString* userId = [defaults objectForKey:currentUserId];
+        return userId;
+    }else {
+        NSString* uuidStr = [LMTool uuid];
+        uuidStr = [uuidStr stringByReplacingOccurrencesOfString:@"-" withString:@""];
+        return uuidStr;
+    }
+}
+
+//将设备号与用户绑定
++(void)bindDeviceToUser:(LoginedRegUser* )loginUser {
+    NSString* userId = loginUser.user.uid;
+    NSString* uuidStr = [LMTool uuid];
+    uuidStr = [uuidStr stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    if ([LMTool deviceIsBinding]) {//设备已经被绑定过
+        NSString* bindUserId = [LMTool getAppUserId];
+        if ([bindUserId isEqualToString:uuidStr]) {//设备绑定的是当前账号
+            return;
+        }
+        
+        //根据用户id来创建用户目录文件夹、设置APPDelegate.userId、创建数据表
+        
+        [defaults setObject:userId forKey:currentUserId];
+        [defaults synchronize];
+        
+        //初始化用户数据
+        [LMTool initFirstLaunchData];
+        
+        //To Do...
+        
+    }else {
+        [defaults setObject:userId forKey:uuidStr];
+        [defaults setObject:uuidStr forKey:currentUserId];
+        [defaults synchronize];
+    }
+    
+}
+
+//保存用户信息
++(void)saveLoginedRegUser:(LoginedRegUser* )loginedUser {
+    NSString* token = loginedUser.token;
+    RegUser* regUser = loginedUser.user;
+    NSString* uidStr = regUser.uid;
+    NSString* phoneNumStr = regUser.phoneNum;
+    NSString* emailStr = regUser.email;
+    GenderType genderType = regUser.gender;
+    NSNumber* genderNum = @0;
+    if (genderType == GenderTypeGenderMale) {
+        genderNum = @1;
+    }else if (genderType == GenderTypeGenderFemale) {
+        genderNum = @2;
+    }else if (genderType == GenderTypeGenderOther) {
+        genderNum = @3;
+    }
+    NSString* birthdayStr = regUser.birthday;
+    NSString* localAreaStr = regUser.localArea;
+    
+    NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentPath = [pathsArr objectAtIndex:0];
+    NSString* plistPath = [documentPath stringByAppendingPathComponent:@"loginedRegUser.plist"];
+    NSMutableDictionary* dic = [NSMutableDictionary dictionary];
+    [dic setObject:token forKey:@"token"];
+    [dic setObject:uidStr forKey:@"uid"];
+    [dic setObject:phoneNumStr forKey:@"phoneNum"];
+    [dic setObject:emailStr forKey:@"email"];
+    [dic setObject:genderNum forKey:@"gender"];
+    [dic setObject:birthdayStr forKey:@"birthday"];
+    [dic setObject:localAreaStr forKey:@"localArea"];
+    
+    [dic writeToFile:plistPath atomically:YES];
+}
+
+//获取用户信息
++(LoginedRegUser* )getLoginedRegUser {
+    LoginedRegUserBuilder* builder = [LoginedRegUser builder];
+    
+    NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentPath = [pathsArr objectAtIndex:0];
+    NSString* plistPath = [documentPath stringByAppendingPathComponent:@"loginedRegUser.plist"];
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:plistPath]) {
+        return nil;
+    }
+    
+    NSDictionary* dic = [NSDictionary dictionaryWithContentsOfFile:plistPath];
+    
+    NSString* tokenStr = [dic objectForKey:@"token"];
+    NSString* uidStr = [dic objectForKey:@"uid"];
+    NSString* phoneNumStr = [dic objectForKey:@"phoneNum"];
+    NSString* emailStr = [dic objectForKey:@"email"];
+    NSNumber* genderNum = [dic objectForKey:@"gender"];
+    NSInteger genderInt = [genderNum integerValue];
+    GenderType type = GenderTypeGenderUnknown;
+    if (genderInt == 1) {
+        type = GenderTypeGenderMale;
+    }else if (genderInt == 2) {
+        type = GenderTypeGenderFemale;
+    }else if (genderInt == 3) {
+        type = GenderTypeGenderOther;
+    }
+    NSString* birthdayStr = [dic objectForKey:@"birthday"];
+    NSString* localAreaStr = [dic objectForKey:@"localArea"];
+    
+    RegUserBuilder* userBuilder = [RegUser builder];
+    [userBuilder setUid:uidStr];
+    [userBuilder setPhoneNum:phoneNumStr];
+    [userBuilder setEmail:emailStr];
+    [userBuilder setGender:type];
+    [userBuilder setBirthday:birthdayStr];
+    [userBuilder setLocalArea:localAreaStr];
+    RegUser* regUser = [userBuilder build];
+    
+    [builder setToken:tokenStr];
+    [builder setUser:regUser];
+    
+    LoginedRegUser* user = [builder build];
+    return user;
+}
+
 
 //iPhone X ?
 +(BOOL )isIPhoneX {
@@ -182,6 +359,21 @@ static NSString* launchCount = @"launchCount";
     NSDate *stampDate2 = [NSDate dateWithTimeIntervalSince1970:timeStamp];
     NSString* dateStr = [stampFormatter stringFromDate:stampDate2];
     return dateStr;
+}
+
+//MD5加密, 32位 小写
++(NSString *)MD5ForLower32Bate:(NSString *)str {
+    //要进行UTF8的转码
+    const char* input = [str UTF8String];
+    unsigned char result[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(input, (CC_LONG)strlen(input), result);
+    
+    NSMutableString *digest = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for (NSInteger i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
+        [digest appendFormat:@"%02x", result[i]];
+    }
+    
+    return digest;
 }
 
 

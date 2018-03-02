@@ -8,6 +8,7 @@
 
 #import "LMRangeViewController.h"
 #import "LMRangeTableViewCell.h"
+#import "LMRangeDetailViewController.h"
 
 @interface LMRangeViewController () <UITableViewDelegate, UITableViewDataSource>
 
@@ -32,8 +33,36 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [self.tableView registerClass:[LMRangeTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.view addSubview:self.tableView];
     
-    self.dataArray = [NSMutableArray arrayWithObjects:@"男生热搜榜", @"男生阅读榜",@"女生热搜榜", @"女生阅读榜", nil];
-    [self.tableView reloadData];
+    self.dataArray = [NSMutableArray array];
+    [self initRangeData];
+}
+
+-(void)initRangeData {
+    TopicChartReqBuilder* builder = [TopicChartReq builder];
+    [builder setType:1];
+    TopicChartReq* req = [builder build];
+    NSData* reqData = [req data];
+    
+    LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
+    [tool postWithCmd:11 ReqData:reqData successBlock:^(NSData *successData) {
+        FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+        if (apiRes.cmd == 11) {
+            ErrCode err = apiRes.err;
+            if (err == ErrCodeErrNone) {
+                TopicChartRes* res = [TopicChartRes parseFromData:apiRes.body];
+                NSArray* arr = res.tcs;
+                if (arr.count > 0) {
+                    [self.dataArray addObjectsFromArray:arr];
+                }
+                
+                [self.tableView reloadData];
+            }
+        }
+        [self hideNetworkLoadingView];
+        
+    } failureBlock:^(NSError *failureError) {
+        [self hideNetworkLoadingView];
+    }];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -62,7 +91,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
         cell = [[LMRangeTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
     
-    cell.titleLab.text = [self.dataArray objectAtIndex:indexPath.row];
+    TopicChart* chart = [self.dataArray objectAtIndex:indexPath.row];
+    cell.titleLab.text = chart.name;
     
     return cell;
 }
@@ -70,6 +100,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:NO];
     
+    TopicChart* chart = [self.dataArray objectAtIndex:indexPath.row];
+    
+    LMRangeDetailViewController* rangeDetailVC = [[LMRangeDetailViewController alloc]init];
+    rangeDetailVC.rangeId = chart.id;
+    [self.navigationController pushViewController:rangeDetailVC animated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

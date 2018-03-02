@@ -12,6 +12,8 @@
 #import "LMChangeSourceViewController.h"
 #import "LMTool.h"
 #import "LMFontView.h"
+#import "LMDatabaseTool.h"
+#import <CoreText/CoreText.h>
 
 @interface LMReaderViewController () <UIPageViewControllerDelegate, UIPageViewControllerDataSource, LMFontViewDelegate>
 
@@ -20,11 +22,13 @@
 @property (nonatomic, strong) NSMutableArray* toolTitleArray;
 @property (nonatomic, strong) Chapter* currentChapter;//当前章节
 @property (nonatomic, strong) NSMutableArray* sourceArray;//所有源头
-@property (nonatomic, strong) UILabel* contentLab;//计算高度用
 @property (nonatomic, assign) NSRange currentRange;//当前文本位置
-@property (nonatomic, assign) NSInteger perPage;//每页字数
 @property (nonatomic, assign) CGFloat fontSize;
 @property (nonatomic, assign) LMReadModel readModel;
+
+@property (nonatomic, strong) NSMutableArray* pageArray;//总页数
+@property (nonatomic, assign) NSInteger currentPage;//
+@property (nonatomic, assign) NSInteger pageChange;
 
 @end
 
@@ -91,14 +95,14 @@
     
     self.toolTitleArray = [NSMutableArray array];
     self.sourceArray = [NSMutableArray array];
+    self.pageArray = [NSMutableArray array];
     
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *plistPath = [paths objectAtIndex:0];
-    plistPath = [plistPath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
-    NSMutableDictionary* configDic = [NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
-    self.fontSize = [[configDic objectForKey:@"readerFont"] floatValue];
-    NSInteger modelInteger = [[configDic objectForKey:@"readerModelDay"] integerValue];
-    if (modelInteger) {//白天模式
+    __block NSInteger modelInt;
+    [LMTool getReaderConfig:^(CGFloat fontSize, NSInteger modelInteger) {
+        self.fontSize = fontSize;
+        modelInt = modelInteger;
+    }];
+    if (modelInt) {//白天模式
         [self.toolTitleArray addObject:@"夜间"];
         self.readModel = LMReadModelDay;
     }else {
@@ -116,21 +120,13 @@
     }
     self.toolbarItems = itemsArr;
     
-//    self.pageVC = [[UIPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStylePageCurl navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];
-//    self.pageVC.delegate = self;
-//    self.pageVC.dataSource = self;
-//    LMBaseViewController *initialViewController = [self viewControllerAtIndex:0];//得到第一页
-//    NSArray *viewControllers = [NSArray arrayWithObject:initialViewController];
-//    [self.pageVC setViewControllers:viewControllers direction:UIPageViewControllerNavigationDirectionReverse animated:NO completion:nil];
-//    self.pageVC.view.frame = self.view.bounds;
-//    [self addChildViewController:self.pageVC];
-//    [self.view addSubview:self.pageVC.view];
-    
     UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapped:)];
     [self.view addGestureRecognizer:tap];
     
     //初始化
-    self.currentRange = NSMakeRange(0, 0);
+    self.currentRange = NSMakeRange(100, 0);
+//    self.currentRange = NSMakeRange(0, 0);
+    
     //
     [self loadCatalogListWithBookId:self.book.bookId];
 }
@@ -158,12 +154,18 @@
 //返回
 -(void)clickedBackButton:(UIButton* )sender {
     [self dismissViewControllerAnimated:YES completion:nil];
+    
+    //保存阅读记录
+//    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+//    tool saveBookReadRecordWithBookId: chapterId: offset:
 }
 
 //换源
 -(void)clickedRightBarButtonItem:(UIButton* )sender {
+    NSLog(@"self.sourceArr = %@", self.sourceArray);
     LMChangeSourceViewController* sourceVC = [[LMChangeSourceViewController alloc]init];
-    [self presentViewController:sourceVC animated:YES completion:nil];
+    sourceVC.sourceArr = [self.sourceArray mutableCopy];
+    [self.navigationController pushViewController:sourceVC animated:YES];
 }
 
 //点击toolBar
@@ -246,111 +248,134 @@
 #pragma mark - UIPageViewControllerDataSource And UIPageViewControllerDelegate
 #pragma mark 返回上一个ViewController对象
 - (UIViewController *)pageViewController:(UIPageViewController *)pageViewController viewControllerBeforeViewController:(UIViewController *)viewController {
-    NSString* text = self.currentChapter.chapterContent;
-    if (self.currentRange.location <= 0) {//起始位置为0，则为第一页
-        //To Do....
+    
+    NSString* totalText = self.currentChapter.chapterContent;
+    
+    if (self.currentPage == 0) {//进入上一章节
+        
+    }else if (self.currentPage == 1) {//预加载上一章节
+        
+    }else {
+        self.pageChange --;
+        
+        NSInteger tempBefore = [[self.pageArray objectAtIndex:self.pageChange - 1] integerValue];
+        NSInteger tempCurrent = [[self.pageArray objectAtIndex:self.pageChange] integerValue];
+        self.currentRange = NSMakeRange(tempBefore, tempCurrent - tempBefore);
+    }
+    
+    LMContentViewController* contentVC = [[LMContentViewController alloc]initWithReadModel:self.readModel fontSize:self.fontSize content:[totalText substringWithRange:self.currentRange]];
+    return contentVC;
+    
+    
+    
+    
+    
+    /*
+    NSString* totalText = self.currentChapter.chapterContent;
+    NSInteger tempBeforeLocation = self.currentRange.location;
+    if (tempBeforeLocation == 0) {//进入上一章节
         return nil;
     }
-    NSRange beforeRange;
-    NSString* beforeText;
+    NSString* tempText = [totalText substringToIndex:tempBeforeLocation];
     
-    if (self.currentRange.location <= self.perPage) {//剩余文本小于一页，全部显示
-        beforeRange = NSMakeRange(0, self.currentRange.location);
-        self.currentRange = beforeRange;//ok
-    }else {
-        beforeRange = NSMakeRange(self.currentRange.location - self.perPage, self.perPage);
-        beforeText = [text substringWithRange:beforeRange];
-        CGFloat beforeHeight = [self caculateTextHeightWithString:beforeText fontSize:self.fontSize];
-        if (beforeHeight == contentRect.size.height){
-            self.currentRange = beforeRange;
-            self.perPage = self.currentRange.length;
-        }else if (beforeHeight < contentRect.size.height) {//能显示
-            for (NSInteger i = beforeRange.location; i >= 0; i --) {
-                beforeRange = NSMakeRange(i, self.currentRange.location - i);
-                beforeText = [text substringWithRange:beforeRange];
-                beforeHeight = [self caculateTextHeightWithString:beforeText fontSize:self.fontSize];
-                if (beforeHeight == contentRect.size.height) {
-                    self.currentRange = beforeRange;
-                    self.perPage = self.currentRange.length;
-                }else if (beforeHeight > contentRect.size.height) {//该页能显示下
-                    self.currentRange = NSMakeRange(beforeRange.location + 1, beforeRange.length - 1);
-                    self.perPage = self.currentRange.length;
-                    break;
-                }else {
-                    if (i == 0) {
-                        self.currentRange = NSMakeRange(0, beforeRange.length);
-                        self.perPage = self.currentRange.length;
-                        break;
-                    }
-                }
-            }
-        }else {
-            for (NSInteger i = beforeRange.location; i <= beforeRange.location + beforeRange.length; i ++) {
-                beforeRange = NSMakeRange(i, self.currentRange.location - i);
-                beforeText = [text substringWithRange:beforeRange];
-                beforeHeight = [self caculateTextHeightWithString:beforeText fontSize:self.fontSize];
-                if (beforeHeight <= contentRect.size.height) {//该页能显示下
-                    self.currentRange = beforeRange;
-                    self.perPage =  self.currentRange.length;
-                    break;
-                }
-            }
-        }
+    NSLog(@"-----------------------");
+    NSMutableString* descStr = [[NSMutableString alloc]init];
+    for (int i=0; i<tempText.length; i++) {
+        [descStr appendString:[tempText substringWithRange:NSMakeRange(tempText.length-i-1, 1)]];
+    }
+    NSLog(@"+++++++++++++++++++++++");
+    
+    NSMutableAttributedString* attributedStr = [[NSMutableAttributedString alloc]initWithString:descStr attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:self.fontSize]}];
+    CTFramesetterRef frameSetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef) attributedStr);
+    CGPathRef path = CGPathCreateWithRect(CGRectMake(0, 0, CGRectGetWidth(contentRect), CGRectGetHeight(contentRect)), NULL);
+    
+    CTFrameRef frame = CTFramesetterCreateFrame(frameSetter, CFRangeMake(0, 0), path, NULL);
+    CFRange tempRange = CTFrameGetVisibleStringRange(frame);
+    NSRange range = NSMakeRange(tempBeforeLocation - tempRange.length, tempRange.length);
+    if (tempRange.location + tempRange.length >= attributedStr.length) {//第一页，预加载上一章节
+            NSLog(@"第一页，预加载上一章节");
+        range = NSMakeRange(0, tempBeforeLocation);
     }
     
-    LMContentViewController* contentVC = [[LMContentViewController alloc]initWithReadModel:self.readModel fontSize:self.fontSize content:[text substringWithRange:self.currentRange]];
+    if (frame) {
+        CFRelease(frame);
+    }
+    CGPathRelease(path);
+    CFRelease(frameSetter);
+    
+    LMContentViewController* contentVC = [[LMContentViewController alloc]initWithReadModel:self.readModel fontSize:self.fontSize content:[tempText substringWithRange:range]];
+    self.currentRange = range;
     return contentVC;
+     */
 }
 
 #pragma mark 返回下一个ViewController对象
 - (UIViewController *)pageViewController:(UIPageViewController *)pageViewController viewControllerAfterViewController:(UIViewController *)viewController {
-    NSString* text = self.currentChapter.chapterContent;
-    NSInteger totalLength = text.length;
-    if (self.currentRange.location + self.currentRange.length >= totalLength) {//已经至最后一页，加载下一章节
-        //To Do....
-        return nil;
-    }
-    NSInteger referLength = self.currentRange.location + self.currentRange.length + self.perPage;//预估下一页文本长度
-    NSRange nextRange = NSMakeRange(self.currentRange.location + self.currentRange.length, self.perPage);
-    if (referLength >= totalLength) {//剩余文本小于一页，全部显示
-        nextRange = NSMakeRange(self.currentRange.location + self.currentRange.length, totalLength - self.currentRange.location - self.currentRange.length);
-        self.currentRange = nextRange;
-    }
-    NSString* nextText = [text substringWithRange:nextRange];
-    CGFloat nextHeight = [self caculateTextHeightWithString:nextText fontSize:self.fontSize];
-    if (nextHeight == contentRect.size.height) {
-        self.currentRange = nextRange;
-        self.perPage = self.currentRange.length;
-    }else if (nextHeight < contentRect.size.height) {//能显示下
-        for (NSInteger i = nextRange.location + nextRange.length; i <= totalLength; i ++) {
-            nextRange = NSMakeRange(nextRange.location, i - nextRange.location);
-            nextText = [text substringWithRange:nextRange];
-            nextHeight = [self caculateTextHeightWithString:nextText fontSize:self.fontSize];
-            if (nextHeight == contentRect.size.height) {//该页能显示下
-                self.currentRange = nextRange;
-                self.perPage = self.currentRange.length;
-                break;
-            }else if (nextHeight > contentRect.size.height) {
-                self.currentRange = NSMakeRange(nextRange.location, nextRange.length - 1);
-                self.perPage = self.currentRange.length;
-                break;
-            }
-        }
+    
+    NSString* totalText = self.currentChapter.chapterContent;
+    
+    if (self.currentPage == self.pageArray.count - 1) {//进入下一章节
+        
+    }else if (self.currentPage == self.pageArray.count - 2) {//预加载下一章节
+        
     }else {
-        for (NSInteger i = nextRange.location + nextRange.length; i > nextRange.location; i --) {
-            nextRange = NSMakeRange(nextRange.location, i - nextRange.location);
-            nextText = [text substringWithRange:nextRange];
-            nextHeight = [self caculateTextHeightWithString:nextText fontSize:self.fontSize];
-            if (nextHeight <= contentRect.size.height) {//该页能显示下
-                self.currentRange = nextRange;
-                self.perPage = self.currentRange.length;
-                break;
-            }
-        }
+        self.pageChange ++;
+        
+        NSInteger tempNext = [[self.pageArray objectAtIndex:self.pageChange + 1] integerValue];
+        NSInteger tempCurrent = [[self.pageArray objectAtIndex:self.pageChange] integerValue];
+        self.currentRange = NSMakeRange(tempCurrent, tempNext - tempCurrent);
     }
     
-    LMContentViewController* contentVC = [[LMContentViewController alloc]initWithReadModel:self.readModel fontSize:self.fontSize content:[text substringWithRange:self.currentRange]];
+    LMContentViewController* contentVC = [[LMContentViewController alloc]initWithReadModel:self.readModel fontSize:self.fontSize content:[totalText substringWithRange:self.currentRange]];
     return contentVC;
+    
+    
+    
+    
+    
+    
+    /*
+    NSString* totalText = self.currentChapter.chapterContent;
+    NSInteger tempAfterLocation = self.currentRange.location + self.currentRange.length;
+    if (tempAfterLocation >= totalText.length) {//进入下一章节
+        return nil;
+    }
+    NSString* tempText = [totalText substringFromIndex:tempAfterLocation];
+    NSMutableAttributedString* attributedStr = [[NSMutableAttributedString alloc]initWithString:tempText attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:self.fontSize]}];
+    CTFramesetterRef frameSetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef) attributedStr);
+    CGPathRef path = CGPathCreateWithRect(CGRectMake(0, 0, CGRectGetWidth(contentRect), CGRectGetHeight(contentRect)), NULL);
+    
+    CTFrameRef frame = CTFramesetterCreateFrame(frameSetter, CFRangeMake(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           0, 0), path, NULL);
+    CFRange tempRange = CTFrameGetVisibleStringRange(frame);
+    NSRange range = NSMakeRange(tempAfterLocation, tempRange.length);
+    if (tempRange.location + tempRange.length >= attributedStr.length) {//最后一页，预加载下一章节
+        NSLog(@"最后一页，预加载下一章节");
+    }
+    
+    if (frame) {
+        CFRelease(frame);
+    }
+    CGPathRelease(path);
+    CFRelease(frameSetter);
+    
+    LMContentViewController* contentVC = [[LMContentViewController alloc]initWithReadModel:self.readModel fontSize:self.fontSize content:[totalText substringWithRange:range]];
+    self.currentRange = range;
+    return contentVC;
+     */
+}
+
+-(void)pageViewController:(UIPageViewController *)pageViewController willTransitionToViewControllers:(NSArray<UIViewController *> *)pendingViewControllers {
+    NSLog(@"333333333333333333333");
+}
+
+-(void)pageViewController:(UIPageViewController *)pageViewController didFinishAnimating:(BOOL)finished previousViewControllers:(NSArray<UIViewController *> *)previousViewControllers transitionCompleted:(BOOL)completed {
+    if (completed) {
+        NSLog(@"111111111111111111111");
+        self.currentPage = self.pageChange;
+    }else {
+        NSLog(@"222222222222222222222");
+        self.pageChange = self.currentPage;
+    }
 }
 
 -(LMFontView *)fontView {
@@ -451,47 +476,123 @@
 
 //
 -(void )setupPageViewControllersWithText:(NSString* )text fontSize:(CGFloat )fontSize {
-    NSUInteger textLength = [text length];//总字数
-    CGFloat totalTextHeight = [self caculateTextHeightWithString:text fontSize:fontSize];
-    if (totalTextHeight <= contentRect.size.height) {//只有一页
-        self.currentRange = NSMakeRange(0, textLength);
-    }else {
-        NSInteger totalPages = ceilf(totalTextHeight/contentRect.size.height);//理论上 总页数
-        self.perPage = textLength/totalPages;//理论上每页 字数
-        NSRange perRange = NSMakeRange(self.currentRange.location, self.perPage);
-        NSString* perStr = [text substringWithRange:perRange];
-        CGFloat perHeight = [self caculateTextHeightWithString:perStr fontSize:fontSize];
-        if (perHeight == contentRect.size.height) {
-            self.currentRange = perRange;
-            self.perPage = self.currentRange.length;
-        }else if (perHeight < contentRect.size.height) {//该页能显示下
-            for (NSInteger i = perRange.location + perRange.length; i < textLength; i ++) {
-                perRange = NSMakeRange(perRange.location, i - perRange.location);
-                perStr = [text substringWithRange:perRange];
-                perHeight = [self caculateTextHeightWithString:perStr fontSize:fontSize];
-                if (perHeight == contentRect.size.height) {//该页能显示下
-                    self.currentRange = NSMakeRange(perRange.location, perRange.length);
-                    self.perPage = self.currentRange.length;
-                    break;
-                }else if (perHeight > contentRect.size.height) {
-                    self.currentRange = NSMakeRange(perRange.location, perRange.length - 1);
-                    self.perPage = self.currentRange.length;
-                    break;
-                }
-            }
-        }else {//该页显示不下
-            for (NSInteger i = perRange.location + perRange.length; i > perRange.location; i --) {
-                perRange = NSMakeRange(perRange.location, i - perRange.location);
-                perStr = [text substringWithRange:perRange];
-                perHeight = [self caculateTextHeightWithString:perStr fontSize:fontSize];
-                if (perHeight <= contentRect.size.height) {//该页能显示下
-                    self.currentRange = perRange;
-                    self.perPage = self.currentRange.length;
-                    break;
-                }
-            }
-        }
+    
+    NSInteger tempOffset = self.currentRange.location;
+    NSString* tempText = [text substringToIndex:tempOffset];
+    NSMutableString* beforeText = [[NSMutableString alloc]init];
+    for (int i=0; i<tempText.length; i++) {
+        [beforeText appendString:[tempText substringWithRange:NSMakeRange(tempText.length-i-1, 1)]];
     }
+    NSMutableAttributedString* beforeAttributedStr = [[NSMutableAttributedString alloc]initWithString:beforeText attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:self.fontSize]}];
+    CTFramesetterRef beforeFrameSetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef) beforeAttributedStr);
+    CGPathRef path = CGPathCreateWithRect(CGRectMake(0, 0, CGRectGetWidth(contentRect), CGRectGetHeight(contentRect)), NULL);
+    
+    NSInteger beforeOffset = 0;
+    NSInteger beforeInnerOffset = 0;
+    BOOL hasBeforePage = YES;
+    // 防止死循环，如果在同一个位置获取CTFrame超过2次，则跳出循环
+    NSInteger beforeLoopSign = beforeOffset;
+    NSInteger beforeRepeatCount = 0;
+    NSInteger beforeObject = 0;
+    
+    if (tempOffset > 0) {
+        
+        while (hasBeforePage) {
+            if (beforeLoopSign == beforeOffset) {
+                ++beforeRepeatCount;
+            }else {
+                beforeRepeatCount = 0;
+            }
+            if (beforeRepeatCount > 1) {
+                // 退出循环前检查一下最后一页是否已经加上
+                if (_pageArray.count == 0) {
+                    [_pageArray addObject:@(beforeOffset)];
+                }
+                else {
+                    
+                    NSUInteger lastOffset = [[_pageArray lastObject] integerValue];
+                    
+                    if (lastOffset != beforeOffset) {
+                        [_pageArray addObject:@(beforeOffset)];
+                    }
+                }
+                break;
+            }
+            beforeObject = beforeOffset != 0 ? (tempOffset - beforeOffset) : 0;
+            
+            [_pageArray addObject:@(beforeObject)];
+            //        [_pageArray addObject:@(beforeOffset)];
+            
+            CTFrameRef frame = CTFramesetterCreateFrame(beforeFrameSetter, CFRangeMake(beforeInnerOffset, 0), path, NULL);
+            CFRange range = CTFrameGetVisibleStringRange(frame);
+            if ((range.location + range.length) != beforeAttributedStr.length) {
+                beforeOffset += range.length;
+                beforeInnerOffset += range.length;
+            } else {
+                // 已经分完，提示跳出循环
+                hasBeforePage = NO;
+            }
+            if (frame) CFRelease(frame);
+        }
+        CFRelease(beforeFrameSetter);
+    }
+    
+    
+    NSString* afterText = [text substringFromIndex:tempOffset];
+    NSMutableAttributedString* afterAttributedStr = [[NSMutableAttributedString alloc]initWithString:afterText attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:self.fontSize]}];
+    CTFramesetterRef afterFrameSetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef) afterAttributedStr);
+    
+    NSInteger afterOffset = 0;
+    NSInteger afterInnerOffset = 0;
+    BOOL hasAfterPage = YES;
+    // 防止死循环，如果在同一个位置获取CTFrame超过2次，则跳出循环
+    NSInteger afterLoopSign = afterOffset;
+    NSInteger afterRepeatCount = 0;
+    
+    while (hasAfterPage) {
+        if (afterLoopSign == afterOffset) {
+            ++afterRepeatCount;
+        }else {
+            afterRepeatCount = 0;
+        }
+        if (afterRepeatCount > 1) {
+            // 退出循环前检查一下最后一页是否已经加上
+            if (_pageArray.count == 0) {
+                [_pageArray addObject:@(afterOffset + tempOffset)];
+            }
+            else {
+                NSUInteger lastOffset = [[_pageArray lastObject] integerValue];
+                if (lastOffset != afterOffset) {
+                    [_pageArray addObject:@(afterOffset + tempOffset)];
+                }
+            }
+            break;
+        }
+        
+        [_pageArray addObject:@(afterOffset + tempOffset)];
+        
+        CTFrameRef frame = CTFramesetterCreateFrame(afterFrameSetter, CFRangeMake(afterInnerOffset, 0), path, NULL);
+        CFRange range = CTFrameGetVisibleStringRange(frame);
+        if ((range.location + range.length) != afterAttributedStr.length) {
+            afterOffset += range.length;
+            afterInnerOffset += range.length;
+        } else {
+            // 已经分完，提示跳出循环
+            hasAfterPage = NO;
+        }
+        if (frame) CFRelease(frame);
+    }
+    
+    CGPathRelease(path);
+    CFRelease(afterFrameSetter);
+    
+    
+    NSLog(@"self.pageArray = %@", self.pageArray);
+    
+    
+    
+    
+    
     //初始化设置pageVC
     if (!self.pageVC) {
         self.pageVC = [[UIPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStylePageCurl navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];
@@ -501,22 +602,29 @@
         [self addChildViewController:self.pageVC];
         [self.view addSubview:self.pageVC.view];
     }
+    
+    for (NSInteger i = 0; i < self.pageArray.count ; i ++) {
+        NSNumber* num = [self.pageArray objectAtIndex:i];
+        if (num.integerValue == self.currentRange.location) {
+            self.currentPage = i;
+            break;
+        }
+    }
+    
+    if (self.currentPage == self.pageArray.count - 1) {
+        NSInteger tempCurrent = [[self.pageArray objectAtIndex:self.currentPage] integerValue];
+        self.currentRange = NSMakeRange(tempCurrent, text.length - tempCurrent);
+    }else {
+        NSInteger tempNext = [[self.pageArray objectAtIndex:self.currentPage + 1] integerValue];
+        NSInteger tempCurrent = [[self.pageArray objectAtIndex:self.currentPage] integerValue];
+        self.currentRange = NSMakeRange(tempCurrent, tempNext - tempCurrent);
+    }
+    self.pageChange = self.currentPage;
+    
     LMContentViewController* contentVC = [[LMContentViewController alloc]initWithReadModel:self.readModel fontSize:self.fontSize content:[text substringWithRange:self.currentRange]];//得到第一页
     NSArray *viewControllers = [NSArray arrayWithObject:contentVC];
     [self.pageVC setViewControllers:viewControllers direction:UIPageViewControllerNavigationDirectionReverse animated:NO completion:nil];
-}
-
-//根据文本计算高度
--(CGFloat )caculateTextHeightWithString:(NSString* )textStr fontSize:(CGFloat )fontSize {
-    if (!self.contentLab) {
-        self.contentLab = [[UILabel alloc]initWithFrame:contentRect];
-        self.contentLab.numberOfLines = 0;
-        self.contentLab.lineBreakMode = NSLineBreakByCharWrapping;
-    }
-    self.contentLab.font = [UIFont systemFontOfSize:fontSize];
-    self.contentLab.text = textStr;
-    CGSize textSize = [self.contentLab sizeThatFits:CGSizeMake(self.contentLab.frame.size.width, CGFLOAT_MAX)];
-    return textSize.height;
+    return;
 }
 
 - (void)didReceiveMemoryWarning {

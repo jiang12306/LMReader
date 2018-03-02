@@ -83,6 +83,19 @@ static dispatch_once_t onceToken;
     }
 }
 
+-(void)setCurrentViewControllerIndex:(NSInteger)index {
+    LMBaseTabBarController* tabBarController;
+    for (UIViewController* vc in self.childViewControllers) {
+        if ([vc isKindOfClass:[LMBaseTabBarController class]]) {
+            tabBarController = (LMBaseTabBarController* )vc;
+            break;
+        }
+    }
+    if (tabBarController && index < tabBarController.viewControllers.count) {
+        tabBarController.selectedIndex = index;
+    }
+}
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

@@ -7,6 +7,7 @@
 //
 
 #import "LMBaseViewController.h"
+#import "MBProgressHUD.h"
 
 @interface LMBaseViewController () <UIGestureRecognizerDelegate>
 
@@ -52,6 +53,15 @@
 -(void)hideNetworkLoadingView {
     [self.loadingView stopAnimating];
     self.loadingView.hidden = YES;
+}
+
+//
+-(void)showMBProgressHUDWithText:(NSString *)hudText {
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    hud.mode = MBProgressHUDModeText;
+    hud.label.text = hudText;
+    hud.removeFromSuperViewOnHide = YES;
+    [hud hideAnimated:YES afterDelay:1];
 }
 
 -(void)dealloc {

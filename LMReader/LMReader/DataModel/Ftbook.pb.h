@@ -30,12 +30,18 @@
 @class BookStoreResBuilder;
 @class Chapter;
 @class ChapterBuilder;
+@class CheckVerifyCodeReq;
+@class CheckVerifyCodeReqBuilder;
+@class City;
+@class CityBuilder;
 @class Device;
 @class DeviceBuilder;
 @class DeviceSize;
 @class DeviceSizeBuilder;
 @class DeviceUdId;
 @class DeviceUdIdBuilder;
+@class FeedbackReq;
+@class FeedbackReqBuilder;
 @class FirstBookReq;
 @class FirstBookReqBuilder;
 @class FirstBookRes;
@@ -48,6 +54,30 @@
 @class FtBookApiReqBuilder;
 @class FtBookApiRes;
 @class FtBookApiResBuilder;
+@class Gps;
+@class GpsBuilder;
+@class LoginedRegUser;
+@class LoginedRegUserBuilder;
+@class PhoneNumRegAndResetPwdReq;
+@class PhoneNumRegAndResetPwdReqBuilder;
+@class PhoneNumRegAndResetPwdRes;
+@class PhoneNumRegAndResetPwdResBuilder;
+@class Province;
+@class ProvinceBuilder;
+@class ProvinceCityReq;
+@class ProvinceCityReqBuilder;
+@class ProvinceCityRes;
+@class ProvinceCityResBuilder;
+@class ReadLogReq;
+@class ReadLogReqBuilder;
+@class RegUser;
+@class RegUserBuilder;
+@class RegUserLoginReq;
+@class RegUserLoginReqBuilder;
+@class RegUserLoginRes;
+@class RegUserLoginResBuilder;
+@class ResetPwdReq;
+@class ResetPwdReqBuilder;
 @class Source;
 @class SourceBuilder;
 @class SourceLastChapter;
@@ -66,6 +96,8 @@
 @class TopicHomeReqBuilder;
 @class TopicHomeRes;
 @class TopicHomeResBuilder;
+@class UpdateRes;
+@class UpdateResBuilder;
 @class UserBook;
 @class UserBookBuilder;
 @class UserBookStoreOperateReq;
@@ -74,6 +106,8 @@
 @class UserBookStoreReqBuilder;
 @class UserBookStoreRes;
 @class UserBookStoreResBuilder;
+@class VerifyCodeReq;
+@class VerifyCodeReqBuilder;
 
 
 typedef NS_ENUM(SInt32, BookState) {
@@ -120,6 +154,18 @@ typedef NS_ENUM(SInt32, ErrCode) {
   ErrCodeErrCannotdecodein = 3,
   ErrCodeErrCannotadddelmodify = 5,
   ErrCodeErrBooknotexist = 7,
+  ErrCodeErrCannotsendsms = 8,
+  ErrCodeErrTimelimit = 9,
+  ErrCodeErrCountlimit = 10,
+  ErrCodeErrPhonecannotreg = 11,
+  ErrCodeErrPhonesmsnotequal = 12,
+  ErrCodeErrOldpwdnotequal = 13,
+  ErrCodeErrPwdsetfail = 14,
+  ErrCodeErrNotlogined = 15,
+  ErrCodeErrPhonenumnotreg = 16,
+  ErrCodeErrPhonenumhavereg = 17,
+  ErrCodeErrUidnotexist = 18,
+  ErrCodeErrParaminvalieformat = 9998,
   ErrCodeErrUnknow = 9999,
 };
 
@@ -135,6 +181,23 @@ typedef NS_ENUM(SInt32, UserBookStoreOperateType) {
 
 BOOL UserBookStoreOperateTypeIsValidValue(UserBookStoreOperateType value);
 NSString *NSStringFromUserBookStoreOperateType(UserBookStoreOperateType value);
+
+typedef NS_ENUM(SInt32, SmsType) {
+  SmsTypeSmsReg = 0,
+  SmsTypeSmsForgotpwd = 1,
+};
+
+BOOL SmsTypeIsValidValue(SmsType value);
+NSString *NSStringFromSmsType(SmsType value);
+
+typedef NS_ENUM(SInt32, GpsCoordinateType) {
+  GpsCoordinateTypeWgs84 = 1,
+  GpsCoordinateTypeGcj02 = 2,
+  GpsCoordinateTypeBd09 = 3,
+};
+
+BOOL GpsCoordinateTypeIsValidValue(GpsCoordinateType value);
+NSString *NSStringFromGpsCoordinateType(GpsCoordinateType value);
 
 typedef NS_ENUM(SInt32, DeviceDeviceType) {
   DeviceDeviceTypeDeviceUnknown = 0,
@@ -474,6 +537,7 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 #define Chapter_chapter_content @"chapterContent"
 #define Chapter_source @"source"
 #define Chapter_updated_at @"updatedAt"
+#define Chapter_id @"id"
 @interface Chapter : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
   BOOL hasUpdatedAt_:1;
@@ -483,6 +547,7 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
   BOOL hasBookNo_:1;
   BOOL hasSource_:1;
   BOOL hasChapterNo_:1;
+  BOOL hasId_:1;
   UInt64 updatedAt;
   NSString* chapterTitle;
   NSString* chapterContent;
@@ -490,6 +555,7 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
   BookNo* bookNo;
   Source* source;
   UInt32 chapterNo;
+  UInt32 id;
 }
 - (BOOL) hasBook;
 - (BOOL) hasBookNo;
@@ -498,6 +564,7 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 - (BOOL) hasChapterContent;
 - (BOOL) hasSource;
 - (BOOL) hasUpdatedAt;
+- (BOOL) hasId;
 @property (readonly, strong) Book* book;
 @property (readonly, strong) BookNo* bookNo;
 @property (readonly) UInt32 chapterNo;
@@ -505,6 +572,7 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 @property (readonly, strong) NSString* chapterContent;
 @property (readonly, strong) Source* source;
 @property (readonly) UInt64 updatedAt;
+@property (readonly) UInt32 id;
 
 + (instancetype) defaultInstance;
 - (instancetype) defaultInstance;
@@ -581,6 +649,91 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 - (UInt64) updatedAt;
 - (ChapterBuilder*) setUpdatedAt:(UInt64) value;
 - (ChapterBuilder*) clearUpdatedAt;
+
+- (BOOL) hasId;
+- (UInt32) id;
+- (ChapterBuilder*) setId:(UInt32) value;
+- (ChapterBuilder*) clearId;
+@end
+
+#define Gps_coordinate_type @"coordinateType"
+#define Gps_longitude @"longitude"
+#define Gps_latitude @"latitude"
+#define Gps_timestamp @"timestamp"
+@interface Gps : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasLongitude_:1;
+  BOOL hasLatitude_:1;
+  BOOL hasTimestamp_:1;
+  BOOL hasCoordinateType_:1;
+  Float64 longitude;
+  Float64 latitude;
+  UInt32 timestamp;
+  GpsCoordinateType coordinateType;
+}
+- (BOOL) hasCoordinateType;
+- (BOOL) hasLongitude;
+- (BOOL) hasLatitude;
+- (BOOL) hasTimestamp;
+@property (readonly) GpsCoordinateType coordinateType;
+@property (readonly) Float64 longitude;
+@property (readonly) Float64 latitude;
+@property (readonly) UInt32 timestamp;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (GpsBuilder*) builder;
++ (GpsBuilder*) builder;
++ (GpsBuilder*) builderWithPrototype:(Gps*) prototype;
+- (GpsBuilder*) toBuilder;
+
++ (Gps*) parseFromData:(NSData*) data;
++ (Gps*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (Gps*) parseFromInputStream:(NSInputStream*) input;
++ (Gps*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (Gps*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (Gps*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface GpsBuilder : PBGeneratedMessageBuilder {
+@private
+  Gps* resultGps;
+}
+
+- (Gps*) defaultInstance;
+
+- (GpsBuilder*) clear;
+- (GpsBuilder*) clone;
+
+- (Gps*) build;
+- (Gps*) buildPartial;
+
+- (GpsBuilder*) mergeFrom:(Gps*) other;
+- (GpsBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (GpsBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasCoordinateType;
+- (GpsCoordinateType) coordinateType;
+- (GpsBuilder*) setCoordinateType:(GpsCoordinateType) value;
+- (GpsBuilder*) clearCoordinateType;
+
+- (BOOL) hasLongitude;
+- (Float64) longitude;
+- (GpsBuilder*) setLongitude:(Float64) value;
+- (GpsBuilder*) clearLongitude;
+
+- (BOOL) hasLatitude;
+- (Float64) latitude;
+- (GpsBuilder*) setLatitude:(Float64) value;
+- (GpsBuilder*) clearLatitude;
+
+- (BOOL) hasTimestamp;
+- (UInt32) timestamp;
+- (GpsBuilder*) setTimestamp:(UInt32) value;
+- (GpsBuilder*) clearTimestamp;
 @end
 
 #define Device_device_type @"deviceType"
@@ -847,24 +1000,201 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 - (DeviceBuilder*) clearScreenSize;
 @end
 
+#define RegUser_uid @"uid"
+#define RegUser_phone_num @"phoneNum"
+#define RegUser_email @"email"
+#define RegUser_gender @"gender"
+#define RegUser_birthday @"birthday"
+#define RegUser_local_area @"localArea"
+@interface RegUser : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasUid_:1;
+  BOOL hasPhoneNum_:1;
+  BOOL hasEmail_:1;
+  BOOL hasBirthday_:1;
+  BOOL hasLocalArea_:1;
+  BOOL hasGender_:1;
+  NSString* uid;
+  NSString* phoneNum;
+  NSString* email;
+  NSString* birthday;
+  NSString* localArea;
+  GenderType gender;
+}
+- (BOOL) hasUid;
+- (BOOL) hasPhoneNum;
+- (BOOL) hasEmail;
+- (BOOL) hasGender;
+- (BOOL) hasBirthday;
+- (BOOL) hasLocalArea;
+@property (readonly, strong) NSString* uid;
+@property (readonly, strong) NSString* phoneNum;
+@property (readonly, strong) NSString* email;
+@property (readonly) GenderType gender;
+@property (readonly, strong) NSString* birthday;
+@property (readonly, strong) NSString* localArea;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (RegUserBuilder*) builder;
++ (RegUserBuilder*) builder;
++ (RegUserBuilder*) builderWithPrototype:(RegUser*) prototype;
+- (RegUserBuilder*) toBuilder;
+
++ (RegUser*) parseFromData:(NSData*) data;
++ (RegUser*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (RegUser*) parseFromInputStream:(NSInputStream*) input;
++ (RegUser*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (RegUser*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (RegUser*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface RegUserBuilder : PBGeneratedMessageBuilder {
+@private
+  RegUser* resultRegUser;
+}
+
+- (RegUser*) defaultInstance;
+
+- (RegUserBuilder*) clear;
+- (RegUserBuilder*) clone;
+
+- (RegUser*) build;
+- (RegUser*) buildPartial;
+
+- (RegUserBuilder*) mergeFrom:(RegUser*) other;
+- (RegUserBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (RegUserBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasUid;
+- (NSString*) uid;
+- (RegUserBuilder*) setUid:(NSString*) value;
+- (RegUserBuilder*) clearUid;
+
+- (BOOL) hasPhoneNum;
+- (NSString*) phoneNum;
+- (RegUserBuilder*) setPhoneNum:(NSString*) value;
+- (RegUserBuilder*) clearPhoneNum;
+
+- (BOOL) hasEmail;
+- (NSString*) email;
+- (RegUserBuilder*) setEmail:(NSString*) value;
+- (RegUserBuilder*) clearEmail;
+
+- (BOOL) hasGender;
+- (GenderType) gender;
+- (RegUserBuilder*) setGender:(GenderType) value;
+- (RegUserBuilder*) clearGender;
+
+- (BOOL) hasBirthday;
+- (NSString*) birthday;
+- (RegUserBuilder*) setBirthday:(NSString*) value;
+- (RegUserBuilder*) clearBirthday;
+
+- (BOOL) hasLocalArea;
+- (NSString*) localArea;
+- (RegUserBuilder*) setLocalArea:(NSString*) value;
+- (RegUserBuilder*) clearLocalArea;
+@end
+
+#define LoginedRegUser_user @"user"
+#define LoginedRegUser_token @"token"
+@interface LoginedRegUser : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasToken_:1;
+  BOOL hasUser_:1;
+  NSString* token;
+  RegUser* user;
+}
+- (BOOL) hasUser;
+- (BOOL) hasToken;
+@property (readonly, strong) RegUser* user;
+@property (readonly, strong) NSString* token;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (LoginedRegUserBuilder*) builder;
++ (LoginedRegUserBuilder*) builder;
++ (LoginedRegUserBuilder*) builderWithPrototype:(LoginedRegUser*) prototype;
+- (LoginedRegUserBuilder*) toBuilder;
+
++ (LoginedRegUser*) parseFromData:(NSData*) data;
++ (LoginedRegUser*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (LoginedRegUser*) parseFromInputStream:(NSInputStream*) input;
++ (LoginedRegUser*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (LoginedRegUser*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (LoginedRegUser*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface LoginedRegUserBuilder : PBGeneratedMessageBuilder {
+@private
+  LoginedRegUser* resultLoginedRegUser;
+}
+
+- (LoginedRegUser*) defaultInstance;
+
+- (LoginedRegUserBuilder*) clear;
+- (LoginedRegUserBuilder*) clone;
+
+- (LoginedRegUser*) build;
+- (LoginedRegUser*) buildPartial;
+
+- (LoginedRegUserBuilder*) mergeFrom:(LoginedRegUser*) other;
+- (LoginedRegUserBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (LoginedRegUserBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasUser;
+- (RegUser*) user;
+- (LoginedRegUserBuilder*) setUser:(RegUser*) value;
+- (LoginedRegUserBuilder*) setUserBuilder:(RegUserBuilder*) builderForValue;
+- (LoginedRegUserBuilder*) mergeUser:(RegUser*) value;
+- (LoginedRegUserBuilder*) clearUser;
+
+- (BOOL) hasToken;
+- (NSString*) token;
+- (LoginedRegUserBuilder*) setToken:(NSString*) value;
+- (LoginedRegUserBuilder*) clearToken;
+@end
+
 #define FtBookApiReq_cmd @"cmd"
 #define FtBookApiReq_device @"device"
 #define FtBookApiReq_body @"body"
+#define FtBookApiReq_logined_user @"loginedUser"
+#define FtBookApiReq_gps @"gps"
+#define FtBookApiReq_ver_name @"verName"
 @interface FtBookApiReq : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
+  BOOL hasVerName_:1;
   BOOL hasDevice_:1;
+  BOOL hasLoginedUser_:1;
+  BOOL hasGps_:1;
   BOOL hasBody_:1;
   BOOL hasCmd_:1;
+  NSString* verName;
   Device* device;
+  LoginedRegUser* loginedUser;
+  Gps* gps;
   NSData* body;
   UInt32 cmd;
 }
 - (BOOL) hasCmd;
 - (BOOL) hasDevice;
 - (BOOL) hasBody;
+- (BOOL) hasLoginedUser;
+- (BOOL) hasGps;
+- (BOOL) hasVerName;
 @property (readonly) UInt32 cmd;
 @property (readonly, strong) Device* device;
 @property (readonly, strong) NSData* body;
+@property (readonly, strong) LoginedRegUser* loginedUser;
+@property (readonly, strong) Gps* gps;
+@property (readonly, strong) NSString* verName;
 
 + (instancetype) defaultInstance;
 - (instancetype) defaultInstance;
@@ -917,6 +1247,25 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 - (NSData*) body;
 - (FtBookApiReqBuilder*) setBody:(NSData*) value;
 - (FtBookApiReqBuilder*) clearBody;
+
+- (BOOL) hasLoginedUser;
+- (LoginedRegUser*) loginedUser;
+- (FtBookApiReqBuilder*) setLoginedUser:(LoginedRegUser*) value;
+- (FtBookApiReqBuilder*) setLoginedUserBuilder:(LoginedRegUserBuilder*) builderForValue;
+- (FtBookApiReqBuilder*) mergeLoginedUser:(LoginedRegUser*) value;
+- (FtBookApiReqBuilder*) clearLoginedUser;
+
+- (BOOL) hasGps;
+- (Gps*) gps;
+- (FtBookApiReqBuilder*) setGps:(Gps*) value;
+- (FtBookApiReqBuilder*) setGpsBuilder:(GpsBuilder*) builderForValue;
+- (FtBookApiReqBuilder*) mergeGps:(Gps*) value;
+- (FtBookApiReqBuilder*) clearGps;
+
+- (BOOL) hasVerName;
+- (NSString*) verName;
+- (FtBookApiReqBuilder*) setVerName:(NSString*) value;
+- (FtBookApiReqBuilder*) clearVerName;
 @end
 
 #define FtBookApiRes_cmd @"cmd"
@@ -2488,13 +2837,18 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 @end
 
 #define TopicChartBookReq_tcid @"tcid"
+#define TopicChartBookReq_page @"page"
 @interface TopicChartBookReq : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
   BOOL hasTcid_:1;
+  BOOL hasPage_:1;
   UInt32 tcid;
+  UInt32 page;
 }
 - (BOOL) hasTcid;
+- (BOOL) hasPage;
 @property (readonly) UInt32 tcid;
+@property (readonly) UInt32 page;
 
 + (instancetype) defaultInstance;
 - (instancetype) defaultInstance;
@@ -2535,14 +2889,29 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 - (UInt32) tcid;
 - (TopicChartBookReqBuilder*) setTcid:(UInt32) value;
 - (TopicChartBookReqBuilder*) clearTcid;
+
+- (BOOL) hasPage;
+- (UInt32) page;
+- (TopicChartBookReqBuilder*) setPage:(UInt32) value;
+- (TopicChartBookReqBuilder*) clearPage;
 @end
 
 #define TopicChartBookRes_books @"books"
+#define TopicChartBookRes_psize @"psize"
+#define TopicChartBookRes_page @"page"
 @interface TopicChartBookRes : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
+  BOOL hasPsize_:1;
+  BOOL hasPage_:1;
+  UInt32 psize;
+  UInt32 page;
   NSMutableArray * booksArray;
 }
+- (BOOL) hasPsize;
+- (BOOL) hasPage;
 @property (readonly, strong) NSArray<Book*> * books;
+@property (readonly) UInt32 psize;
+@property (readonly) UInt32 page;
 - (Book*)booksAtIndex:(NSUInteger)index;
 
 + (instancetype) defaultInstance;
@@ -2585,6 +2954,910 @@ NSString *NSStringFromDeviceOsType(DeviceOsType value);
 - (TopicChartBookResBuilder *)addBooks:(Book*)value;
 - (TopicChartBookResBuilder *)setBooksArray:(NSArray<Book*> *)array;
 - (TopicChartBookResBuilder *)clearBooks;
+
+- (BOOL) hasPsize;
+- (UInt32) psize;
+- (TopicChartBookResBuilder*) setPsize:(UInt32) value;
+- (TopicChartBookResBuilder*) clearPsize;
+
+- (BOOL) hasPage;
+- (UInt32) page;
+- (TopicChartBookResBuilder*) setPage:(UInt32) value;
+- (TopicChartBookResBuilder*) clearPage;
+@end
+
+#define VerifyCodeReq_phone_num @"phoneNum"
+#define VerifyCodeReq_sms_type @"smsType"
+@interface VerifyCodeReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasPhoneNum_:1;
+  BOOL hasSmsType_:1;
+  NSString* phoneNum;
+  SmsType smsType;
+}
+- (BOOL) hasPhoneNum;
+- (BOOL) hasSmsType;
+@property (readonly, strong) NSString* phoneNum;
+@property (readonly) SmsType smsType;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (VerifyCodeReqBuilder*) builder;
++ (VerifyCodeReqBuilder*) builder;
++ (VerifyCodeReqBuilder*) builderWithPrototype:(VerifyCodeReq*) prototype;
+- (VerifyCodeReqBuilder*) toBuilder;
+
++ (VerifyCodeReq*) parseFromData:(NSData*) data;
++ (VerifyCodeReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (VerifyCodeReq*) parseFromInputStream:(NSInputStream*) input;
++ (VerifyCodeReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (VerifyCodeReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (VerifyCodeReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface VerifyCodeReqBuilder : PBGeneratedMessageBuilder {
+@private
+  VerifyCodeReq* resultVerifyCodeReq;
+}
+
+- (VerifyCodeReq*) defaultInstance;
+
+- (VerifyCodeReqBuilder*) clear;
+- (VerifyCodeReqBuilder*) clone;
+
+- (VerifyCodeReq*) build;
+- (VerifyCodeReq*) buildPartial;
+
+- (VerifyCodeReqBuilder*) mergeFrom:(VerifyCodeReq*) other;
+- (VerifyCodeReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (VerifyCodeReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasPhoneNum;
+- (NSString*) phoneNum;
+- (VerifyCodeReqBuilder*) setPhoneNum:(NSString*) value;
+- (VerifyCodeReqBuilder*) clearPhoneNum;
+
+- (BOOL) hasSmsType;
+- (SmsType) smsType;
+- (VerifyCodeReqBuilder*) setSmsType:(SmsType) value;
+- (VerifyCodeReqBuilder*) clearSmsType;
+@end
+
+#define CheckVerifyCodeReq_phone_num @"phoneNum"
+#define CheckVerifyCodeReq_vcode @"vcode"
+#define CheckVerifyCodeReq_sms_type @"smsType"
+@interface CheckVerifyCodeReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasPhoneNum_:1;
+  BOOL hasVcode_:1;
+  BOOL hasSmsType_:1;
+  NSString* phoneNum;
+  NSString* vcode;
+  SmsType smsType;
+}
+- (BOOL) hasPhoneNum;
+- (BOOL) hasVcode;
+- (BOOL) hasSmsType;
+@property (readonly, strong) NSString* phoneNum;
+@property (readonly, strong) NSString* vcode;
+@property (readonly) SmsType smsType;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (CheckVerifyCodeReqBuilder*) builder;
++ (CheckVerifyCodeReqBuilder*) builder;
++ (CheckVerifyCodeReqBuilder*) builderWithPrototype:(CheckVerifyCodeReq*) prototype;
+- (CheckVerifyCodeReqBuilder*) toBuilder;
+
++ (CheckVerifyCodeReq*) parseFromData:(NSData*) data;
++ (CheckVerifyCodeReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (CheckVerifyCodeReq*) parseFromInputStream:(NSInputStream*) input;
++ (CheckVerifyCodeReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (CheckVerifyCodeReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (CheckVerifyCodeReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface CheckVerifyCodeReqBuilder : PBGeneratedMessageBuilder {
+@private
+  CheckVerifyCodeReq* resultCheckVerifyCodeReq;
+}
+
+- (CheckVerifyCodeReq*) defaultInstance;
+
+- (CheckVerifyCodeReqBuilder*) clear;
+- (CheckVerifyCodeReqBuilder*) clone;
+
+- (CheckVerifyCodeReq*) build;
+- (CheckVerifyCodeReq*) buildPartial;
+
+- (CheckVerifyCodeReqBuilder*) mergeFrom:(CheckVerifyCodeReq*) other;
+- (CheckVerifyCodeReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (CheckVerifyCodeReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasPhoneNum;
+- (NSString*) phoneNum;
+- (CheckVerifyCodeReqBuilder*) setPhoneNum:(NSString*) value;
+- (CheckVerifyCodeReqBuilder*) clearPhoneNum;
+
+- (BOOL) hasVcode;
+- (NSString*) vcode;
+- (CheckVerifyCodeReqBuilder*) setVcode:(NSString*) value;
+- (CheckVerifyCodeReqBuilder*) clearVcode;
+
+- (BOOL) hasSmsType;
+- (SmsType) smsType;
+- (CheckVerifyCodeReqBuilder*) setSmsType:(SmsType) value;
+- (CheckVerifyCodeReqBuilder*) clearSmsType;
+@end
+
+#define Province_id @"id"
+#define Province_name @"name"
+@interface Province : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasName_:1;
+  BOOL hasId_:1;
+  NSString* name;
+  UInt32 id;
+}
+- (BOOL) hasId;
+- (BOOL) hasName;
+@property (readonly) UInt32 id;
+@property (readonly, strong) NSString* name;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (ProvinceBuilder*) builder;
++ (ProvinceBuilder*) builder;
++ (ProvinceBuilder*) builderWithPrototype:(Province*) prototype;
+- (ProvinceBuilder*) toBuilder;
+
++ (Province*) parseFromData:(NSData*) data;
++ (Province*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (Province*) parseFromInputStream:(NSInputStream*) input;
++ (Province*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (Province*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (Province*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface ProvinceBuilder : PBGeneratedMessageBuilder {
+@private
+  Province* resultProvince;
+}
+
+- (Province*) defaultInstance;
+
+- (ProvinceBuilder*) clear;
+- (ProvinceBuilder*) clone;
+
+- (Province*) build;
+- (Province*) buildPartial;
+
+- (ProvinceBuilder*) mergeFrom:(Province*) other;
+- (ProvinceBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (ProvinceBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasId;
+- (UInt32) id;
+- (ProvinceBuilder*) setId:(UInt32) value;
+- (ProvinceBuilder*) clearId;
+
+- (BOOL) hasName;
+- (NSString*) name;
+- (ProvinceBuilder*) setName:(NSString*) value;
+- (ProvinceBuilder*) clearName;
+@end
+
+#define City_province_id @"provinceId"
+#define City_id @"id"
+#define City_name @"name"
+@interface City : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasName_:1;
+  BOOL hasProvinceId_:1;
+  BOOL hasId_:1;
+  NSString* name;
+  UInt32 provinceId;
+  UInt32 id;
+}
+- (BOOL) hasProvinceId;
+- (BOOL) hasId;
+- (BOOL) hasName;
+@property (readonly) UInt32 provinceId;
+@property (readonly) UInt32 id;
+@property (readonly, strong) NSString* name;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (CityBuilder*) builder;
++ (CityBuilder*) builder;
++ (CityBuilder*) builderWithPrototype:(City*) prototype;
+- (CityBuilder*) toBuilder;
+
++ (City*) parseFromData:(NSData*) data;
++ (City*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (City*) parseFromInputStream:(NSInputStream*) input;
++ (City*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (City*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (City*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface CityBuilder : PBGeneratedMessageBuilder {
+@private
+  City* resultCity;
+}
+
+- (City*) defaultInstance;
+
+- (CityBuilder*) clear;
+- (CityBuilder*) clone;
+
+- (City*) build;
+- (City*) buildPartial;
+
+- (CityBuilder*) mergeFrom:(City*) other;
+- (CityBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (CityBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasProvinceId;
+- (UInt32) provinceId;
+- (CityBuilder*) setProvinceId:(UInt32) value;
+- (CityBuilder*) clearProvinceId;
+
+- (BOOL) hasId;
+- (UInt32) id;
+- (CityBuilder*) setId:(UInt32) value;
+- (CityBuilder*) clearId;
+
+- (BOOL) hasName;
+- (NSString*) name;
+- (CityBuilder*) setName:(NSString*) value;
+- (CityBuilder*) clearName;
+@end
+
+#define ProvinceCityReq_province_id @"provinceId"
+@interface ProvinceCityReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasProvinceId_:1;
+  UInt32 provinceId;
+}
+- (BOOL) hasProvinceId;
+@property (readonly) UInt32 provinceId;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (ProvinceCityReqBuilder*) builder;
++ (ProvinceCityReqBuilder*) builder;
++ (ProvinceCityReqBuilder*) builderWithPrototype:(ProvinceCityReq*) prototype;
+- (ProvinceCityReqBuilder*) toBuilder;
+
++ (ProvinceCityReq*) parseFromData:(NSData*) data;
++ (ProvinceCityReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ProvinceCityReq*) parseFromInputStream:(NSInputStream*) input;
++ (ProvinceCityReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ProvinceCityReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (ProvinceCityReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface ProvinceCityReqBuilder : PBGeneratedMessageBuilder {
+@private
+  ProvinceCityReq* resultProvinceCityReq;
+}
+
+- (ProvinceCityReq*) defaultInstance;
+
+- (ProvinceCityReqBuilder*) clear;
+- (ProvinceCityReqBuilder*) clone;
+
+- (ProvinceCityReq*) build;
+- (ProvinceCityReq*) buildPartial;
+
+- (ProvinceCityReqBuilder*) mergeFrom:(ProvinceCityReq*) other;
+- (ProvinceCityReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (ProvinceCityReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasProvinceId;
+- (UInt32) provinceId;
+- (ProvinceCityReqBuilder*) setProvinceId:(UInt32) value;
+- (ProvinceCityReqBuilder*) clearProvinceId;
+@end
+
+#define ProvinceCityRes_provinces @"provinces"
+#define ProvinceCityRes_citys @"citys"
+@interface ProvinceCityRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  NSMutableArray * provincesArray;
+  NSMutableArray * citysArray;
+}
+@property (readonly, strong) NSArray<Province*> * provinces;
+@property (readonly, strong) NSArray<City*> * citys;
+- (Province*)provincesAtIndex:(NSUInteger)index;
+- (City*)citysAtIndex:(NSUInteger)index;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (ProvinceCityResBuilder*) builder;
++ (ProvinceCityResBuilder*) builder;
++ (ProvinceCityResBuilder*) builderWithPrototype:(ProvinceCityRes*) prototype;
+- (ProvinceCityResBuilder*) toBuilder;
+
++ (ProvinceCityRes*) parseFromData:(NSData*) data;
++ (ProvinceCityRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ProvinceCityRes*) parseFromInputStream:(NSInputStream*) input;
++ (ProvinceCityRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ProvinceCityRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (ProvinceCityRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface ProvinceCityResBuilder : PBGeneratedMessageBuilder {
+@private
+  ProvinceCityRes* resultProvinceCityRes;
+}
+
+- (ProvinceCityRes*) defaultInstance;
+
+- (ProvinceCityResBuilder*) clear;
+- (ProvinceCityResBuilder*) clone;
+
+- (ProvinceCityRes*) build;
+- (ProvinceCityRes*) buildPartial;
+
+- (ProvinceCityResBuilder*) mergeFrom:(ProvinceCityRes*) other;
+- (ProvinceCityResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (ProvinceCityResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (NSMutableArray<Province*> *)provinces;
+- (Province*)provincesAtIndex:(NSUInteger)index;
+- (ProvinceCityResBuilder *)addProvinces:(Province*)value;
+- (ProvinceCityResBuilder *)setProvincesArray:(NSArray<Province*> *)array;
+- (ProvinceCityResBuilder *)clearProvinces;
+
+- (NSMutableArray<City*> *)citys;
+- (City*)citysAtIndex:(NSUInteger)index;
+- (ProvinceCityResBuilder *)addCitys:(City*)value;
+- (ProvinceCityResBuilder *)setCitysArray:(NSArray<City*> *)array;
+- (ProvinceCityResBuilder *)clearCitys;
+@end
+
+#define FeedbackReq_type @"type"
+#define FeedbackReq_words @"words"
+#define FeedbackReq_phone_num @"phoneNum"
+#define FeedbackReq_email @"email"
+@interface FeedbackReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasWords_:1;
+  BOOL hasPhoneNum_:1;
+  BOOL hasEmail_:1;
+  BOOL hasType_:1;
+  NSString* words;
+  NSString* phoneNum;
+  NSString* email;
+  UInt32 type;
+}
+- (BOOL) hasType;
+- (BOOL) hasWords;
+- (BOOL) hasPhoneNum;
+- (BOOL) hasEmail;
+@property (readonly) UInt32 type;
+@property (readonly, strong) NSString* words;
+@property (readonly, strong) NSString* phoneNum;
+@property (readonly, strong) NSString* email;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (FeedbackReqBuilder*) builder;
++ (FeedbackReqBuilder*) builder;
++ (FeedbackReqBuilder*) builderWithPrototype:(FeedbackReq*) prototype;
+- (FeedbackReqBuilder*) toBuilder;
+
++ (FeedbackReq*) parseFromData:(NSData*) data;
++ (FeedbackReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (FeedbackReq*) parseFromInputStream:(NSInputStream*) input;
++ (FeedbackReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (FeedbackReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (FeedbackReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface FeedbackReqBuilder : PBGeneratedMessageBuilder {
+@private
+  FeedbackReq* resultFeedbackReq;
+}
+
+- (FeedbackReq*) defaultInstance;
+
+- (FeedbackReqBuilder*) clear;
+- (FeedbackReqBuilder*) clone;
+
+- (FeedbackReq*) build;
+- (FeedbackReq*) buildPartial;
+
+- (FeedbackReqBuilder*) mergeFrom:(FeedbackReq*) other;
+- (FeedbackReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (FeedbackReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasType;
+- (UInt32) type;
+- (FeedbackReqBuilder*) setType:(UInt32) value;
+- (FeedbackReqBuilder*) clearType;
+
+- (BOOL) hasWords;
+- (NSString*) words;
+- (FeedbackReqBuilder*) setWords:(NSString*) value;
+- (FeedbackReqBuilder*) clearWords;
+
+- (BOOL) hasPhoneNum;
+- (NSString*) phoneNum;
+- (FeedbackReqBuilder*) setPhoneNum:(NSString*) value;
+- (FeedbackReqBuilder*) clearPhoneNum;
+
+- (BOOL) hasEmail;
+- (NSString*) email;
+- (FeedbackReqBuilder*) setEmail:(NSString*) value;
+- (FeedbackReqBuilder*) clearEmail;
+@end
+
+#define PhoneNumRegAndResetPwdReq_req_type @"reqType"
+#define PhoneNumRegAndResetPwdReq_phone_num @"phoneNum"
+#define PhoneNumRegAndResetPwdReq_vcode @"vcode"
+#define PhoneNumRegAndResetPwdReq_md5_pwd @"md5Pwd"
+@interface PhoneNumRegAndResetPwdReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasPhoneNum_:1;
+  BOOL hasVcode_:1;
+  BOOL hasMd5Pwd_:1;
+  BOOL hasReqType_:1;
+  NSString* phoneNum;
+  NSString* vcode;
+  NSString* md5Pwd;
+  UInt32 reqType;
+}
+- (BOOL) hasReqType;
+- (BOOL) hasPhoneNum;
+- (BOOL) hasVcode;
+- (BOOL) hasMd5Pwd;
+@property (readonly) UInt32 reqType;
+@property (readonly, strong) NSString* phoneNum;
+@property (readonly, strong) NSString* vcode;
+@property (readonly, strong) NSString* md5Pwd;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (PhoneNumRegAndResetPwdReqBuilder*) builder;
++ (PhoneNumRegAndResetPwdReqBuilder*) builder;
++ (PhoneNumRegAndResetPwdReqBuilder*) builderWithPrototype:(PhoneNumRegAndResetPwdReq*) prototype;
+- (PhoneNumRegAndResetPwdReqBuilder*) toBuilder;
+
++ (PhoneNumRegAndResetPwdReq*) parseFromData:(NSData*) data;
++ (PhoneNumRegAndResetPwdReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (PhoneNumRegAndResetPwdReq*) parseFromInputStream:(NSInputStream*) input;
++ (PhoneNumRegAndResetPwdReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (PhoneNumRegAndResetPwdReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (PhoneNumRegAndResetPwdReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface PhoneNumRegAndResetPwdReqBuilder : PBGeneratedMessageBuilder {
+@private
+  PhoneNumRegAndResetPwdReq* resultPhoneNumRegAndResetPwdReq;
+}
+
+- (PhoneNumRegAndResetPwdReq*) defaultInstance;
+
+- (PhoneNumRegAndResetPwdReqBuilder*) clear;
+- (PhoneNumRegAndResetPwdReqBuilder*) clone;
+
+- (PhoneNumRegAndResetPwdReq*) build;
+- (PhoneNumRegAndResetPwdReq*) buildPartial;
+
+- (PhoneNumRegAndResetPwdReqBuilder*) mergeFrom:(PhoneNumRegAndResetPwdReq*) other;
+- (PhoneNumRegAndResetPwdReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (PhoneNumRegAndResetPwdReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasReqType;
+- (UInt32) reqType;
+- (PhoneNumRegAndResetPwdReqBuilder*) setReqType:(UInt32) value;
+- (PhoneNumRegAndResetPwdReqBuilder*) clearReqType;
+
+- (BOOL) hasPhoneNum;
+- (NSString*) phoneNum;
+- (PhoneNumRegAndResetPwdReqBuilder*) setPhoneNum:(NSString*) value;
+- (PhoneNumRegAndResetPwdReqBuilder*) clearPhoneNum;
+
+- (BOOL) hasVcode;
+- (NSString*) vcode;
+- (PhoneNumRegAndResetPwdReqBuilder*) setVcode:(NSString*) value;
+- (PhoneNumRegAndResetPwdReqBuilder*) clearVcode;
+
+- (BOOL) hasMd5Pwd;
+- (NSString*) md5Pwd;
+- (PhoneNumRegAndResetPwdReqBuilder*) setMd5Pwd:(NSString*) value;
+- (PhoneNumRegAndResetPwdReqBuilder*) clearMd5Pwd;
+@end
+
+#define PhoneNumRegAndResetPwdRes_logined_user @"loginedUser"
+@interface PhoneNumRegAndResetPwdRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasLoginedUser_:1;
+  LoginedRegUser* loginedUser;
+}
+- (BOOL) hasLoginedUser;
+@property (readonly, strong) LoginedRegUser* loginedUser;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (PhoneNumRegAndResetPwdResBuilder*) builder;
++ (PhoneNumRegAndResetPwdResBuilder*) builder;
++ (PhoneNumRegAndResetPwdResBuilder*) builderWithPrototype:(PhoneNumRegAndResetPwdRes*) prototype;
+- (PhoneNumRegAndResetPwdResBuilder*) toBuilder;
+
++ (PhoneNumRegAndResetPwdRes*) parseFromData:(NSData*) data;
++ (PhoneNumRegAndResetPwdRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (PhoneNumRegAndResetPwdRes*) parseFromInputStream:(NSInputStream*) input;
++ (PhoneNumRegAndResetPwdRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (PhoneNumRegAndResetPwdRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (PhoneNumRegAndResetPwdRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface PhoneNumRegAndResetPwdResBuilder : PBGeneratedMessageBuilder {
+@private
+  PhoneNumRegAndResetPwdRes* resultPhoneNumRegAndResetPwdRes;
+}
+
+- (PhoneNumRegAndResetPwdRes*) defaultInstance;
+
+- (PhoneNumRegAndResetPwdResBuilder*) clear;
+- (PhoneNumRegAndResetPwdResBuilder*) clone;
+
+- (PhoneNumRegAndResetPwdRes*) build;
+- (PhoneNumRegAndResetPwdRes*) buildPartial;
+
+- (PhoneNumRegAndResetPwdResBuilder*) mergeFrom:(PhoneNumRegAndResetPwdRes*) other;
+- (PhoneNumRegAndResetPwdResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (PhoneNumRegAndResetPwdResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasLoginedUser;
+- (LoginedRegUser*) loginedUser;
+- (PhoneNumRegAndResetPwdResBuilder*) setLoginedUser:(LoginedRegUser*) value;
+- (PhoneNumRegAndResetPwdResBuilder*) setLoginedUserBuilder:(LoginedRegUserBuilder*) builderForValue;
+- (PhoneNumRegAndResetPwdResBuilder*) mergeLoginedUser:(LoginedRegUser*) value;
+- (PhoneNumRegAndResetPwdResBuilder*) clearLoginedUser;
+@end
+
+#define ResetPwdReq_old_md5_pwd @"oldMd5Pwd"
+#define ResetPwdReq_new_md5_pwd @"newMd5Pwd"
+@interface ResetPwdReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasOldMd5Pwd_:1;
+  BOOL hasNewMd5Pwd_:1;
+  NSString* oldMd5Pwd;
+  NSString* newMd5Pwd;
+}
+- (BOOL) hasOldMd5Pwd;
+- (BOOL) hasNewMd5Pwd;
+@property (readonly, strong) NSString* oldMd5Pwd;
+@property (readonly, strong) NS_RETURNS_NOT_RETAINED NSString* newMd5Pwd;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (ResetPwdReqBuilder*) builder;
++ (ResetPwdReqBuilder*) builder;
++ (ResetPwdReqBuilder*) builderWithPrototype:(ResetPwdReq*) prototype;
+- (ResetPwdReqBuilder*) toBuilder;
+
++ (ResetPwdReq*) parseFromData:(NSData*) data;
++ (ResetPwdReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ResetPwdReq*) parseFromInputStream:(NSInputStream*) input;
++ (ResetPwdReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ResetPwdReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (ResetPwdReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface ResetPwdReqBuilder : PBGeneratedMessageBuilder {
+@private
+  ResetPwdReq* resultResetPwdReq;
+}
+
+- (ResetPwdReq*) defaultInstance;
+
+- (ResetPwdReqBuilder*) clear;
+- (ResetPwdReqBuilder*) clone;
+
+- (ResetPwdReq*) build;
+- (ResetPwdReq*) buildPartial;
+
+- (ResetPwdReqBuilder*) mergeFrom:(ResetPwdReq*) other;
+- (ResetPwdReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (ResetPwdReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasOldMd5Pwd;
+- (NSString*) oldMd5Pwd;
+- (ResetPwdReqBuilder*) setOldMd5Pwd:(NSString*) value;
+- (ResetPwdReqBuilder*) clearOldMd5Pwd;
+
+- (BOOL) hasNewMd5Pwd;
+- (NSString*) newMd5Pwd NS_RETURNS_NOT_RETAINED;
+- (ResetPwdReqBuilder*) setNewMd5Pwd:(NSString*) value;
+- (ResetPwdReqBuilder*) clearNewMd5Pwd;
+@end
+
+#define RegUserLoginReq_u @"u"
+#define RegUserLoginReq_md5_pwd @"md5Pwd"
+@interface RegUserLoginReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasU_:1;
+  BOOL hasMd5Pwd_:1;
+  NSString* u;
+  NSString* md5Pwd;
+}
+- (BOOL) hasU;
+- (BOOL) hasMd5Pwd;
+@property (readonly, strong) NSString* u;
+@property (readonly, strong) NSString* md5Pwd;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (RegUserLoginReqBuilder*) builder;
++ (RegUserLoginReqBuilder*) builder;
++ (RegUserLoginReqBuilder*) builderWithPrototype:(RegUserLoginReq*) prototype;
+- (RegUserLoginReqBuilder*) toBuilder;
+
++ (RegUserLoginReq*) parseFromData:(NSData*) data;
++ (RegUserLoginReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (RegUserLoginReq*) parseFromInputStream:(NSInputStream*) input;
++ (RegUserLoginReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (RegUserLoginReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (RegUserLoginReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface RegUserLoginReqBuilder : PBGeneratedMessageBuilder {
+@private
+  RegUserLoginReq* resultRegUserLoginReq;
+}
+
+- (RegUserLoginReq*) defaultInstance;
+
+- (RegUserLoginReqBuilder*) clear;
+- (RegUserLoginReqBuilder*) clone;
+
+- (RegUserLoginReq*) build;
+- (RegUserLoginReq*) buildPartial;
+
+- (RegUserLoginReqBuilder*) mergeFrom:(RegUserLoginReq*) other;
+- (RegUserLoginReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (RegUserLoginReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasU;
+- (NSString*) u;
+- (RegUserLoginReqBuilder*) setU:(NSString*) value;
+- (RegUserLoginReqBuilder*) clearU;
+
+- (BOOL) hasMd5Pwd;
+- (NSString*) md5Pwd;
+- (RegUserLoginReqBuilder*) setMd5Pwd:(NSString*) value;
+- (RegUserLoginReqBuilder*) clearMd5Pwd;
+@end
+
+#define RegUserLoginRes_logined_user @"loginedUser"
+@interface RegUserLoginRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasLoginedUser_:1;
+  LoginedRegUser* loginedUser;
+}
+- (BOOL) hasLoginedUser;
+@property (readonly, strong) LoginedRegUser* loginedUser;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (RegUserLoginResBuilder*) builder;
++ (RegUserLoginResBuilder*) builder;
++ (RegUserLoginResBuilder*) builderWithPrototype:(RegUserLoginRes*) prototype;
+- (RegUserLoginResBuilder*) toBuilder;
+
++ (RegUserLoginRes*) parseFromData:(NSData*) data;
++ (RegUserLoginRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (RegUserLoginRes*) parseFromInputStream:(NSInputStream*) input;
++ (RegUserLoginRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (RegUserLoginRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (RegUserLoginRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface RegUserLoginResBuilder : PBGeneratedMessageBuilder {
+@private
+  RegUserLoginRes* resultRegUserLoginRes;
+}
+
+- (RegUserLoginRes*) defaultInstance;
+
+- (RegUserLoginResBuilder*) clear;
+- (RegUserLoginResBuilder*) clone;
+
+- (RegUserLoginRes*) build;
+- (RegUserLoginRes*) buildPartial;
+
+- (RegUserLoginResBuilder*) mergeFrom:(RegUserLoginRes*) other;
+- (RegUserLoginResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (RegUserLoginResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasLoginedUser;
+- (LoginedRegUser*) loginedUser;
+- (RegUserLoginResBuilder*) setLoginedUser:(LoginedRegUser*) value;
+- (RegUserLoginResBuilder*) setLoginedUserBuilder:(LoginedRegUserBuilder*) builderForValue;
+- (RegUserLoginResBuilder*) mergeLoginedUser:(LoginedRegUser*) value;
+- (RegUserLoginResBuilder*) clearLoginedUser;
+@end
+
+#define ReadLogReq_chapter_id @"chapterId"
+#define ReadLogReq_ioffset @"ioffset"
+@interface ReadLogReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasChapterId_:1;
+  BOOL hasIoffset_:1;
+  UInt32 chapterId;
+  UInt32 ioffset;
+}
+- (BOOL) hasChapterId;
+- (BOOL) hasIoffset;
+@property (readonly) UInt32 chapterId;
+@property (readonly) UInt32 ioffset;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (ReadLogReqBuilder*) builder;
++ (ReadLogReqBuilder*) builder;
++ (ReadLogReqBuilder*) builderWithPrototype:(ReadLogReq*) prototype;
+- (ReadLogReqBuilder*) toBuilder;
+
++ (ReadLogReq*) parseFromData:(NSData*) data;
++ (ReadLogReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ReadLogReq*) parseFromInputStream:(NSInputStream*) input;
++ (ReadLogReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (ReadLogReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (ReadLogReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface ReadLogReqBuilder : PBGeneratedMessageBuilder {
+@private
+  ReadLogReq* resultReadLogReq;
+}
+
+- (ReadLogReq*) defaultInstance;
+
+- (ReadLogReqBuilder*) clear;
+- (ReadLogReqBuilder*) clone;
+
+- (ReadLogReq*) build;
+- (ReadLogReq*) buildPartial;
+
+- (ReadLogReqBuilder*) mergeFrom:(ReadLogReq*) other;
+- (ReadLogReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (ReadLogReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasChapterId;
+- (UInt32) chapterId;
+- (ReadLogReqBuilder*) setChapterId:(UInt32) value;
+- (ReadLogReqBuilder*) clearChapterId;
+
+- (BOOL) hasIoffset;
+- (UInt32) ioffset;
+- (ReadLogReqBuilder*) setIoffset:(UInt32) value;
+- (ReadLogReqBuilder*) clearIoffset;
+@end
+
+#define UpdateRes_up @"up"
+#define UpdateRes_ver_name @"verName"
+#define UpdateRes_up_t @"upT"
+#define UpdateRes_url @"url"
+@interface UpdateRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasVerName_:1;
+  BOOL hasUrl_:1;
+  BOOL hasUp_:1;
+  BOOL hasUpT_:1;
+  NSString* verName;
+  NSString* url;
+  UInt32 up;
+  UInt32 upT;
+}
+- (BOOL) hasUp;
+- (BOOL) hasVerName;
+- (BOOL) hasUpT;
+- (BOOL) hasUrl;
+@property (readonly) UInt32 up;
+@property (readonly, strong) NSString* verName;
+@property (readonly) UInt32 upT;
+@property (readonly, strong) NSString* url;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (UpdateResBuilder*) builder;
++ (UpdateResBuilder*) builder;
++ (UpdateResBuilder*) builderWithPrototype:(UpdateRes*) prototype;
+- (UpdateResBuilder*) toBuilder;
+
++ (UpdateRes*) parseFromData:(NSData*) data;
++ (UpdateRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (UpdateRes*) parseFromInputStream:(NSInputStream*) input;
++ (UpdateRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (UpdateRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (UpdateRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface UpdateResBuilder : PBGeneratedMessageBuilder {
+@private
+  UpdateRes* resultUpdateRes;
+}
+
+- (UpdateRes*) defaultInstance;
+
+- (UpdateResBuilder*) clear;
+- (UpdateResBuilder*) clone;
+
+- (UpdateRes*) build;
+- (UpdateRes*) buildPartial;
+
+- (UpdateResBuilder*) mergeFrom:(UpdateRes*) other;
+- (UpdateResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (UpdateResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasUp;
+- (UInt32) up;
+- (UpdateResBuilder*) setUp:(UInt32) value;
+- (UpdateResBuilder*) clearUp;
+
+- (BOOL) hasVerName;
+- (NSString*) verName;
+- (UpdateResBuilder*) setVerName:(NSString*) value;
+- (UpdateResBuilder*) clearVerName;
+
+- (BOOL) hasUpT;
+- (UInt32) upT;
+- (UpdateResBuilder*) setUpT:(UInt32) value;
+- (UpdateResBuilder*) clearUpT;
+
+- (BOOL) hasUrl;
+- (NSString*) url;
+- (UpdateResBuilder*) setUrl:(NSString*) value;
+- (UpdateResBuilder*) clearUrl;
 @end
 
 

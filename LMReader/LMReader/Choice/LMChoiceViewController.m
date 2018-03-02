@@ -134,7 +134,12 @@ static CGFloat cellHeight = 100;
 
 //section头部  更多
 -(void)clickedSectionButton:(UIButton* )sender {
+    LMInterestOrEndType type = LMInterestType;
+    if (sender.tag == 1) {//完结经典
+        type = LMEndType;
+    }
     LMInterestOrEndViewController* interestOrEndVC = [[LMInterestOrEndViewController alloc]init];
+    interestOrEndVC.type = type;
     [self.navigationController pushViewController:interestOrEndVC animated:YES];
 }
 
@@ -156,6 +161,7 @@ static CGFloat cellHeight = 100;
     NSMutableAttributedString* btnStr = [[NSMutableAttributedString alloc]initWithString:@"更多>" attributes:@{NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle), NSForegroundColorAttributeName : [UIColor whiteColor]}];
     [btn setAttributedTitle:btnStr forState:UIControlStateNormal];
     [btn addTarget:self action:@selector(clickedSectionButton:) forControlEvents:UIControlEventTouchUpInside];
+    btn.tag = section;
     [vi addSubview:btn];
     return vi;
 }

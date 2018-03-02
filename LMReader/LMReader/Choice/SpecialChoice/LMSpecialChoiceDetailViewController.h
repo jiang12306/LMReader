@@ -10,4 +10,6 @@
 
 @interface LMSpecialChoiceDetailViewController : LMBaseViewController
 
+@property (nonatomic, assign) TopicChart* chart;
+
 @end

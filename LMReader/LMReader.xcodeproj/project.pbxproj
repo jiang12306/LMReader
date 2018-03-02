@@ -38,11 +38,16 @@
 		F22D97D820283D7E007958D4 /* NSBundle+MJRefresh.m in Sources */ = {isa = PBXBuildFile; fileRef = F22D97C320283D7E007958D4 /* NSBundle+MJRefresh.m */; };
 		F22D97DC202843A5007958D4 /* LMBaseRefreshTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = F22D97DB202843A5007958D4 /* LMBaseRefreshTableView.m */; };
 		F22D97DE20285887007958D4 /* cycleAddButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22D97DD20285887007958D4 /* cycleAddButton@2x.png */; };
+		F23ED22D204660520039774D /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F23ED22C204660520039774D /* MobileCoreServices.framework */; };
+		F23ED22F2046605B0039774D /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F23ED22E2046605B0039774D /* AVFoundation.framework */; };
+		F249F97220479F0200D879C0 /* avator_LoginOut@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F249F96E20479F0100D879C0 /* avator_LoginOut@2x.png */; };
+		F249F97320479F0200D879C0 /* avator_Login@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F249F97120479F0200D879C0 /* avator_Login@2x.png */; };
 		F2545732202A931900A9491C /* libProtocolBuffers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F254572B202A927400A9491C /* libProtocolBuffers.a */; };
 		F2545733202A931F00A9491C /* ProtocolBuffers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F254572F202A927400A9491C /* ProtocolBuffers.framework */; };
 		F254573E202A95B800A9491C /* ProtocolBuffers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F254572F202A927400A9491C /* ProtocolBuffers.framework */; };
 		F254573F202A95B800A9491C /* ProtocolBuffers.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F254572F202A927400A9491C /* ProtocolBuffers.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F2545746202B0CAE00A9491C /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = F2545745202B0CAE00A9491C /* MBProgressHUD.m */; };
+		F255F8E02041736B00A1ED95 /* LMChangeSourceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F255F8DF2041736B00A1ED95 /* LMChangeSourceTableViewCell.m */; };
 		F25758052032CA780054961B /* LMSearchBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = F25758042032CA780054961B /* LMSearchBarView.m */; };
 		F2585D63202413380017D773 /* LMBookStoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2585D62202413380017D773 /* LMBookStoreViewController.m */; };
 		F2585D67202415DA0017D773 /* LMBaseBookTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2585D66202415DA0017D773 /* LMBaseBookTableViewCell.m */; };
@@ -129,11 +134,29 @@
 		F27163A2202320010095A2E3 /* interestButton_Selected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F27163A0202320010095A2E3 /* interestButton_Selected@2x.png */; };
 		F27163A3202320010095A2E3 /* interestButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F27163A1202320010095A2E3 /* interestButton@2x.png */; };
 		F2742F5E2030318D00BFDC92 /* LMBookDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2742F5D2030318D00BFDC92 /* LMBookDetailViewController.m */; };
+		F2754294203E73CA009E01B7 /* LMSpecialChoiceCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2754293203E73CA009E01B7 /* LMSpecialChoiceCollectionViewCell.m */; };
 		F276E01220203D5300B0C0C8 /* LMBaseTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F276E01120203D5300B0C0C8 /* LMBaseTableViewCell.m */; };
 		F276E0152020427200B0C0C8 /* LMBookShelfTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F276E0142020427200B0C0C8 /* LMBookShelfTableViewCell.m */; };
 		F276E01820207A8100B0C0C8 /* LMProfileTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F276E01720207A8100B0C0C8 /* LMProfileTableViewCell.m */; };
 		F2868CA5202EA52400037C59 /* LMFontView.m in Sources */ = {isa = PBXBuildFile; fileRef = F2868CA4202EA52400037C59 /* LMFontView.m */; };
 		F2868CA8202F061C00037C59 /* LMSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2868CA7202F061C00037C59 /* LMSearchViewController.m */; };
+		F2B69EF32043AA7E00A7921B /* LMAboutUsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69EF22043AA7E00A7921B /* LMAboutUsViewController.m */; };
+		F2B69EF72043ACB300A7921B /* LMCopyrightViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69EF62043ACB300A7921B /* LMCopyrightViewController.m */; };
+		F2B69EFE2043AD7500A7921B /* LMFeedBackViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69EFD2043AD7500A7921B /* LMFeedBackViewController.m */; };
+		F2B69F012043AD8500A7921B /* LMSystemSettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F002043AD8500A7921B /* LMSystemSettingViewController.m */; };
+		F2B69F042043AD9400A7921B /* LMReadPreferencesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F032043AD9400A7921B /* LMReadPreferencesViewController.m */; };
+		F2B69F072043AD9F00A7921B /* LMReadRecordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F062043AD9F00A7921B /* LMReadRecordViewController.m */; };
+		F2B69F0A2043BC5900A7921B /* LMComboxView.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F092043BC5900A7921B /* LMComboxView.m */; };
+		F2B69F0D2043D80500A7921B /* comboxView_Up@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2B69F0B2043D80500A7921B /* comboxView_Up@2x.png */; };
+		F2B69F0E2043D80500A7921B /* comboxView_Down@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2B69F0C2043D80500A7921B /* comboxView_Down@2x.png */; };
+		F2B69F112043DAEA00A7921B /* LMComboxViewTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F102043DAEA00A7921B /* LMComboxViewTableViewCell.m */; };
+		F2B69F142043EC9300A7921B /* LMProfileCenterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F132043EC9300A7921B /* LMProfileCenterViewController.m */; };
+		F2B69F172043F23600A7921B /* LMProfileCenterTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F162043F23600A7921B /* LMProfileCenterTableViewCell.m */; };
+		F2B69F1A2043F60900A7921B /* LMSystemSettingTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F192043F60900A7921B /* LMSystemSettingTableViewCell.m */; };
+		F2B69F1E204405E000A7921B /* LMRegisterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F1D204405E000A7921B /* LMRegisterViewController.m */; };
+		F2B69F22204407F100A7921B /* LMLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F21204407F100A7921B /* LMLoginViewController.m */; };
+		F2B69F2520441B4500A7921B /* LMSetPasswordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F2420441B4500A7921B /* LMSetPasswordViewController.m */; };
+		F2B69F2820441B8A00A7921B /* LMResetPasswordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F2720441B8A00A7921B /* LMResetPasswordViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -262,10 +285,17 @@
 		F22D97DA202843A5007958D4 /* LMBaseRefreshTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBaseRefreshTableView.h; sourceTree = "<group>"; };
 		F22D97DB202843A5007958D4 /* LMBaseRefreshTableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBaseRefreshTableView.m; sourceTree = "<group>"; };
 		F22D97DD20285887007958D4 /* cycleAddButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cycleAddButton@2x.png"; sourceTree = "<group>"; };
+		F23ED2292046473D0039774D /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		F23ED22C204660520039774D /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		F23ED22E2046605B0039774D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		F249F96E20479F0100D879C0 /* avator_LoginOut@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "avator_LoginOut@2x.png"; sourceTree = "<group>"; };
+		F249F97120479F0200D879C0 /* avator_Login@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "avator_Login@2x.png"; sourceTree = "<group>"; };
 		F2545723202A927400A9491C /* ProtocolBuffers.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ProtocolBuffers.xcodeproj; path = "../../../../../Downloads/protobuf-objc-master/src/runtime/ProtocolBuffers.xcodeproj"; sourceTree = "<group>"; };
 		F254573C202A940D00A9491C /* ProtocolBuffers_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ProtocolBuffers_Prefix.pch; path = "../../../../../Downloads/protobuf-objc-master/src/runtime/ProtocolBuffers_Prefix.pch"; sourceTree = "<group>"; };
 		F2545744202B0CAD00A9491C /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
 		F2545745202B0CAE00A9491C /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
+		F255F8DE2041736B00A1ED95 /* LMChangeSourceTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMChangeSourceTableViewCell.h; sourceTree = "<group>"; };
+		F255F8DF2041736B00A1ED95 /* LMChangeSourceTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMChangeSourceTableViewCell.m; sourceTree = "<group>"; };
 		F25758032032CA780054961B /* LMSearchBarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSearchBarView.h; sourceTree = "<group>"; };
 		F25758042032CA780054961B /* LMSearchBarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSearchBarView.m; sourceTree = "<group>"; };
 		F2585D61202413380017D773 /* LMBookStoreViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookStoreViewController.h; sourceTree = "<group>"; };
@@ -423,6 +453,8 @@
 		F27163A42023247E0095A2E3 /* LMReader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReader.pch; sourceTree = "<group>"; };
 		F2742F5C2030318D00BFDC92 /* LMBookDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookDetailViewController.h; sourceTree = "<group>"; };
 		F2742F5D2030318D00BFDC92 /* LMBookDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBookDetailViewController.m; sourceTree = "<group>"; };
+		F2754292203E73CA009E01B7 /* LMSpecialChoiceCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSpecialChoiceCollectionViewCell.h; sourceTree = "<group>"; };
+		F2754293203E73CA009E01B7 /* LMSpecialChoiceCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSpecialChoiceCollectionViewCell.m; sourceTree = "<group>"; };
 		F276E01020203D5300B0C0C8 /* LMBaseTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBaseTableViewCell.h; sourceTree = "<group>"; };
 		F276E01120203D5300B0C0C8 /* LMBaseTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBaseTableViewCell.m; sourceTree = "<group>"; };
 		F276E0132020427200B0C0C8 /* LMBookShelfTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookShelfTableViewCell.h; sourceTree = "<group>"; };
@@ -433,6 +465,38 @@
 		F2868CA4202EA52400037C59 /* LMFontView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMFontView.m; sourceTree = "<group>"; };
 		F2868CA6202F061C00037C59 /* LMSearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSearchViewController.h; sourceTree = "<group>"; };
 		F2868CA7202F061C00037C59 /* LMSearchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSearchViewController.m; sourceTree = "<group>"; };
+		F2B69EF12043AA7E00A7921B /* LMAboutUsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMAboutUsViewController.h; sourceTree = "<group>"; };
+		F2B69EF22043AA7E00A7921B /* LMAboutUsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMAboutUsViewController.m; sourceTree = "<group>"; };
+		F2B69EF52043ACB300A7921B /* LMCopyrightViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMCopyrightViewController.h; sourceTree = "<group>"; };
+		F2B69EF62043ACB300A7921B /* LMCopyrightViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMCopyrightViewController.m; sourceTree = "<group>"; };
+		F2B69EFC2043AD7500A7921B /* LMFeedBackViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMFeedBackViewController.h; sourceTree = "<group>"; };
+		F2B69EFD2043AD7500A7921B /* LMFeedBackViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMFeedBackViewController.m; sourceTree = "<group>"; };
+		F2B69EFF2043AD8500A7921B /* LMSystemSettingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSystemSettingViewController.h; sourceTree = "<group>"; };
+		F2B69F002043AD8500A7921B /* LMSystemSettingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSystemSettingViewController.m; sourceTree = "<group>"; };
+		F2B69F022043AD9400A7921B /* LMReadPreferencesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReadPreferencesViewController.h; sourceTree = "<group>"; };
+		F2B69F032043AD9400A7921B /* LMReadPreferencesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMReadPreferencesViewController.m; sourceTree = "<group>"; };
+		F2B69F052043AD9F00A7921B /* LMReadRecordViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReadRecordViewController.h; sourceTree = "<group>"; };
+		F2B69F062043AD9F00A7921B /* LMReadRecordViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMReadRecordViewController.m; sourceTree = "<group>"; };
+		F2B69F082043BC5900A7921B /* LMComboxView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMComboxView.h; sourceTree = "<group>"; };
+		F2B69F092043BC5900A7921B /* LMComboxView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMComboxView.m; sourceTree = "<group>"; };
+		F2B69F0B2043D80500A7921B /* comboxView_Up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "comboxView_Up@2x.png"; sourceTree = "<group>"; };
+		F2B69F0C2043D80500A7921B /* comboxView_Down@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "comboxView_Down@2x.png"; sourceTree = "<group>"; };
+		F2B69F0F2043DAEA00A7921B /* LMComboxViewTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMComboxViewTableViewCell.h; sourceTree = "<group>"; };
+		F2B69F102043DAEA00A7921B /* LMComboxViewTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMComboxViewTableViewCell.m; sourceTree = "<group>"; };
+		F2B69F122043EC9300A7921B /* LMProfileCenterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileCenterViewController.h; sourceTree = "<group>"; };
+		F2B69F132043EC9300A7921B /* LMProfileCenterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileCenterViewController.m; sourceTree = "<group>"; };
+		F2B69F152043F23600A7921B /* LMProfileCenterTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileCenterTableViewCell.h; sourceTree = "<group>"; };
+		F2B69F162043F23600A7921B /* LMProfileCenterTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileCenterTableViewCell.m; sourceTree = "<group>"; };
+		F2B69F182043F60900A7921B /* LMSystemSettingTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSystemSettingTableViewCell.h; sourceTree = "<group>"; };
+		F2B69F192043F60900A7921B /* LMSystemSettingTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSystemSettingTableViewCell.m; sourceTree = "<group>"; };
+		F2B69F1C204405E000A7921B /* LMRegisterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMRegisterViewController.h; sourceTree = "<group>"; };
+		F2B69F1D204405E000A7921B /* LMRegisterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMRegisterViewController.m; sourceTree = "<group>"; };
+		F2B69F20204407F100A7921B /* LMLoginViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMLoginViewController.h; sourceTree = "<group>"; };
+		F2B69F21204407F100A7921B /* LMLoginViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMLoginViewController.m; sourceTree = "<group>"; };
+		F2B69F2320441B4500A7921B /* LMSetPasswordViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSetPasswordViewController.h; sourceTree = "<group>"; };
+		F2B69F2420441B4500A7921B /* LMSetPasswordViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSetPasswordViewController.m; sourceTree = "<group>"; };
+		F2B69F2620441B8A00A7921B /* LMResetPasswordViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMResetPasswordViewController.h; sourceTree = "<group>"; };
+		F2B69F2720441B8A00A7921B /* LMResetPasswordViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMResetPasswordViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -440,6 +504,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F23ED22F2046605B0039774D /* AVFoundation.framework in Frameworks */,
+				F23ED22D204660520039774D /* MobileCoreServices.framework in Frameworks */,
 				F2613C36202C36A700F21111 /* libsqlite3.dylib in Frameworks */,
 				F2545733202A931F00A9491C /* ProtocolBuffers.framework in Frameworks */,
 				F2545732202A931900A9491C /* libProtocolBuffers.a in Frameworks */,
@@ -472,6 +538,8 @@
 			children = (
 				F22D977D2027FB4C007958D4 /* LMSpecialChoiceViewController.h */,
 				F22D977E2027FB4C007958D4 /* LMSpecialChoiceViewController.m */,
+				F2754292203E73CA009E01B7 /* LMSpecialChoiceCollectionViewCell.h */,
+				F2754293203E73CA009E01B7 /* LMSpecialChoiceCollectionViewCell.m */,
 				F22D9791202810A6007958D4 /* LMSpecialChoiceDetailViewController.h */,
 				F22D9792202810A6007958D4 /* LMSpecialChoiceDetailViewController.m */,
 			);
@@ -591,6 +659,15 @@
 			path = BaseTableView;
 			sourceTree = "<group>";
 		};
+		F251493120403CC100C6C68D /* BookStore */ = {
+			isa = PBXGroup;
+			children = (
+				F2585D61202413380017D773 /* LMBookStoreViewController.h */,
+				F2585D62202413380017D773 /* LMBookStoreViewController.m */,
+			);
+			path = BookStore;
+			sourceTree = "<group>";
+		};
 		F2545724202A927400A9491C /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -649,6 +726,8 @@
 				F26D84C8202D9823001CC773 /* LMCatalogTableViewCell.m */,
 				F271630D2022BE630095A2E3 /* LMChangeSourceViewController.h */,
 				F271630E2022BE630095A2E3 /* LMChangeSourceViewController.m */,
+				F255F8DE2041736B00A1ED95 /* LMChangeSourceTableViewCell.h */,
+				F255F8DF2041736B00A1ED95 /* LMChangeSourceTableViewCell.m */,
 			);
 			path = Reader;
 			sourceTree = "<group>";
@@ -704,10 +783,12 @@
 				F259E8C82029976100C327A1 /* DataModel */,
 				F27163102022BFC50095A2E3 /* OpenSource */,
 				F2742F61203034C000BFDC92 /* BookDetail */,
+				F275428C203E5DF5009E01B7 /* LMSearch */,
 				F258939D2021693100CB2364 /* Reader */,
 				F262787C201F161300D33722 /* BookShelf */,
 				F262787B201F15F600D33722 /* Choice */,
 				F262787A201F15EF00D33722 /* Profile */,
+				F2B69F1F204407BA00A7921B /* Login */,
 				F2627876201F070000D33722 /* FitstLaunch */,
 				F2627872201F062200D33722 /* Tool */,
 				F2627864201EF22D00D33722 /* Root */,
@@ -781,6 +862,16 @@
 				F2627885201F165400D33722 /* LMProfileViewController.m */,
 				F276E01620207A8100B0C0C8 /* LMProfileTableViewCell.h */,
 				F276E01720207A8100B0C0C8 /* LMProfileTableViewCell.m */,
+				F2B69F122043EC9300A7921B /* LMProfileCenterViewController.h */,
+				F2B69F132043EC9300A7921B /* LMProfileCenterViewController.m */,
+				F2B69F152043F23600A7921B /* LMProfileCenterTableViewCell.h */,
+				F2B69F162043F23600A7921B /* LMProfileCenterTableViewCell.m */,
+				F2B69EF82043AD1400A7921B /* ReadRecord */,
+				F2B69EFA2043AD3200A7921B /* ReadPreferences */,
+				F2B69EFB2043AD4700A7921B /* SystemSetting */,
+				F2B69EF92043AD2600A7921B /* FeedBack */,
+				F2B69EEE2043AA4F00A7921B /* AboutUs */,
+				F2B69EF42043AC7A00A7921B /* Copyright */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -800,15 +891,11 @@
 		F262787C201F161300D33722 /* BookShelf */ = {
 			isa = PBXGroup;
 			children = (
-				F25758002032C7EE0054961B /* LMSearchView */,
 				F262787D201F162F00D33722 /* LMBookShelfViewController.h */,
 				F262787E201F162F00D33722 /* LMBookShelfViewController.m */,
 				F276E0132020427200B0C0C8 /* LMBookShelfTableViewCell.h */,
 				F276E0142020427200B0C0C8 /* LMBookShelfTableViewCell.m */,
-				F2585D61202413380017D773 /* LMBookStoreViewController.h */,
-				F2585D62202413380017D773 /* LMBookStoreViewController.m */,
-				F2868CA6202F061C00037C59 /* LMSearchViewController.h */,
-				F2868CA7202F061C00037C59 /* LMSearchViewController.m */,
+				F251493120403CC100C6C68D /* BookStore */,
 			);
 			path = BookShelf;
 			sourceTree = "<group>";
@@ -818,6 +905,10 @@
 			children = (
 				F258939B2021687300CB2364 /* test.txt */,
 				F22D97942028284E007958D4 /* test1@2x.png */,
+				F249F97120479F0200D879C0 /* avator_Login@2x.png */,
+				F249F96E20479F0100D879C0 /* avator_LoginOut@2x.png */,
+				F2B69F0C2043D80500A7921B /* comboxView_Down@2x.png */,
+				F2B69F0B2043D80500A7921B /* comboxView_Up@2x.png */,
 				F22D97DD20285887007958D4 /* cycleAddButton@2x.png */,
 				F27163062022AF330095A2E3 /* nightMode@2x.png */,
 				F271639E20230B400095A2E3 /* firstLaunch1@2x.png */,
@@ -953,6 +1044,8 @@
 		F27163922022C29D0095A2E3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F23ED22E2046605B0039774D /* AVFoundation.framework */,
+				F23ED22C204660520039774D /* MobileCoreServices.framework */,
 				F2613C34202C368500F21111 /* libsqlite3.dylib */,
 				F254573C202A940D00A9491C /* ProtocolBuffers_Prefix.pch */,
 				F259E9252029B8D000C327A1 /* Foundation.framework */,
@@ -972,6 +1065,16 @@
 			path = BookDetail;
 			sourceTree = "<group>";
 		};
+		F275428C203E5DF5009E01B7 /* LMSearch */ = {
+			isa = PBXGroup;
+			children = (
+				F2868CA6202F061C00037C59 /* LMSearchViewController.h */,
+				F2868CA7202F061C00037C59 /* LMSearchViewController.m */,
+				F25758002032C7EE0054961B /* LMSearchView */,
+			);
+			path = LMSearch;
+			sourceTree = "<group>";
+		};
 		F2868CA2202EA50900037C59 /* FontView */ = {
 			isa = PBXGroup;
 			children = (
@@ -979,6 +1082,81 @@
 				F2868CA4202EA52400037C59 /* LMFontView.m */,
 			);
 			path = FontView;
+			sourceTree = "<group>";
+		};
+		F2B69EEE2043AA4F00A7921B /* AboutUs */ = {
+			isa = PBXGroup;
+			children = (
+				F2B69EF12043AA7E00A7921B /* LMAboutUsViewController.h */,
+				F2B69EF22043AA7E00A7921B /* LMAboutUsViewController.m */,
+			);
+			path = AboutUs;
+			sourceTree = "<group>";
+		};
+		F2B69EF42043AC7A00A7921B /* Copyright */ = {
+			isa = PBXGroup;
+			children = (
+				F2B69EF52043ACB300A7921B /* LMCopyrightViewController.h */,
+				F2B69EF62043ACB300A7921B /* LMCopyrightViewController.m */,
+			);
+			path = Copyright;
+			sourceTree = "<group>";
+		};
+		F2B69EF82043AD1400A7921B /* ReadRecord */ = {
+			isa = PBXGroup;
+			children = (
+				F2B69F052043AD9F00A7921B /* LMReadRecordViewController.h */,
+				F2B69F062043AD9F00A7921B /* LMReadRecordViewController.m */,
+			);
+			path = ReadRecord;
+			sourceTree = "<group>";
+		};
+		F2B69EF92043AD2600A7921B /* FeedBack */ = {
+			isa = PBXGroup;
+			children = (
+				F2B69EFC2043AD7500A7921B /* LMFeedBackViewController.h */,
+				F2B69EFD2043AD7500A7921B /* LMFeedBackViewController.m */,
+				F2B69F082043BC5900A7921B /* LMComboxView.h */,
+				F2B69F092043BC5900A7921B /* LMComboxView.m */,
+				F2B69F0F2043DAEA00A7921B /* LMComboxViewTableViewCell.h */,
+				F2B69F102043DAEA00A7921B /* LMComboxViewTableViewCell.m */,
+			);
+			path = FeedBack;
+			sourceTree = "<group>";
+		};
+		F2B69EFA2043AD3200A7921B /* ReadPreferences */ = {
+			isa = PBXGroup;
+			children = (
+				F2B69F022043AD9400A7921B /* LMReadPreferencesViewController.h */,
+				F2B69F032043AD9400A7921B /* LMReadPreferencesViewController.m */,
+			);
+			path = ReadPreferences;
+			sourceTree = "<group>";
+		};
+		F2B69EFB2043AD4700A7921B /* SystemSetting */ = {
+			isa = PBXGroup;
+			children = (
+				F2B69EFF2043AD8500A7921B /* LMSystemSettingViewController.h */,
+				F2B69F002043AD8500A7921B /* LMSystemSettingViewController.m */,
+				F2B69F182043F60900A7921B /* LMSystemSettingTableViewCell.h */,
+				F2B69F192043F60900A7921B /* LMSystemSettingTableViewCell.m */,
+			);
+			path = SystemSetting;
+			sourceTree = "<group>";
+		};
+		F2B69F1F204407BA00A7921B /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				F2B69F20204407F100A7921B /* LMLoginViewController.h */,
+				F2B69F21204407F100A7921B /* LMLoginViewController.m */,
+				F2B69F1C204405E000A7921B /* LMRegisterViewController.h */,
+				F2B69F1D204405E000A7921B /* LMRegisterViewController.m */,
+				F2B69F2320441B4500A7921B /* LMSetPasswordViewController.h */,
+				F2B69F2420441B4500A7921B /* LMSetPasswordViewController.m */,
+				F2B69F2620441B8A00A7921B /* LMResetPasswordViewController.h */,
+				F2B69F2720441B8A00A7921B /* LMResetPasswordViewController.m */,
+			);
+			path = Login;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1080,15 +1258,19 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F2B69F0D2043D80500A7921B /* comboxView_Up@2x.png in Resources */,
 				F22D97952028284E007958D4 /* test1@2x.png in Resources */,
 				F2585D6E20246DF80017D773 /* choice_Range@2x.png in Resources */,
 				F2627857201EEFE700D33722 /* LaunchScreen.storyboard in Resources */,
 				F262788C201F1CBA00D33722 /* tabBar_Profile@2x.png in Resources */,
 				F2627892201F274300D33722 /* tabBar_BookShelf@2x.png in Resources */,
 				F27163A3202320010095A2E3 /* interestButton@2x.png in Resources */,
+				F249F97320479F0200D879C0 /* avator_Login@2x.png in Resources */,
 				F27163092022B82A0095A2E3 /* navigationItem_More@2x.png in Resources */,
 				F262788F201F1F1D00D33722 /* navigationItem_Back@2x.png in Resources */,
 				F22D97CF20283D7E007958D4 /* MJRefresh.bundle in Resources */,
+				F249F97220479F0200D879C0 /* avator_LoginOut@2x.png in Resources */,
+				F2B69F0E2043D80500A7921B /* comboxView_Down@2x.png in Resources */,
 				F27163A2202320010095A2E3 /* interestButton_Selected@2x.png in Resources */,
 				F22D9789202804EB007958D4 /* cell_Arrow@2x.png in Resources */,
 				F27163072022AF330095A2E3 /* nightMode@2x.png in Resources */,
@@ -1112,6 +1294,7 @@
 				F22D97D020283D7E007958D4 /* UIScrollView+MJExtension.m in Sources */,
 				F2742F5E2030318D00BFDC92 /* LMBookDetailViewController.m in Sources */,
 				F276E01820207A8100B0C0C8 /* LMProfileTableViewCell.m in Sources */,
+				F2B69F22204407F100A7921B /* LMLoginViewController.m in Sources */,
 				F26D84C9202D9823001CC773 /* LMCatalogTableViewCell.m in Sources */,
 				F27163662022C06C0095A2E3 /* NSImage+WebCache.m in Sources */,
 				F271631F2022C0300095A2E3 /* AFHTTPSessionManager.m in Sources */,
@@ -1119,6 +1302,7 @@
 				F2613C33202C2E0200F21111 /* LMDatabaseTool.m in Sources */,
 				F27163742022C06C0095A2E3 /* SDWebImageTransition.m in Sources */,
 				F27163722022C06C0095A2E3 /* SDWebImageManager.m in Sources */,
+				F2B69F042043AD9400A7921B /* LMReadPreferencesViewController.m in Sources */,
 				F27163202022C0300095A2E3 /* AFNetworkReachabilityManager.m in Sources */,
 				F271636E2022C06C0095A2E3 /* SDWebImageDownloaderOperation.m in Sources */,
 				F22D97C820283D7E007958D4 /* MJRefreshAutoStateFooter.m in Sources */,
@@ -1128,7 +1312,9 @@
 				F2627882201F163C00D33722 /* LMChoiceViewController.m in Sources */,
 				F22D97CC20283D7E007958D4 /* MJRefreshGifHeader.m in Sources */,
 				F27163702022C06C0095A2E3 /* SDWebImageGIFCoder.m in Sources */,
+				F2B69EF32043AA7E00A7921B /* LMAboutUsViewController.m in Sources */,
 				F25758052032CA780054961B /* LMSearchBarView.m in Sources */,
+				F2B69F112043DAEA00A7921B /* LMComboxViewTableViewCell.m in Sources */,
 				F271637A2022C06C0095A2E3 /* UIImage+WebP.m in Sources */,
 				F2868CA5202EA52400037C59 /* LMFontView.m in Sources */,
 				F271636B2022C06C0095A2E3 /* SDWebImageCodersManager.m in Sources */,
@@ -1136,6 +1322,7 @@
 				F2627875201F063700D33722 /* LMTool.m in Sources */,
 				F27163682022C06C0095A2E3 /* SDImageCacheConfig.m in Sources */,
 				F262787F201F162F00D33722 /* LMBookShelfViewController.m in Sources */,
+				F2B69F0A2043BC5900A7921B /* LMComboxView.m in Sources */,
 				F27163792022C06C0095A2E3 /* UIImage+MultiFormat.m in Sources */,
 				F2545746202B0CAE00A9491C /* MBProgressHUD.m in Sources */,
 				F259E8CF202999D300C327A1 /* Ftbook.pb.m in Sources */,
@@ -1144,10 +1331,14 @@
 				F22D97CA20283D7E007958D4 /* MJRefreshBackNormalFooter.m in Sources */,
 				F271637B2022C06C0095A2E3 /* UIImageView+HighlightedWebCache.m in Sources */,
 				F22D97D520283D7E007958D4 /* MJRefreshComponent.m in Sources */,
+				F2B69F2820441B8A00A7921B /* LMResetPasswordViewController.m in Sources */,
 				F27163222022C0300095A2E3 /* AFURLRequestSerialization.m in Sources */,
 				F27163772022C06C0095A2E3 /* UIImage+ForceDecode.m in Sources */,
 				F271636A2022C06C0095A2E3 /* SDWebImageCoderHelper.m in Sources */,
+				F2B69F012043AD8500A7921B /* LMSystemSettingViewController.m in Sources */,
+				F2B69F172043F23600A7921B /* LMProfileCenterTableViewCell.m in Sources */,
 				F259E8D320299EB700C327A1 /* LMNetworkTool.m in Sources */,
+				F2B69F142043EC9300A7921B /* LMProfileCenterViewController.m in Sources */,
 				F22D978C20280C15007958D4 /* LMInterestOrEndViewController.m in Sources */,
 				F27163782022C06C0095A2E3 /* UIImage+GIF.m in Sources */,
 				F27163732022C06C0095A2E3 /* SDWebImagePrefetcher.m in Sources */,
@@ -1158,6 +1349,7 @@
 				F271636C2022C06C0095A2E3 /* SDWebImageCompat.m in Sources */,
 				F22D97CB20283D7E007958D4 /* MJRefreshBackStateFooter.m in Sources */,
 				F22D97C720283D7E007958D4 /* MJRefreshAutoNormalFooter.m in Sources */,
+				F255F8E02041736B00A1ED95 /* LMChangeSourceTableViewCell.m in Sources */,
 				F27163212022C0300095A2E3 /* AFSecurityPolicy.m in Sources */,
 				F22D97C520283D7E007958D4 /* UIScrollView+MJRefresh.m in Sources */,
 				F27163242022C0300095A2E3 /* AFURLSessionManager.m in Sources */,
@@ -1173,25 +1365,31 @@
 				F27163692022C06C0095A2E3 /* SDWebImageCoder.m in Sources */,
 				F22D9793202810A6007958D4 /* LMSpecialChoiceDetailViewController.m in Sources */,
 				F25893A620219CDA00CB2364 /* LMContentViewController.m in Sources */,
+				F2B69F2520441B4500A7921B /* LMSetPasswordViewController.m in Sources */,
 				F2627886201F165400D33722 /* LMProfileViewController.m in Sources */,
 				F2627879201F071900D33722 /* LMFirstLaunchViewController.m in Sources */,
 				F271639D2022FF130095A2E3 /* LMFirstLaunch3ViewController.m in Sources */,
 				F27163672022C06C0095A2E3 /* SDImageCache.m in Sources */,
 				F27163652022C06C0095A2E3 /* NSData+ImageContentType.m in Sources */,
+				F2B69F1E204405E000A7921B /* LMRegisterViewController.m in Sources */,
 				F271637C2022C06C0095A2E3 /* UIImageView+WebCache.m in Sources */,
 				F271638C2022C0840095A2E3 /* FMDatabase.m in Sources */,
 				F2627871201EF89E00D33722 /* LMBaseTabBarController.m in Sources */,
 				F25893A320219A9100CB2364 /* LMReaderViewController.m in Sources */,
+				F2754294203E73CA009E01B7 /* LMSpecialChoiceCollectionViewCell.m in Sources */,
 				F271636D2022C06C0095A2E3 /* SDWebImageDownloader.m in Sources */,
 				F22D97D420283D7E007958D4 /* MJRefreshBackFooter.m in Sources */,
 				F271637D2022C06C0095A2E3 /* UIView+WebCache.m in Sources */,
 				F22D97C620283D7E007958D4 /* MJRefreshAutoGifFooter.m in Sources */,
 				F22D977F2027FB4C007958D4 /* LMSpecialChoiceViewController.m in Sources */,
 				F271637E2022C06C0095A2E3 /* UIView+WebCacheOperation.m in Sources */,
+				F2B69F1A2043F60900A7921B /* LMSystemSettingTableViewCell.m in Sources */,
 				F2627867201EF24500D33722 /* LMRootViewController.m in Sources */,
+				F2B69F072043AD9F00A7921B /* LMReadRecordViewController.m in Sources */,
 				F22D97CE20283D7E007958D4 /* MJRefreshStateHeader.m in Sources */,
 				F22D97D220283D7E007958D4 /* UIView+MJExtension.m in Sources */,
 				F271639A2022FF050095A2E3 /* LMFirstLaunch2ViewController.m in Sources */,
+				F2B69EF72043ACB300A7921B /* LMCopyrightViewController.m in Sources */,
 				F271638F2022C0840095A2E3 /* FMDatabaseQueue.m in Sources */,
 				F22D97CD20283D7E007958D4 /* MJRefreshNormalHeader.m in Sources */,
 				F2627863201EF10500D33722 /* LMBaseViewController.m in Sources */,
@@ -1203,6 +1401,7 @@
 				F22D97D620283D7E007958D4 /* MJRefreshFooter.m in Sources */,
 				F27163632022C06C0095A2E3 /* MKAnnotationView+WebCache.m in Sources */,
 				F276E0152020427200B0C0C8 /* LMBookShelfTableViewCell.m in Sources */,
+				F2B69EFE2043AD7500A7921B /* LMFeedBackViewController.m in Sources */,
 				F271638E2022C0840095A2E3 /* FMDatabasePool.m in Sources */,
 				F27163232022C0300095A2E3 /* AFURLResponseSerialization.m in Sources */,
 				F22D97DC202843A5007958D4 /* LMBaseRefreshTableView.m in Sources */,
@@ -1236,6 +1435,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				F2627856201EEFE700D33722 /* Base */,
+				F23ED2292046473D0039774D /* zh-Hans */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -1247,6 +1447,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1302,6 +1503,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";

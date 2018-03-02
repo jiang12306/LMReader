@@ -23,9 +23,9 @@
 
 @implementation LMBookShelfTableViewCell
 
-static CGFloat deleteWidth = 50;
-static CGFloat upsideWidth = 50;
-static CGFloat slideSpace = 50;//滑动距离 显示/隐藏 置顶 删除 按钮
+static CGFloat deleteWidth = 70;
+static CGFloat upsideWidth = 70;
+static CGFloat slideSpace = 70;//滑动距离 显示/隐藏 置顶 删除 按钮
 static CGFloat spaceX = 10;
 
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
@@ -54,13 +54,16 @@ static CGFloat spaceX = 10;
         self.upsideBtn.backgroundColor = [UIColor grayColor];
         [self.upsideBtn addTarget:self action:@selector(clickedUpsiceButton:) forControlEvents:UIControlEventTouchUpInside];
         self.upsideBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
-        [self.upsideBtn setTitle:@"置顶" forState:UIControlStateNormal];
+        self.upsideBtn.titleLabel.font = [UIFont systemFontOfSize:16];
+//        [self.upsideBtn setTitle:@"置顶" forState:UIControlStateNormal];
         [self.contentView insertSubview:self.upsideBtn belowSubview:self.cellView];
     }
     if (!self.deleteBtn) {
         self.deleteBtn = [[UIButton alloc]initWithFrame:CGRectMake(screenRect.size.width, 0, deleteWidth, self.frame.size.height)];
         self.deleteBtn.backgroundColor = [UIColor colorWithRed:1 green:51/255.f blue:42/255.f alpha:1];
         [self.deleteBtn addTarget:self action:@selector(clickedDeleteButton:) forControlEvents:UIControlEventTouchUpInside];
+        self.deleteBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+        self.deleteBtn.titleLabel.font = [UIFont systemFontOfSize:16];
         [self.deleteBtn setTitle:@"删除" forState:UIControlStateNormal];
         [self.contentView insertSubview:self.deleteBtn belowSubview:self.upsideBtn];
     }
@@ -186,7 +189,7 @@ static CGFloat spaceX = 10;
 }
 
 -(void)setupContentUserBook:(UserBook* )userBook {
-    CGRect screenRect = [UIScreen mainScreen].bounds;
+//    CGRect screenRect = [UIScreen mainScreen].bounds;
     
     Book* book = userBook.book;
     UInt32 isTop = userBook.isTop;
@@ -205,7 +208,7 @@ static CGFloat spaceX = 10;
     self.nameLab.frame = CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + spaceX, self.coverIV.frame.origin.y, nameSize.width, nameFrame.size.height);
     
     NSString* updateStr = [NSString stringWithFormat:@"%llu", book.lastChapter.updatedAt];
-    NSLog(@"updateStr = %@", updateStr);
+    
     
     NSString* str = [LMTool convertTimeStampToTime:book.lastChapter.updatedAt];
     self.updateLab.text = str;

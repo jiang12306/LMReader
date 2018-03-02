@@ -35,6 +35,7 @@
         //表头底下不算面积
         self.automaticallyAdjustsScrollViewInsets = YES;
     }
+    self.navigationController.interactivePopGestureRecognizer.delegate = nil;
     
     self.contentLabel = [[UILabel alloc]initWithFrame:contentRect];
 //    self.contentLabel.backgroundColor = [UIColor greenColor];
