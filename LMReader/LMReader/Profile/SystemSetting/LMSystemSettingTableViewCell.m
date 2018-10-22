@@ -43,8 +43,6 @@
 }
 
 -(void)clickedSwitch:(UISwitch* )sender {
-    NSLog(@"------------%d", sender.isOn);
-    
     if (self.delegate != nil && [self.delegate respondsToSelector:@selector(didClickSwitch:systemSettingCell:)]) {
         [self.delegate didClickSwitch:sender.isOn systemSettingCell:self];
     }

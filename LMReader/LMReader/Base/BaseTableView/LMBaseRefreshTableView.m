@@ -7,6 +7,7 @@
 //
 
 #import "LMBaseRefreshTableView.h"
+#import "LMTool.h"
 
 @implementation LMBaseRefreshTableView
 
@@ -38,6 +39,10 @@
     }];
     header.lastUpdatedTimeLabel.hidden = YES;
     self.mj_header = header;
+    
+//    self.mj_header.hidden = YES;
+    //KVO 正常情况下隐藏header
+//    [self addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
 }
 
 //上拉加载
@@ -91,6 +96,35 @@
 //取消 禁止 上拉加载
 -(void)cancelNoMoreData {
     [self setupFooterView];
+}
+
+
+-(void)hideMJRefreshHeader {
+    self.mj_header.hidden = YES;
+}
+-(void)showMJRefreshHeader {
+    self.mj_header.hidden = NO;
+}
+
+//KVO 正常情况下隐藏header  下拉时显示
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if (object == self && [keyPath isEqualToString:@"contentOffset"]) {
+        CGFloat offsetY = self.contentOffset.y;
+        CGFloat mj_OffsetY = -64;
+        if ([LMTool isBangsScreen]) {
+            mj_OffsetY = -88;
+        }
+//        NSLog(@"++++++offsetY = %f, mj_OffsetY = %f++++++", offsetY, mj_OffsetY);
+        if (offsetY < mj_OffsetY) {
+            [self showMJRefreshHeader];
+        }else {
+            [self hideMJRefreshHeader];
+        }
+    }
+}
+
+-(void)dealloc {
+//    [self removeObserver:self forKeyPath:@"contentOffset" context:nil];
 }
 
 

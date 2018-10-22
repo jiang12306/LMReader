@@ -11,5 +11,8 @@
 @interface LMRangeDetailViewController : LMBaseViewController
 
 @property (nonatomic, assign) UInt32 rangeId;
+@property (nonatomic, copy) NSString* titleStr;
+
+@property (nonatomic, strong) NSMutableArray* dataArray;
 
 @end

@@ -12,11 +12,14 @@
 #import "LMDatabaseTool.h"
 #import "AppDelegate.h"
 #import <CommonCrypto/CommonCrypto.h>
+#import "TFHpple.h"
+#import <AdSupport/AdSupport.h>
 
 @implementation LMTool
 
 static NSString* launchCount = @"launchCount";
 static NSString* currentUserId = @"currentUserId";
+static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件夹
 
 //是否第一次launch
 +(BOOL)isFirstLaunch {
@@ -61,35 +64,6 @@ static NSString* currentUserId = @"currentUserId";
     [defaults synchronize];
 }
 
-//初始化第一次启动用户数据
-+(void)initFirstLaunchData {
-    //创建用户文件夹
-    NSFileManager* fileManager = [NSFileManager defaultManager];
-    NSString* userFilePath = [LMTool getUserFilePath];
-    
-    //阅读器界面 配置 初始化
-    NSString* plistPath = [userFilePath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
-    if (![fileManager fileExistsAtPath:plistPath]) {
-        NSMutableDictionary* configDic = [NSMutableDictionary dictionary];
-        [configDic setObject:@1 forKey:@"readerModelDay"];
-        [configDic setObject:@18 forKey:@"readerFont"];
-        [configDic setObject:@"目录" forKey:@"readerCatalog"];
-        [configDic setObject:@"下载" forKey:@"readerDownload"];
-        [configDic setObject:@"分享" forKey:@"readerShare"];
-        [configDic writeToFile:plistPath atomically:YES];
-    }
-    
-    
-    
-    //创建 表
-    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-    [tool createAllFirstLaunchTable];
-    
-    
-    
-    [LMNetworkTool sharedNetworkTool];
-}
-
 //获取用户文件夹目录
 +(NSString* )getUserFilePath {
     AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
@@ -102,39 +76,585 @@ static NSString* currentUserId = @"currentUserId";
     if (![fileManager fileExistsAtPath:userFilePath isDirectory:&isDir]) {
         [fileManager createDirectoryAtPath:userFilePath withIntermediateDirectories:YES attributes:nil error:nil];
     }
+    
+    NSString* bookRecordPath = [documentPath stringByAppendingPathComponent:bookRecord];//书本记录 文件夹
+    BOOL isBookDir;
+    if (![fileManager fileExistsAtPath:bookRecordPath isDirectory:&isBookDir]) {//不存在文件夹 创建
+        [fileManager createDirectoryAtPath:bookRecordPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
     return userFilePath;
 }
 
-//获取 阅读界面 配置
-+(void)getReaderConfig:(void (^) (CGFloat fontSize, NSInteger modelInteger))block {
-    NSString* userFilePath = [LMTool getUserFilePath];
-    NSString* plistPath = [userFilePath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
-    NSDictionary* configDic = [NSDictionary dictionaryWithContentsOfFile:plistPath];
-    CGFloat fontSize = [[configDic objectForKey:@"readerFont"] floatValue];
-    NSInteger modelInteger = [[configDic objectForKey:@"readerModelDay"] integerValue];
-    block(fontSize, modelInteger);
+//获取用户图书目录
++(NSString* )getBookRecordPath {
+    NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentPath = [pathsArr objectAtIndex:0];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    
+    NSString* bookRecordPath = [documentPath stringByAppendingPathComponent:bookRecord];//书本记录 文件夹
+    BOOL isBookDir;
+    if (![fileManager fileExistsAtPath:bookRecordPath isDirectory:&isBookDir]) {//不存在文件夹 创建
+        [fileManager createDirectoryAtPath:bookRecordPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    return bookRecordPath;
 }
 
-//修改阅读器 配置
-+(void)changeReaderConfigWithReaderModelDay:(BOOL )day fontSize:(CGFloat )fontSize {
-    NSNumber* modelNum = @0;
-    if (day) {
-        modelNum = @1;
+//初始化第一次启动用户数据
++(void)initFirstLaunchData {
+    //创建用户文件夹
+    [LMTool getUserFilePath];
+    
+    //创建图书文件夹
+    [LMTool getBookRecordPath];
+    
+    //配置 初始化
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* modelDayStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerModelDay"];
+    NSString* fontStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerFont"];
+    NSNumber* fontNum = [userDefaults objectForKey:fontStr];
+    if (fontNum != nil && ![fontNum isKindOfClass:[NSNull class]] && fontNum.integerValue > 0) {
+        [userDefaults removeObjectForKey:modelDayStr];//阅读界面第二版：删除夜间模式，改成不同背景颜色选择
+        [userDefaults synchronize];
+    }else {
+        //阅读界面 默认设置
+        [userDefaults setObject:@16 forKey:fontStr];
+        
+        //系统设置 默认设置
+        NSString* alertStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"updateAlert"];
+        NSString* downloadStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"autoDownload"];
+        NSString* loadNextStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"autoLoadNext"];
+        [userDefaults setObject:@0 forKey:alertStr];
+        [userDefaults setObject:@0 forKey:downloadStr];
+        [userDefaults setObject:@0 forKey:loadNextStr];
+        
+        [userDefaults synchronize];
     }
+    //阅读界面第二版新增设置
+    NSString* brightStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerBright"];
+    NSString* readBgStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerBackground"];
+    NSString* lineSpaceStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerLineSpace"];
+    NSNumber* readBgNum = [userDefaults objectForKey:readBgStr];
+    if (readBgNum != nil && ![readBgNum isKindOfClass:[NSNull class]] && readBgNum.integerValue > 0) {
+        
+    }else {
+        CGFloat brightFloat = [UIScreen mainScreen].brightness;
+        NSNumber* brightNum = [NSNumber numberWithFloat:brightFloat];
+        [userDefaults setObject:brightNum forKey:brightStr];
+        [userDefaults setObject:@1 forKey:readBgStr];
+        [userDefaults setObject:@1 forKey:lineSpaceStr];
+        [userDefaults synchronize];
+    }
+    
+    
+    
+    
+    
+    
+    //创建 表
+    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+    [tool createAllFirstLaunchTable];
+    
+    
+    
+    [LMNetworkTool sharedNetworkTool];
+}
+
+//获取 阅读界面 配置
++(void)getReaderConfig:(void (^) (CGFloat brightness, CGFloat fontSize, NSInteger bgInteger, CGFloat lineSpace, NSInteger lpIndex))block {
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* brightStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerBright"];
+    NSString* fontStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerFont"];
+    NSString* bgStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerBackground"];
+    NSString* lineSpaceStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerLineSpace"];
+    NSNumber* brightNum = [userDefaults objectForKey:brightStr];
+    NSNumber* fontNum = [userDefaults objectForKey:fontStr];
+    NSNumber* bgNum = [userDefaults objectForKey:bgStr];
+    NSNumber* lineSpaceNum = [userDefaults objectForKey:lineSpaceStr];
+    
+    CGFloat brightFloat = brightNum.floatValue;
+    CGFloat fontSize = fontNum.floatValue;
+    NSInteger bgInt = bgNum.integerValue;
+    //适配新版行间距
+    CGFloat linsSpaceFloat = lineSpaceNum.floatValue;
+    UIFont* font = [UIFont systemFontOfSize:fontSize];
+    NSInteger lineSpaceInt = lineSpaceNum.integerValue;
+    if (lineSpaceInt == 1) {
+        linsSpaceFloat = font.lineHeight / 2;
+    }else if (lineSpaceInt == 2) {
+        linsSpaceFloat = font.lineHeight * 2 / 3;
+    }else if (lineSpaceInt == 3) {
+        linsSpaceFloat = font.lineHeight * 6 / 7;
+    }else {
+        linsSpaceFloat = font.lineHeight / 2;
+        lineSpaceInt = 1;
+    }
+    block(brightFloat, fontSize, bgInt, linsSpaceFloat, lineSpaceInt);
+}
+
+//修改阅读器 配置 亮度
++(void)changeReaderConfigWithBrightness:(CGFloat )brightness {
+    NSNumber* brightNum = [NSNumber numberWithFloat:brightness];
+    
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* brightStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerBright"];
+    [userDefaults setObject:brightNum forKey:brightStr];
+    [userDefaults synchronize];
+}
+
+//修改阅读器 配置 字号
++(void)changeReaderConfigWithFontSize:(CGFloat )fontSize {
     NSNumber* fontNum = @16;
     if (fontSize) {
         fontNum = [NSNumber numberWithFloat:fontSize];
     }
-    NSString* userFilePath = [LMTool getUserFilePath];
-    NSString* plistPath = [userFilePath stringByAppendingPathComponent:@"LMReaderConfig.plist"];
-    NSMutableDictionary* configDic = [NSMutableDictionary dictionaryWithContentsOfFile:plistPath];
-    [configDic setObject:modelNum forKey:@"readerModelDay"];
-    [configDic setObject:fontNum forKey:@"readerFont"];
-    
-    [configDic writeToFile:plistPath atomically:YES];
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fontStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerFont"];
+    [userDefaults setObject:fontNum forKey:fontStr];
+    [userDefaults synchronize];
 }
 
-//
+//修改阅读器 配置 背景
++(void)changeReaderConfigWithBackgroundInteger:(CGFloat )bgInteger {
+    NSNumber* bgNum = [NSNumber numberWithInteger:bgInteger];
+    
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* bgStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerBackground"];
+    [userDefaults setObject:bgNum forKey:bgStr];
+    [userDefaults synchronize];
+}
+
+//修改阅读器 配置 行间距
++(void)changeReaderConfigWithLineSpace:(CGFloat )lineSpace lineSpaceIndex:(NSInteger)lpIndex {
+    NSNumber* lineSpaceNum = [NSNumber numberWithFloat:lineSpace];
+    if (lpIndex) {
+        lineSpaceNum = [NSNumber numberWithInteger:lpIndex];
+    }
+    
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* lineSpaceStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"readerLineSpace"];
+    [userDefaults setObject:lineSpaceNum forKey:lineSpaceStr];
+    [userDefaults synchronize];
+}
+
+//获取 系统设置 配置 自动加载下一章节
++(BOOL )getSystemAutoLoadNextChapterConfig {
+    BOOL loadNextBool = NO;
+    
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* loadNextStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"autoLoadNext"];
+    NSInteger loadNextInt = [[userDefaults objectForKey:loadNextStr] integerValue];
+    if (loadNextInt > 0) {
+        loadNextBool = YES;
+    }
+    return loadNextBool;
+}
+
+//获取 系统设置 配置
++(void)getSystemSettingConfig:(void (^) (BOOL alert, BOOL download, BOOL loadNext))block {
+    BOOL alertBool = NO;
+    BOOL downloadBool = NO;
+    BOOL loadNextBool = NO;
+    
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* alertStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"updateAlert"];
+    NSString* downloadStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"autoDownload"];
+    NSString* loadNextStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"autoLoadNext"];
+    
+    NSInteger alertInt = [[userDefaults objectForKey:alertStr] integerValue];
+    if (alertInt > 0) {
+        alertBool = YES;
+    }
+    NSInteger downloadInt = [[userDefaults objectForKey:downloadStr] integerValue];
+    if (downloadInt > 0) {
+        downloadBool = YES;
+    }
+    NSInteger loadNextInt = [[userDefaults objectForKey:loadNextStr] integerValue];
+    if (loadNextInt > 0) {
+        loadNextBool = YES;
+    }
+    block(alertBool, downloadBool, loadNextBool);
+}
+
+//更改 系统设置 配置
++(void)changeSystemSettingWithAlert:(BOOL )alert download:(BOOL )download loadNext:(BOOL )loadNext {
+    NSNumber* alertNum = @0;
+    if (alert) {
+        alertNum = @1;
+    }
+    NSNumber* downloadNum = @0;
+    if (download) {
+        downloadNum = @1;
+    }
+    NSNumber* loadNextNum = @0;
+    if (loadNext) {
+        loadNextNum = @1;
+    }
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    
+    NSString* alertStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"updateAlert"];
+    NSString* downloadStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"autoDownload"];
+    NSString* loadNextStr = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"autoLoadNext"];
+    
+    [userDefaults setObject:alertNum forKey:alertStr];
+    [userDefaults setObject:downloadNum forKey:downloadStr];
+    [userDefaults setObject:loadNextNum forKey:loadNextStr];
+    [userDefaults synchronize];
+}
+
+//设置是否允许推送
++(void)setupUserNotificatioinState:(BOOL )isAllowed {
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* notifyKey = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"notificationState"];
+    [userDefaults setBool:isAllowed forKey:notifyKey];
+    [userDefaults synchronize];
+}
+
+//获取是否允许推送
++(BOOL )getUserNotificatioinState {
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* notifyKey = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"notificationState"];
+    return [userDefaults boolForKey:notifyKey];
+}
+
+//保存txt
++(BOOL )saveBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId bookText:(NSString* )text {
+    BOOL result = NO;
+    NSString* path = [LMTool getBookRecordPath];
+    NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
+    NSString* bookPath = [path stringByAppendingPathComponent:bookIdStr];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir;
+    if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
+        [fileManager createDirectoryAtPath:bookPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.txt", chapterId]];
+    
+    if ([fileManager fileExistsAtPath:textPath]) {
+        [fileManager removeItemAtPath:textPath error:nil];
+    }
+    result = [text writeToFile:textPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    
+    return result;
+}
+
+//删除txt
++(BOOL )deleteBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId {
+    BOOL result = NO;
+    NSString* path = [LMTool getBookRecordPath];
+    NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
+    NSString* bookPath = [path stringByAppendingPathComponent:bookIdStr];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir;
+    if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
+        return result;
+    }
+    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.txt", chapterId]];
+    
+    if ([fileManager fileExistsAtPath:textPath]) {
+        result = [fileManager removeItemAtPath:textPath error:nil];
+    }
+    
+    return result;
+}
+
+//删除book
++(BOOL )deleteBookWithBookId:(UInt32 )bookId {
+    BOOL result = NO;
+    NSString* path = [LMTool getBookRecordPath];
+    NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
+    NSString* bookPath = [path stringByAppendingPathComponent:bookIdStr];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir;
+    if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
+        return result;
+    }else {
+        result = [fileManager removeItemAtPath:bookPath error:nil];
+    }
+    
+    return result;
+}
+
+//book目录下的所有书本
++(NSArray* )queryAllBookDirectory {
+    NSString* path = [LMTool getBookRecordPath];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    NSArray* allBookPath = [fileManager contentsOfDirectoryAtPath:path error:nil];
+    return allBookPath;
+}
+
+//是否存在某本书的文件
++(BOOL )isExistBookDirectoryWithBookId:(UInt32 )bookId {
+    BOOL result = NO;
+    NSString* path = [LMTool getBookRecordPath];
+    NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
+    NSString* bookPath = [path stringByAppendingPathComponent:bookIdStr];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir = NO;
+    if ([fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
+        if (isDir) {
+            return YES;
+        }
+    }
+    return result;
+}
+
+//获取书本所占内存大小 单位：MB
++(float )getBookFileSizeWithBookId:(UInt32 )bookId {
+    NSString* path = [LMTool getBookRecordPath];
+    NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
+    NSString* bookPath = [path stringByAppendingPathComponent:bookIdStr];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir = NO;
+    if ([fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
+        if (isDir) {
+            NSDictionary* dic = [fileManager attributesOfItemAtPath:bookPath error:nil];
+            NSNumber *freeFileSystemSizeInBytes = [dic objectForKey:NSFileSystemFreeSize];
+            long long bookSize = [freeFileSystemSizeInBytes unsignedIntegerValue];
+            
+//            long long bookSize = [[fileManager attributesOfItemAtPath:bookPath error:nil] fileSize];
+            float changeSize = (float )(bookSize / (1024.0 * 1024.0));
+            return changeSize;
+        }
+    }
+    return 0;
+}
+
+//是否存在txt
++(BOOL )isExistBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId {
+    BOOL result = NO;
+    NSString* path = [LMTool getBookRecordPath];
+    NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
+    NSString* bookPath = [path stringByAppendingPathComponent:bookIdStr];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir;
+    if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
+        return result;
+    }
+    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.txt", chapterId]];
+    
+    if ([fileManager fileExistsAtPath:textPath]) {
+        result = YES;
+    }
+    
+    return result;
+}
+
+//取txt
++(NSString* )queryBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId {
+    NSString* path = [LMTool getBookRecordPath];
+    NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
+    NSString* bookPath = [path stringByAppendingPathComponent:bookIdStr];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir;
+    if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
+        return nil;
+    }
+    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.txt", chapterId]];
+    if (![fileManager fileExistsAtPath:textPath]) {
+        return nil;
+    }
+    NSString* str = [NSString stringWithContentsOfFile:textPath encoding:NSUTF8StringEncoding error:nil];
+    
+    return str;
+}
+
+//新解析方式下 保存章节列表  拼上catalogList，用以区别旧解析方式下保存的NSData数据
++(BOOL )archiveNewParseBookCatalogListWithBookId:(UInt32 )bookId catalogList:(NSArray* )catalogList {
+    BOOL result = NO;
+    if (catalogList != nil && ![catalogList isKindOfClass:[NSNull class]] && catalogList.count > 0) {
+        
+    }else {
+        return result;
+    }
+    NSMutableArray* arr = [NSMutableArray array];
+    for (NSInteger i = 0; i < catalogList.count; i ++) {
+        LMReaderBookChapter* chapter = [catalogList objectAtIndex:i];
+        NSString* urlStr = chapter.url;
+        NSString* title = chapter.title;
+        NSInteger chapterId = chapter.chapterId;
+        NSNumber* chapterIdNum = [NSNumber numberWithInteger:chapterId];
+        NSDictionary* dic = [[NSDictionary alloc]initWithObjects:@[urlStr, title, chapterIdNum] forKeys:@[@"url", @"title", @"chapterId"]];
+        [arr addObject:dic];
+    }
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d_catalogList", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    result = [arr writeToFile:filePath atomically:YES];
+    return result;
+}
+
+//新解析方式下 取章节列表
++(NSArray<LMReaderBookChapter* >* )unarchiveNewParseBookCatalogListWithBookId:(UInt32 )bookId {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d_catalogList", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:filePath]) {
+        return nil;
+    }
+    NSMutableArray* arr = [NSMutableArray array];
+    NSArray* catalogList = [[NSArray alloc]initWithContentsOfFile:filePath];
+    for (NSInteger i = 0; i < catalogList.count; i ++) {
+        NSDictionary* dic = [catalogList objectAtIndex:i];
+        LMReaderBookChapter* chapter = [[LMReaderBookChapter alloc]init];
+        chapter.url = [dic objectForKey:@"url"];
+        chapter.title = [dic objectForKey:@"title"];
+        NSNumber* chapterIdNum = [dic objectForKey:@"chapterId"];
+        chapter.chapterId = [chapterIdNum integerValue];
+        [arr addObject:chapter];
+    }
+    return arr;
+}
+
+//删除 图书目录
++(BOOL )deleteArchiveBookNewParseCatalogListWithBookId:(UInt32 )bookId {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d_catalogList", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    
+    BOOL result = NO;
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:filePath]) {
+        result = [fileManager removeItemAtPath:filePath error:nil];
+    }
+    return result;
+}
+
+//归档 保存图书目录
++(BOOL )archiveBookCatalogListWithBookId:(UInt32 )bookId catalogList:(NSData* )catalogList {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    BOOL result = [catalogList writeToFile:filePath atomically:YES];
+    return result;
+}
+
+//反归档 取图书目录
++(NSData* )unArchiveBookCatalogListWithBookId:(UInt32 )bookId {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:filePath]) {
+        return nil;
+    }
+    NSData* data = [[NSData alloc]initWithContentsOfFile:filePath];
+    return data;
+}
+
+//删除 图书目录
++(BOOL )deleteArchiveBookCatalogListWithBookId:(UInt32 )bookId {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    
+    BOOL result = NO;
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:filePath]) {
+        result = [fileManager removeItemAtPath:filePath error:nil];
+    }
+    return result;
+}
+
+//归档 保存图书源列表最新章节
++(BOOL )archiveBookSourceWithBookId:(UInt32 )bookId sourceDic:(NSDictionary* )sourceDic {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d_sourceDic", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    BOOL result = [sourceDic writeToFile:filePath atomically:YES];
+    return result;
+}
+
+//反归档 取图书源列表最新章节
++(NSDictionary* )unArchiveBookSourceDicWithBookId:(UInt32 )bookId {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d_sourceDic", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:filePath]) {
+        return nil;
+    }
+    NSDictionary* dic = [[NSDictionary alloc]initWithContentsOfFile:filePath];
+    return dic;
+}
+
+//删除 图书源列表最新章节
++(BOOL )deleteArchiveBookSourceDicWithBookId:(UInt32 )bookId {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%d_sourceDic", appDelegate.userId, bookId];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    
+    BOOL result = NO;
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:filePath]) {
+        result = [fileManager removeItemAtPath:filePath error:nil];
+    }
+    return result;
+}
+
+//归档 精选首页
++(BOOL )archiveChoiceData:(NSData* )choiceData {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"choiceData"];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    
+    BOOL result = [choiceData writeToFile:filePath atomically:YES];
+    return result;
+}
+
+//反归档 精选首页
++(NSData* )unArchiveChoiceData {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"choiceData"];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:filePath]) {
+        return nil;
+    }
+    NSData* data = [[NSData alloc]initWithContentsOfFile:filePath];
+    return data;
+}
+
+//删除 精选首页
++(BOOL )deleteChoiceData {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"choiceData"];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    
+    BOOL result = NO;
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:filePath]) {
+        result = [fileManager removeItemAtPath:filePath error:nil];
+    }
+    return result;
+}
+
+//判断设备是否绑定
 +(BOOL )deviceIsBinding {
     NSString* uuidStr = [LMTool uuid];
     uuidStr = [uuidStr stringByReplacingOccurrencesOfString:@"-" withString:@""];
@@ -158,6 +678,37 @@ static NSString* currentUserId = @"currentUserId";
         uuidStr = [uuidStr stringByReplacingOccurrencesOfString:@"-" withString:@""];
         return uuidStr;
     }
+}
+
+//首次进入app选择性别之后 保存性别
++(void)saveFirstLaunchGenderType:(GenderType )genderType {
+    NSNumber* typeNum = @1;
+    if (genderType == GenderTypeGenderFemale) {
+        typeNum = @2;
+    }
+    NSString* keyStr = [NSString stringWithFormat:@"%@_%@", [self getAppUserId], @"GenderType"];
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:typeNum forKey:keyStr];
+    [userDefaults synchronize];
+}
+
+//删除首次进入app时选择的性别
++(void)deleteFirstLaunchGenderType {
+    NSString* keyStr = [NSString stringWithFormat:@"%@_%@", [self getAppUserId], @"GenderType"];
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults removeObjectForKey:keyStr];
+    [userDefaults synchronize];
+}
+
+//获取首次进入app时选择的性别
++(GenderType )getFirstLaunchGenderType {
+    NSString* keyStr = [NSString stringWithFormat:@"%@_%@", [self getAppUserId], @"GenderType"];
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber* typeNum = [userDefaults objectForKey:keyStr];
+    if (typeNum != nil && ![NSNumber isKindOfClass:[NSNull class]] && typeNum.integerValue == 2) {
+        return GenderTypeGenderFemale;
+    }
+    return GenderTypeGenderMale;
 }
 
 //将设备号与用户绑定
@@ -208,6 +759,20 @@ static NSString* currentUserId = @"currentUserId";
     }
     NSString* birthdayStr = regUser.birthday;
     NSString* localAreaStr = regUser.localArea;
+    UInt32 registerTimeInt = regUser.registerTime;
+    NSNumber* registerTimeNum = [NSNumber numberWithInt:registerTimeInt];
+    NSString* iconStr = regUser.icon;
+    NSString* wxStr = regUser.wx;
+    NSString* qqStr = regUser.qq;
+    RegUserSetPw setpw = regUser.setpw;
+    NSNumber* setpwNum = @0;
+    if (setpw == RegUserSetPwYes) {
+        setpwNum = @1;
+    }
+    NSData* avatorData = regUser.iconB;
+    NSString* nickNameStr = regUser.nickname;
+    NSString* wxNickNameStr = regUser.wxNickname;
+    NSString* qqNickNameStr = regUser.qqNickname;
     
     NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString* documentPath = [pathsArr objectAtIndex:0];
@@ -220,8 +785,35 @@ static NSString* currentUserId = @"currentUserId";
     [dic setObject:genderNum forKey:@"gender"];
     [dic setObject:birthdayStr forKey:@"birthday"];
     [dic setObject:localAreaStr forKey:@"localArea"];
+    [dic setObject:registerTimeNum forKey:@"registerTime"];
+    [dic setObject:iconStr forKey:@"icon"];
+    [dic setObject:wxStr forKey:@"wx"];
+    [dic setObject:qqStr forKey:@"qq"];
+    [dic setObject:setpwNum forKey:@"setpw"];
+    [dic setObject:nickNameStr forKey:@"nickName"];
+    [dic setObject:wxNickNameStr forKey:@"wxNickName"];
+    [dic setObject:qqNickNameStr forKey:@"qqNickName"];
+    [dic setObject:avatorData forKey:@"avator"];
     
+    //
     [dic writeToFile:plistPath atomically:YES];
+}
+
+//删除用户信息
++(BOOL )deleteLoginedRegUser {
+    NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentPath = [pathsArr objectAtIndex:0];
+    NSString* plistPath = [documentPath stringByAppendingPathComponent:@"loginedRegUser.plist"];
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    NSError* error;
+    if ([fileManager fileExistsAtPath:plistPath]) {
+        [fileManager removeItemAtPath:plistPath error:&error];
+    }
+    if (error) {
+        return NO;
+    }
+    return YES;
 }
 
 //获取用户信息
@@ -255,6 +847,19 @@ static NSString* currentUserId = @"currentUserId";
     }
     NSString* birthdayStr = [dic objectForKey:@"birthday"];
     NSString* localAreaStr = [dic objectForKey:@"localArea"];
+    NSNumber* registerTimeNum = [dic objectForKey:@"registerTime"];
+    NSString* iconStr = [dic objectForKey:@"icon"];
+    NSString* wxStr = [dic objectForKey:@"wx"];
+    NSString* qqStr = [dic objectForKey:@"qq"];
+    NSNumber* setpwNum = [dic objectForKey:@"setpw"];
+    RegUserSetPw setPw = RegUserSetPwNo;
+    if (setpwNum.integerValue == 1) {
+        setPw = RegUserSetPwYes;
+    }
+    NSData* avatorData = [dic objectForKey:@"avator"];
+    NSString* nickNameStr = [dic objectForKey:@"nickName"];
+    NSString* wxNickNameStr = [dic objectForKey:@"wxNickName"];
+    NSString* qqNickNameStr = [dic objectForKey:@"qqNickName"];
     
     RegUserBuilder* userBuilder = [RegUser builder];
     [userBuilder setUid:uidStr];
@@ -263,6 +868,15 @@ static NSString* currentUserId = @"currentUserId";
     [userBuilder setGender:type];
     [userBuilder setBirthday:birthdayStr];
     [userBuilder setLocalArea:localAreaStr];
+    [userBuilder setRegisterTime:(UInt32)[registerTimeNum intValue]];
+    [userBuilder setIcon:iconStr];
+    [userBuilder setWx:wxStr];
+    [userBuilder setQq:qqStr];
+    [userBuilder setSetpw:setPw];
+    [userBuilder setNickname:nickNameStr];
+    [userBuilder setWxNickname:wxNickNameStr];
+    [userBuilder setQqNickname:qqNickNameStr];
+    [userBuilder setIconB:avatorData];
     RegUser* regUser = [userBuilder build];
     
     [builder setToken:tokenStr];
@@ -272,22 +886,116 @@ static NSString* currentUserId = @"currentUserId";
     return user;
 }
 
+//存储 启动页 数据
++(BOOL )saveLaunchImageData:(NSData* )launchData {
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    
+    NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentPath = [pathsArr objectAtIndex:0];
+    NSString* launchPath = [documentPath stringByAppendingPathComponent:@"launchData"];
+    if ([fileManager fileExistsAtPath:launchPath]) {
+        [fileManager removeItemAtPath:launchPath error:nil];
+    }
+    BOOL result = [launchData writeToFile:launchPath atomically:YES];
+    return result;
+}
+//删 启动页 数据
++(BOOL )deleteLaunchImageData {
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    
+    NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentPath = [pathsArr objectAtIndex:0];
+    NSString* launchPath = [documentPath stringByAppendingPathComponent:@"launchData"];
+    if ([fileManager fileExistsAtPath:launchPath]) {
+        return [fileManager removeItemAtPath:launchPath error:nil];
+    }
+    return NO;
+}
+//取 启动页 数据
++(NSData* )queryLaunchImageData {
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    
+    NSArray *pathsArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* documentPath = [pathsArr objectAtIndex:0];
+    NSString* launchPath = [documentPath stringByAppendingPathComponent:@"launchData"];
+    if ([fileManager fileExistsAtPath:launchPath]) {
+        NSData* data = [[NSData alloc]initWithContentsOfFile:launchPath];
+        return data;
+    }else {
+        return nil;
+    }
+}
+//存 启动页 上次角标
++(void )saveLastLaunchImageIndex:(NSInteger )index {
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:[NSNumber numberWithInteger:index] forKey:@"launchDataIndex"];
+    [userDefaults synchronize];
+}
+//取 启动页 上次角标
++(NSInteger )queryLastLaunchImageIndex {
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber* num = [userDefaults objectForKey:@"launchDataIndex"];
+    if (num != nil && ![num isKindOfClass:[NSNull class]]) {
+        return num.integerValue;
+    }else {
+        return 0;
+    }
+}
+//删 启动页 上次角标
++(void )deleteLastLaunchImageIndex {
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults removeObjectForKey:@"launchDataIndex"];
+    [userDefaults synchronize];
+}
 
-//iPhone X ?
-+(BOOL )isIPhoneX {
-    CGRect rect = CGRectMake(0, 0, 375, 812);
+//刘海屏 适配navigationBar和tabBar
++(BOOL )isBangsScreen {
+    CGRect rectX = CGRectMake(0, 0, 375, 812);//iPhone X 分辨率1125*2436
+    CGRect rectXs = CGRectMake(0, 0, 375, 812);//iPhone Xs 分辨率1125*2436
+    CGRect rectXsMax = CGRectMake(0, 0, 414, 896);//iPhone Xs Max 分辨率1242*2688
+    CGRect rectXr = CGRectMake(0, 0, 414, 896);//iPhone Xr 分辨率828*1792
     CGRect deviceRect = [UIScreen mainScreen].bounds;
-    return CGRectEqualToRect(deviceRect, rect);
+    BOOL result = NO;
+    if (CGRectEqualToRect(deviceRect, rectX)) {
+        result = YES;
+    }else if (CGRectEqualToRect(deviceRect, rectXs)) {
+        result = YES;
+    }else if (CGRectEqualToRect(deviceRect, rectXsMax)) {
+        result = YES;
+    }else if (CGRectEqualToRect(deviceRect, rectXr)) {
+        result = YES;
+    }
+    return result;
 }
 
 //uuid
 +(NSString* )uuid {
-    return [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+//    ASIdentifierManager* adManager = [ASIdentifierManager sharedManager];
+//    if (adManager.advertisingTrackingEnabled) {
+//
+//    }
+//    NSString *advertisingId = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+    NSString* uuidStr = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    return uuidStr;
+}
+
+//当前APP版本号（1.0.1）
++(NSString* )applicationCurrentVersion {
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *appCurVersion = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
+    return appCurVersion;
 }
 
 //系统版本
 +(NSString* )systemVersion {
-    return [[UIDevice currentDevice] systemVersion];
+    NSString* systemStr = [[UIDevice currentDevice] systemVersion];
+    return systemStr;
+}
+
+//系统版本
++(float )systemVersionFloat {
+    NSString* systemStr = [[UIDevice currentDevice] systemVersion];
+    return systemStr.floatValue;
 }
 
 //设备型号
@@ -351,14 +1059,103 @@ static NSString* currentUserId = @"currentUserId";
 }
 
 
-//将时间戳转换成时间
+//将时间戳转换成字符串
 +(NSString* )convertTimeStampToTime:(UInt64 )timeStamp {
-    NSDateFormatter *stampFormatter = [[NSDateFormatter alloc] init];
-    [stampFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
-    //以 1970/01/01 GMT为基准，然后过了secs秒的时间
-    NSDate *stampDate2 = [NSDate dateWithTimeIntervalSince1970:timeStamp];
-    NSString* dateStr = [stampFormatter stringFromDate:stampDate2];
-    return dateStr;
+    if (timeStamp) {
+        
+    }else {
+        return @"";
+    }
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+    //获取此时时间戳长度
+    NSTimeInterval nowTimeinterval = [[NSDate date] timeIntervalSince1970];
+    int timeInt = nowTimeinterval - timeStamp; //时间差
+    
+    int year = timeInt / (3600 * 24 * 30 *12);
+    int month = timeInt / (3600 * 24 * 30);
+    int day = timeInt / (3600 * 24);
+    int hour = timeInt / 3600;
+    int minute = timeInt / 60;
+    if (year > 0) {
+        return [NSString stringWithFormat:@"%d年前",year];
+    }else if (month > 0) {
+        return [NSString stringWithFormat:@"%d个月前",month];
+    }else if (day > 0) {
+        return [NSString stringWithFormat:@"%d天前",day];
+    }else if (hour > 0) {
+        return [NSString stringWithFormat:@"%d小时前",hour];
+    }else if (minute > 0) {
+        return [NSString stringWithFormat:@"%d分钟前",minute];
+    }else {
+        return [NSString stringWithFormat:@"刚刚"];
+    }
+}
+
+//将时间换成字符串
++(NSString* )convertTimeStringToTime:(NSString* )timeStr {
+    if (timeStr != nil && ![timeStr isKindOfClass:[NSNull class]] && timeStr.length > 0) {
+        
+    }else {
+        return @"";
+    }
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+    //获取此时时间戳长度
+    NSTimeInterval nowTimeinterval = [[NSDate date] timeIntervalSince1970];
+    NSDate* date = [dateFormatter dateFromString:timeStr];
+    NSTimeInterval timeStamp = [date timeIntervalSince1970];
+    int timeInt = nowTimeinterval - timeStamp; //时间差
+    
+    int year = timeInt / (3600 * 24 * 30 *12);
+    int month = timeInt / (3600 * 24 * 30);
+    int day = timeInt / (3600 * 24);
+    int hour = timeInt / 3600;
+    int minute = timeInt / 60;
+    if (year > 0) {
+        return [NSString stringWithFormat:@"%d年前",year];
+    }else if (month > 0) {
+        return [NSString stringWithFormat:@"%d个月前",month];
+    }else if (day > 0) {
+        return [NSString stringWithFormat:@"%d天前",day];
+    }else if (hour > 0) {
+        return [NSString stringWithFormat:@"%d小时前",hour];
+    }else if (minute > 0) {
+        return [NSString stringWithFormat:@"%d分钟前",minute];
+    }else {
+        return [NSString stringWithFormat:@"刚刚"];
+    }
+}
+
+//将时间转换成时间字符串
++(NSString* )convertDateToTime:(NSDate* )date {
+    long dateStamp = [date timeIntervalSince1970];
+    return [LMTool convertTimeStampToTime:dateStamp];
+}
+
+//将日期转换成小时
++(NSInteger )convertDateToHourTime:(NSDate* )date {
+    long dateStamp = [date timeIntervalSince1970];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+    //获取此时时间戳长度
+    NSTimeInterval nowTimeinterval = [[NSDate date] timeIntervalSince1970];
+    int timeInt = nowTimeinterval - dateStamp; //时间差
+    
+    NSInteger hour = timeInt / 3600;
+    return hour;
+}
+
+//将日期转换成天
++(NSInteger )convertTimeStampToDayTime:(NSInteger )timeStamp {
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+    //获取此时时间戳长度
+    NSTimeInterval nowTimeinterval = [[NSDate date] timeIntervalSince1970];
+    int timeInt = nowTimeinterval - timeStamp; //时间差
+    
+    NSInteger day = timeInt / (3600 * 24);
+    return day;
 }
 
 //MD5加密, 32位 小写
@@ -376,5 +1173,225 @@ static NSString* currentUserId = @"currentUserId";
     return digest;
 }
 
+//10位时间戳，到秒
++(UInt32 )get10NumbersTimeStamp {
+    NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
+    NSTimeInterval a=[dat timeIntervalSince1970];
+    NSString *timeString = [NSString stringWithFormat:@"%.0f", a];
+    return (UInt32 )[timeString integerValue];
+}
+
+//url编码
++(NSString* )encodeURLString:(NSString* )urlStr {
+    NSString *encodedString = [urlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    return encodedString;
+}
+
+//HTML解析，将后台返回的解析数组转成node字符串
++(NSString* )convertToHTMLStringWithListArray:(NSArray* )listArray {
+    NSString* searchStr = @"";
+    for (NSString* subList in listArray) {
+        NSString* tempSubList = [subList stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        NSArray* tempStrArr1 = [tempSubList componentsSeparatedByString:@" "];
+        for (NSString* tempSubStr1 in tempStrArr1) {
+            NSRange dotRange = [tempSubStr1 rangeOfString:@"."];
+            if (dotRange.location != NSNotFound) {
+                NSArray* dotStrArr = [tempSubStr1 componentsSeparatedByString:@"."];
+                if (dotStrArr.count >= 2) {//多个属性值时
+                    NSString* firstStr = [dotStrArr objectAtIndex:0];
+                    NSString* otherStr = [dotStrArr objectAtIndex:1];
+                    for (NSInteger i = 2; i < dotStrArr.count; i ++) {
+                        NSString* subDotStr = [dotStrArr objectAtIndex:i];
+                        otherStr = [otherStr stringByAppendingString:[NSString stringWithFormat:@" %@", subDotStr]];
+                    }
+                    searchStr = [searchStr stringByAppendingString:[NSString stringWithFormat:@"//%@[@class='%@']", firstStr, otherStr]];
+                }else {
+                    NSString* dotBeforeStr = [tempSubStr1 substringToIndex:dotRange.location];
+                    NSString* dotAfterStr = [tempSubStr1 substringFromIndex:dotRange.location + dotRange.length];
+                    searchStr = [searchStr stringByAppendingString:[NSString stringWithFormat:@"//%@[@class='%@']", dotBeforeStr, dotAfterStr]];
+                }
+            }else {
+                NSRange sharpRange = [tempSubStr1 rangeOfString:@"#"];
+                if (sharpRange.location != NSNotFound) {
+                    NSString* sharpBeforeStr = [tempSubStr1 substringToIndex:sharpRange.location];
+                    NSString* sharpAfterStr = [tempSubStr1 substringFromIndex:sharpRange.location + sharpRange.length];
+                    if (sharpBeforeStr == nil || sharpBeforeStr.length == 0) {
+                        sharpBeforeStr = @"div";
+                    }
+                    searchStr = [searchStr stringByAppendingString:[NSString stringWithFormat:@"//%@[@id='%@']", sharpBeforeStr, sharpAfterStr]];
+                }else {
+                    searchStr = [searchStr stringByAppendingString:[NSString stringWithFormat:@"//%@", tempSubStr1]];
+                }
+            }
+        }
+    }
+    return searchStr;
+}
+
+//将br段落符天换成换行符\n
++(NSString* )replaceBrCharacterWithReturnCharacter:(NSString* )originalStr {
+    if (originalStr == nil || [originalStr isKindOfClass:[NSNull class]]) {
+        return @"";
+    }
+//    NSString* resultStr = [originalStr stringByReplacingOccurrencesOfString:@"<br>" withString:@"\n"];
+//    resultStr = [originalStr stringByReplacingOccurrencesOfString:@"<br />" withString:@"\n"];
+    
+    //替换<p>标签
+    NSString* regexStr2 = @"<p>";
+    NSString* replaceStr2 = @"   ";
+    NSRegularExpression* expression2 = [NSRegularExpression regularExpressionWithPattern:regexStr2 options:NSRegularExpressionAnchorsMatchLines | NSRegularExpressionCaseInsensitive error:nil];
+    NSString* resultStr = [expression2 stringByReplacingMatchesInString:originalStr options:NSMatchingReportProgress range:NSMakeRange(0, originalStr.length) withTemplate:replaceStr2];
+    
+    //替换</p>标签
+    NSString* regexStr3 = @"</p>";
+    NSString* replaceStr3 = @"\n";
+    NSRegularExpression* expression3 = [NSRegularExpression regularExpressionWithPattern:regexStr3 options:NSRegularExpressionAnchorsMatchLines | NSRegularExpressionCaseInsensitive error:nil];
+    resultStr = [expression3 stringByReplacingMatchesInString:resultStr options:NSMatchingReportProgress range:NSMakeRange(0, resultStr.length) withTemplate:replaceStr3];
+    
+    //替换<P>标签
+    NSString* regexStr4 = @"<P>";
+    NSString* replaceStr4 = @"\n";
+    NSRegularExpression* expression4 = [NSRegularExpression regularExpressionWithPattern:regexStr4 options:NSRegularExpressionAnchorsMatchLines | NSRegularExpressionCaseInsensitive error:nil];
+    resultStr = [expression4 stringByReplacingMatchesInString:resultStr options:NSMatchingReportProgress range:NSMakeRange(0, resultStr.length) withTemplate:replaceStr4];
+    
+    //替换</P>标签
+    NSString* regexStr5 = @"</P>";
+    NSString* replaceStr5 = @"\n";
+    NSRegularExpression* expression5 = [NSRegularExpression regularExpressionWithPattern:regexStr5 options:NSRegularExpressionAnchorsMatchLines | NSRegularExpressionCaseInsensitive error:nil];
+    resultStr = [expression5 stringByReplacingMatchesInString:resultStr options:NSMatchingReportProgress range:NSMakeRange(0, resultStr.length) withTemplate:replaceStr5];
+    
+    //去掉<br><br/><br /><br >等标签
+    NSString* regexStr1 = @"<br[ ]?[/]?>";
+    NSString* replaceStr1 = @"\n";
+    NSRegularExpression* expression1 = [NSRegularExpression regularExpressionWithPattern:regexStr1 options:NSRegularExpressionAnchorsMatchLines | NSRegularExpressionCaseInsensitive error:nil];
+    resultStr = [expression1 stringByReplacingMatchesInString:resultStr options:NSMatchingReportProgress range:NSMakeRange(0, resultStr.length) withTemplate:replaceStr1];
+    
+    //去掉带<script>相关东西
+    NSString* regexStr = @"<script[^>]*>[\\d\\D]*?</script>";
+    NSString* replaceStr = @"";
+    NSRegularExpression* expression = [NSRegularExpression regularExpressionWithPattern:regexStr options:NSRegularExpressionAnchorsMatchLines | NSRegularExpressionCaseInsensitive error:nil];
+    resultStr = [expression stringByReplacingMatchesInString:resultStr options:NSMatchingReportProgress range:NSMakeRange(0, resultStr.length) withTemplate:replaceStr];
+    return resultStr;
+}
+
+//过滤掉无用文本
++(NSString* )filterUselessStringWithText:(NSString* )originalStr filterArr:(NSArray* )filterArr {
+    if (originalStr == nil || [originalStr isKindOfClass:[NSNull class]]) {
+        return @"";
+    }
+    NSString* resultStr = originalStr;
+    for (NSInteger i = 0; i < filterArr.count; i ++) {
+        id subElement = [filterArr objectAtIndex:i];
+        if ([subElement isKindOfClass:[NSString class]]) {
+            NSString* filterStr = subElement;
+            if (filterStr.length > 0) {
+                NSString* regexStr = filterStr;
+                NSString* replaceStr = @"";
+                NSRegularExpression* expression = [NSRegularExpression regularExpressionWithPattern:regexStr options:NSRegularExpressionAnchorsMatchLines | NSRegularExpressionCaseInsensitive error:nil];
+                resultStr = [expression stringByReplacingMatchesInString:resultStr options:NSMatchingReportProgress range:NSMakeRange(0, resultStr.length) withTemplate:replaceStr];
+            }
+        }
+    }
+    return resultStr;
+}
+
+//替换空格
++(NSString* )replaceSeveralNewLineWithOneNewLineWithText:(NSString* )originalStr {
+    if (originalStr == nil || [originalStr isKindOfClass:[NSNull class]]) {
+        return @"";
+    }
+    NSString* changedStr = [originalStr stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString* regexStr = @"(\\r|\\n){1,}[ ]?";
+    NSString* replaceStr = @"\n";
+    NSRegularExpression* expression = [NSRegularExpression regularExpressionWithPattern:regexStr options:NSRegularExpressionUseUnixLineSeparators error:nil];
+    NSString* resultStr = [expression stringByReplacingMatchesInString:changedStr options:NSMatchingReportCompletion range:NSMakeRange(0, changedStr.length) withTemplate:replaceStr];
+    resultStr = [NSString stringWithFormat:@"    %@", resultStr];
+    return resultStr;
+}
+
+//根据转码（如gbk）转换成utf-8
++(NSStringEncoding )convertEncodingStringWithEncoding:(NSString* )encoding {
+    if (encoding == nil || [encoding isKindOfClass:[NSNull class]]) {
+        return NSUTF8StringEncoding;
+    }else if ([encoding isEqualToString:@"utf-8"]) {
+        return NSUTF8StringEncoding;
+    }else if ([encoding isEqualToString:@"gbk"]) {
+        return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+    }else if ([encoding isEqualToString:@"GB2312"]) {
+        return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+    }
+    return NSUTF8StringEncoding;
+}
+
+//根据书籍hostUrl以及章节briefStr组合得到章节的具体章节url
++(NSString* )getChapterUrlStrWithHostUrlStr:(NSString* )urlStr briefStr:(NSString* )briefStr {
+    NSString* bookChapterUrlStr = nil;
+    NSString *regex =@"[a-zA-z]+://[^\\s]*";
+    NSPredicate *urlTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
+    if ([urlTest evaluateWithObject:briefStr]) {
+        bookChapterUrlStr = briefStr;
+    }else {
+        if ([urlStr rangeOfString:@"/index.htm"].location != NSNotFound) {
+            if ([urlStr rangeOfString:@"/index.html"].location != NSNotFound) {
+                NSString* subUrlStr = [urlStr stringByReplacingOccurrencesOfString:@"/index.html" withString:@""];
+                if ([briefStr hasPrefix:@"/"]) {
+                    bookChapterUrlStr = [NSString stringWithFormat:@"%@%@", subUrlStr,briefStr];
+                }else {
+                    bookChapterUrlStr = [NSString stringWithFormat:@"%@/%@", subUrlStr, briefStr];
+                }
+            }else {
+                NSString* subUrlStr = [urlStr stringByReplacingOccurrencesOfString:@"/index.htm" withString:@""];
+                if ([briefStr hasPrefix:@"/"]) {
+                    bookChapterUrlStr = [NSString stringWithFormat:@"%@%@", subUrlStr,briefStr];
+                }else {
+                    bookChapterUrlStr = [NSString stringWithFormat:@"%@/%@", subUrlStr, briefStr];
+                }
+            }
+        }else {
+            NSURL* bookUrl = [NSURL URLWithString:briefStr relativeToURL:[NSURL URLWithString:urlStr]];
+            bookChapterUrlStr = bookUrl.absoluteString;
+        }
+    }
+    return bookChapterUrlStr;
+}
+
+//保存 微信登录、分享是否打开
++(void)saveWeChatLoginOpen:(BOOL)open {
+    NSString* keyStr = [NSString stringWithFormat:@"weChatLoginOpen%@", [LMTool applicationCurrentVersion]];
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:open forKey:keyStr];
+    [userDefaults synchronize];
+}
+//获取 微信登录、分享是否打开
++(BOOL )getWeChatLoginOpen {
+    NSString* keyStr = [NSString stringWithFormat:@"weChatLoginOpen%@", [LMTool applicationCurrentVersion]];
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    return [userDefaults boolForKey:keyStr];
+}
+
+//归档 广告开关
++(BOOL )archiveAdvertisementSwitchData:(NSData* )adData {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"adSwitch"];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    
+    BOOL result = [adData writeToFile:filePath atomically:YES];
+    return result;
+}
+
+//反归档 广告开关
++(NSData* )unArchiveAdvertisementSwitchData {
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* fileName = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"adSwitch"];
+    NSString* filePath = [LMTool getUserFilePath];
+    filePath = [filePath stringByAppendingPathComponent:fileName];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:filePath]) {
+        return nil;
+    }
+    NSData* data = [[NSData alloc]initWithContentsOfFile:filePath];
+    return data;
+}
 
 @end

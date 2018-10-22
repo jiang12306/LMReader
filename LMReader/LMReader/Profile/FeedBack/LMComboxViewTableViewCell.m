@@ -15,6 +15,9 @@
     if (self) {
         self.selectionStyle = UITableViewCellSelectionStyleNone;
         
+        self.layer.borderWidth = 1;
+        self.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
+        
         [self setupContentLab];
     }
     return self;
@@ -37,7 +40,7 @@
 
 -(void)setClicked:(BOOL)clicked {
     if (clicked) {
-        self.backgroundColor = [UIColor grayColor];
+        self.backgroundColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1];
     }else {
         self.backgroundColor = [UIColor whiteColor];
     }

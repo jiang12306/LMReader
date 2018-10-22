@@ -10,6 +10,7 @@
 #import "LMBaseBookTableViewCell.h"
 #import "LMBookDetailViewController.h"
 #import "LMBaseRefreshTableView.h"
+#import "LMTool.h"
 
 @interface LMInterestOrEndViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate>
 
@@ -24,23 +25,29 @@
 @implementation LMInterestOrEndViewController
 
 static NSString* cellIdentifier = @"cellIdentifier";
-static CGFloat cellHeight = 95;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (@available(ios 11.0, *)) {
-        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }else {
-        //表头底下不算面积
-        self.automaticallyAdjustsScrollViewInsets = YES;
-    }
     
     self.title = @"兴趣推荐";
     if (self.type == LMEndType) {
-        self.title = @"完结经典";
+        self.title = @"经典完结";
+    }else if (self.type == LMHotBookType) {
+        self.title = @"热门新书";
+    }else if (self.type == LMPublishBookType) {
+        self.title = @"出版图书";
+    }else if (self.type == LMEditorRecommandType) {
+        self.title = @"编辑推荐";
     }
     
-    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStylePlain];
+    CGFloat naviHeight = 20 + 44;
+    if ([LMTool isBangsScreen]) {
+        naviHeight = 44 + 44;
+    }
+    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) style:UITableViewStylePlain];
+    if (@available(ios 11.0, *)) {
+        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
+    }
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.refreshDelegate = self;
@@ -54,6 +61,16 @@ static CGFloat cellHeight = 95;
     self.dataArray = [NSMutableArray array];
     
     [self loadInterestOrEndDataWithPage:self.page isRefreshingOrLoadMoreData:NO];
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
+    return vi;
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
+    return vi;
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -73,7 +90,7 @@ static CGFloat cellHeight = 95;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return cellHeight;
+    return baseBookCellHeight;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -95,70 +112,99 @@ static CGFloat cellHeight = 95;
     Book* book = [self.dataArray objectAtIndex:indexPath.row];
     
     LMBookDetailViewController* bookDetailVC = [[LMBookDetailViewController alloc]init];
-    bookDetailVC.book = book;
+    bookDetailVC.bookId = book.bookId;
     [self.navigationController pushViewController:bookDetailVC animated:YES];
 }
 
 //加载数据
 -(void)loadInterestOrEndDataWithPage:(NSInteger )page isRefreshingOrLoadMoreData:(BOOL )loadMore {
+    
     [self showNetworkLoadingView];
+    
     self.isRefreshing = YES;
     
     TopicHomeReqBuilder* builder = [TopicHomeReq builder];
     if (self.type == LMInterestType) {
         [builder setType:1];
-    }else {
+    }else if (self.type == LMEndType) {
         [builder setType:2];
+    }else if (self.type == LMHotBookType) {
+        [builder setType:3];
+    }else if (self.type == LMPublishBookType) {
+        [builder setType:4];
+    }else if (self.type == LMEditorRecommandType) {
+        [builder setType:5];
     }
     [builder setPage:(UInt32)page];
     TopicHomeReq* req = [builder build];
     NSData* reqData = [req data];
     
+    __weak LMInterestOrEndViewController* weakSelf = self;
+    
     LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
     [tool postWithCmd:10 ReqData:reqData successBlock:^(NSData *successData) {
-        FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
-        if (apiRes.cmd == 10) {
-            ErrCode err = apiRes.err;
-            if (err == ErrCodeErrNone) {
-                TopicHomeRes* res = [TopicHomeRes parseFromData:apiRes.body];
-                NSInteger currentSize = res.psize;
-                
-                NSArray* arr1;
-                if (self.type == LMInterestType) {
-                    arr1 = res.interestBooks;
-                }else {
-                    arr1 = res.finishBooks;
+        @try {
+            FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+            if (apiRes.cmd == 10) {
+                ErrCode err = apiRes.err;
+                if (err == ErrCodeErrNone) {
+                    TopicHomeRes* res = [TopicHomeRes parseFromData:apiRes.body];
+                    
+                    NSArray* arr1;
+                    if (weakSelf.type == LMInterestType) {
+                        arr1 = res.interestBooks;
+                    }else if (weakSelf.type == LMEndType) {
+                        arr1 = res.finishBooks;
+                    }else if (weakSelf.type == LMHotBookType) {
+                        arr1 = res.hotnewBooks;
+                    }else if (weakSelf.type == LMPublishBookType) {
+                        arr1 = res.publicedBooks;
+                    }else if (weakSelf.type == LMEditorRecommandType) {
+                        arr1 = res.editorBooks;
+                    }
+                    if (weakSelf.page == 0) {//第一页
+                        [weakSelf.dataArray removeAllObjects];
+                        if (arr1.count == 0) {
+                            [weakSelf showMBProgressHUDWithText:@"空空如也"];
+                        }
+                    }
+                    if (arr1.count > 0) {
+                        [weakSelf hideEmptyLabel];
+                        
+                        [weakSelf.dataArray addObjectsFromArray:arr1];
+                    }else {//最后一页
+                        weakSelf.isEnd = YES;
+                        [weakSelf.tableView setupNoMoreData];
+                    }
+                    if (weakSelf.dataArray.count == 0) {
+                        [weakSelf showEmptyLabelWithText:nil];
+                    }
+                    weakSelf.page ++;
+                    [weakSelf.tableView reloadData];
                 }
-                if (self.page == 0) {//第一页
-                    [self.dataArray removeAllObjects];
-                }
-                if (arr1.count > 0) {
-                    [self.dataArray addObjectsFromArray:arr1];
-                }
-                
-                if (arr1.count < currentSize) {//最后一页
-                    self.isEnd = YES;
-                    [self.tableView setupNoMoreData];
-                }
-                self.page ++;
-                [self.tableView reloadData];
             }
+            
+        } @catch (NSException *exception) {
+            [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+        } @finally {
+            
         }
-        self.isRefreshing = NO;
-        [self hideNetworkLoadingView];
+        weakSelf.isRefreshing = NO;
+        [weakSelf hideNetworkLoadingView];
         if (loadMore) {
-            [self.tableView stopLoadMoreData];
+            [weakSelf.tableView stopLoadMoreData];
         }else {
-            [self.tableView stopRefresh];
+            [weakSelf.tableView stopRefresh];
         }
     } failureBlock:^(NSError *failureError) {
-        self.isRefreshing = NO;
-        [self hideNetworkLoadingView];
+        weakSelf.isRefreshing = NO;
+        [weakSelf hideNetworkLoadingView];
         if (loadMore) {
-            [self.tableView stopLoadMoreData];
+            [weakSelf.tableView stopLoadMoreData];
         }else {
-            [self.tableView stopRefresh];
+            [weakSelf.tableView stopRefresh];
         }
+        [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
     }];
 }
 

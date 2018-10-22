@@ -18,8 +18,19 @@
 -(void)exchangeLaunchState:(BOOL)isFirstLaunch;
 
 /** 更改当前显示vc
- *  @param index 当前item的角标 0：书架  1：精选  2：我的
+ *  @param index 当前item的角标 0：书架  1：精选   2：书城  3：我的
  */
 -(void)setCurrentViewControllerIndex:(NSInteger )index;
+
+/** 回到TabBarController当前显示vc
+ *  @param index 当前item的角标 0：书架  1：精选   2：书城  3：我的
+ */
+-(void)backToTabBarControllerWithViewControllerIndex:(NSInteger )index;
+
+/** 跳转至vc
+ *  @param classString 类型字符串  为空时表示回到首页书架页
+ *  @param paramString 传过来的参数
+ */
+-(void)openViewControllerCalss:(NSString* )classString paramString:(NSString* )paramString;
 
 @end

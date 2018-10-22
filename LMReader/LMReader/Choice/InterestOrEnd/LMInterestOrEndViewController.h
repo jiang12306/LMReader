@@ -11,6 +11,9 @@
 typedef enum {
     LMInterestType = 0,
     LMEndType = 1,
+    LMHotBookType = 2,
+    LMPublishBookType = 3,
+    LMEditorRecommandType = 4,
 }LMInterestOrEndType;
 
 @interface LMInterestOrEndViewController : LMBaseViewController

@@ -9,18 +9,57 @@
 #ifndef LMReader_pch
 #define LMReader_pch
 
+#import "Ftbook.pb.h"
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+
 //app显示名称
-#define APPNAME @"Kindle"
+#define APPNAME @"夜色书馆"
+
+//书城
+#define BOOKSTORENAME @"书城"
+
+//网络请求失败提示语
+#define NETWORKFAILEDALERT @"网络请求失败"
 
 //主题色 蓝色
 #define THEMECOLOR [UIColor colorWithRed:40/255.f green:147/255.f blue:232/255.f alpha:1]
+//主题色 橙色
+#define THEMEORANGECOLOR [UIColor colorWithRed:248/255.f green:72/255.f blue:25/255.f alpha:1]
 
 //返回 按钮 颜色 白色
-#define BACKCOLOR [UIColor whiteColor]
+#define BACKCOLOR [UIColor blackColor]
 
 #define RGB(r,g,b,a) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a]
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
+//微信 相关
+#define  weChatAppId @"wx6e5eb59b9cab5c09"
+//登录
+#define weChatLoginNotifyName @"weChatLoginNotifyName"
+#define weChatLoginState @"weChatLoginState"
+#define weChatLoginKey @"weChatLoginKey"
+//分享  微信、qq分享共用key
+#define weChatShareNotifyName @"weChatShareNotifyName"
+#define weChatShareKey @"weChatShareKey"
+
+
+
+//QQ 相关
+#define qqAppId @"101502746"
+
+
+//腾讯广点通广告
+#define tencentGDTAPPID @"1107780273"
+#define tencentGDTSplashPlacementID @"1030645025822259"
+#define tencentGDTNativeExpressPlacementID @"1010943094100980"
+#define tencentGDTNativeExpressSplashPlacementID @"9010446154864795"
+#define tencentGDTBookShelfPlacementID @"6090042095588739"
+#define baiduAdPublisherId @"ae019302"
+
+
 
 // Include any system framework and library headers here that should be included in all compilation units.
 // You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.

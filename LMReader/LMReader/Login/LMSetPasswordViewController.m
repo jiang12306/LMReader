@@ -23,59 +23,69 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    if (@available(ios 11.0, *)) {
-        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }else {
-        //表头底下不算面积
-        self.automaticallyAdjustsScrollViewInsets = YES;
-    }
-    
     self.title = @"设置密码";
     
     CGFloat spaceX = 10;
-    CGFloat spaceY = 15;
-    CGFloat labHeight = 30;
+    CGFloat spaceY = 20;
+    CGFloat labHeight = 40;
     
     self.scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    self.scrollView.backgroundColor = [UIColor colorWithRed:234/255.f green:234/255.f blue:241/255.f alpha:1];
+    if (@available(ios 11.0, *)) {
+        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
+    }
+    self.scrollView.backgroundColor = [UIColor whiteColor];
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
     [self.view addSubview:self.scrollView];
     
-    UILabel* pwdLab = [[UILabel alloc]initWithFrame:CGRectMake(spaceX, spaceY, 90, labHeight)];
-    pwdLab.font = [UIFont systemFontOfSize:16];
-    pwdLab.text = @"输入新密码";
-    [self.scrollView addSubview:pwdLab];
-    
-    self.pwdTF = [[UITextField alloc]initWithFrame:CGRectMake(pwdLab.frame.origin.x + pwdLab.frame.size.width + spaceX, pwdLab.frame.origin.y, self.view.frame.size.width - pwdLab.frame.size.width - spaceX * 3, labHeight)];
+    self.pwdTF = [[UITextField alloc]initWithFrame:CGRectMake(spaceX, spaceY, self.view.frame.size.width - spaceX * 2, labHeight)];
     self.pwdTF.backgroundColor = [UIColor whiteColor];
+    self.pwdTF.layer.borderWidth = 1;
     self.pwdTF.layer.cornerRadius = 5;
     self.pwdTF.layer.masksToBounds = YES;
+    self.pwdTF.layer.borderColor = [UIColor colorWithRed:200.f/255 green:200.f/255 blue:200.f/255 alpha:1].CGColor;
     self.pwdTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     self.pwdTF.secureTextEntry = YES;
+    self.pwdTF.placeholder = @" 输入新密码";
     [self.scrollView addSubview:self.pwdTF];
     
-    UILabel* conformLab = [[UILabel alloc]initWithFrame:CGRectMake(spaceX, pwdLab.frame.origin.y + pwdLab.frame.size.height + spaceY, 90, labHeight)];
-    conformLab.font = [UIFont systemFontOfSize:16];
-    conformLab.text = @"确认新密码";
-    [self.scrollView addSubview:conformLab];
-    
-    self.conformTF = [[UITextField alloc]initWithFrame:CGRectMake(self.pwdTF.frame.origin.x, conformLab.frame.origin.y, self.pwdTF.frame.size.width, self.pwdTF.frame.size.height)];
+    self.conformTF = [[UITextField alloc]initWithFrame:CGRectMake(self.pwdTF.frame.origin.x, self.pwdTF.frame.origin.y + self.pwdTF.frame.size.height + spaceY, self.pwdTF.frame.size.width, self.pwdTF.frame.size.height)];
     self.conformTF.backgroundColor = [UIColor whiteColor];
+    self.conformTF.layer.borderWidth = 1;
     self.conformTF.layer.cornerRadius = 5;
     self.conformTF.layer.masksToBounds = YES;
+    self.conformTF.layer.borderColor = [UIColor colorWithRed:200.f/255 green:200.f/255 blue:200.f/255 alpha:1].CGColor;
     self.conformTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     self.conformTF.secureTextEntry = YES;
+    self.conformTF.placeholder = @" 确认新密码";
     [self.scrollView addSubview:self.conformTF];
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(spaceX, conformLab.frame.origin.y + conformLab.frame.size.height + spaceY, self.view.frame.size.width - spaceX * 2, 35)];
-    self.sendBtn.backgroundColor = THEMECOLOR;
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(spaceX, self.conformTF.frame.origin.y + self.conformTF.frame.size.height + spaceY, self.view.frame.size.width - spaceX * 2, labHeight)];
+    self.sendBtn.backgroundColor = THEMEORANGECOLOR;
     self.sendBtn.layer.cornerRadius = 5;
     self.sendBtn.layer.masksToBounds = YES;
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.scrollView addSubview:self.sendBtn];
+    
+    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapped:)];
+    tap.cancelsTouchesInView = NO;
+    [self.view addGestureRecognizer:tap];
 }
+
+-(void)tapped:(UITapGestureRecognizer* )tapGR {
+    [self stopEditing];
+}
+
+-(void)stopEditing {
+    if ([self.pwdTF isFirstResponder]) {
+        [self.pwdTF resignFirstResponder];
+    }
+    if ([self.conformTF isFirstResponder]) {
+        [self.conformTF resignFirstResponder];
+    }
+}
+
 
 //
 -(void)clickedSendButton:(UIButton* )sender {
@@ -97,10 +107,12 @@
     [self showNetworkLoadingView];
     
     PhoneNumRegAndResetPwdReqBuilder* builder = [PhoneNumRegAndResetPwdReq builder];
-    if (self.type == LMRegisterTypeNewRegister) {
+    if (self.type == SmsTypeSmsReg) {
         [builder setReqType:0];
-    }else {
+    }else if (self.type == SmsTypeSmsForgotpwd) {
         [builder setReqType:1];
+    }else if (self.type == SmsTypeSmsBind) {
+        [builder setReqType:2];
     }
     [builder setPhoneNum:self.phoneStr];
     [builder setVcode:self.verifyStr];
@@ -108,38 +120,53 @@
     PhoneNumRegAndResetPwdReq* req = [builder build];
     NSData* reqData = [req data];
     
+    __weak LMSetPasswordViewController* weakSelf = self;
+    
     LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
     [tool postWithCmd:17 ReqData:reqData successBlock:^(NSData *successData) {
-        FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
-        if (apiRes.cmd == 17) {
-            ErrCode err = apiRes.err;
-            if (err == ErrCodeErrNone) {
-                PhoneNumRegAndResetPwdRes* res = [PhoneNumRegAndResetPwdRes parseFromData:apiRes.body];
-                LoginedRegUser* logUser = res.loginedUser;
-                NSString* tokenStr = logUser.token;
-                if (tokenStr != nil && ![tokenStr isKindOfClass:[NSNull class]] && tokenStr.length > 0) {
-                    
-                    //绑定设备与用户
-                    [LMTool bindDeviceToUser:logUser];
-                    
-                    //保存登录用户信息
-                    [LMTool saveLoginedRegUser:logUser];
-                    
-                    if (self.type == LMRegisterTypeNewRegister) {//新注册用户回到“我的”界面
-                        [self.navigationController popToRootViewControllerAnimated:YES];
-                    }else {//修改密码，回到“我的”界面
-                        [self.navigationController popToRootViewControllerAnimated:YES];
+        @try {
+            FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+            if (apiRes.cmd == 17) {
+                ErrCode err = apiRes.err;
+                if (err == ErrCodeErrNone) {
+                    PhoneNumRegAndResetPwdRes* res = [PhoneNumRegAndResetPwdRes parseFromData:apiRes.body];
+                    LoginedRegUser* logUser = res.loginedUser;
+                    NSString* tokenStr = logUser.token;
+                    if (tokenStr != nil && ![tokenStr isKindOfClass:[NSNull class]] && tokenStr.length > 0) {
+                        
+                        //绑定设备与用户
+                        [LMTool bindDeviceToUser:logUser];
+                        
+                        //保存登录用户信息
+                        [LMTool saveLoginedRegUser:logUser];
+                        
+                        [weakSelf showMBProgressHUDWithText:@"操作成功"];
+                        
+                        dispatch_after(dispatch_walltime(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                            if (weakSelf.type == SmsTypeSmsReg) {//新注册用户回到“我的”界面
+                                [weakSelf.navigationController popToRootViewControllerAnimated:YES];
+                            }else if (weakSelf.type == SmsTypeSmsForgotpwd) {//忘记密码，回到“我的”界面
+                                [weakSelf.navigationController popToRootViewControllerAnimated:YES];
+                            }else if (weakSelf.type == SmsTypeSmsBind) {//绑定手机号，然后修改密码，回到“我的”界面
+                                [weakSelf.navigationController popToRootViewControllerAnimated:YES];
+                            }
+                        });
+                        
+                    }else {
+                        [weakSelf showMBProgressHUDWithText:@"操作失败"];
                     }
-                    
-                }else {
-                    [self showMBProgressHUDWithText:@"设置失败"];
                 }
             }
+            
+        } @catch (NSException *exception) {
+            [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+        } @finally {
+            
         }
-        [self hideNetworkLoadingView];
+        [weakSelf hideNetworkLoadingView];
     } failureBlock:^(NSError *failureError) {
-        [self showMBProgressHUDWithText:@"网络请求失败"];
-        [self hideNetworkLoadingView];
+        [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+        [weakSelf hideNetworkLoadingView];
     }];
 }
 

@@ -10,6 +10,11 @@
 #import "LMBaseTabBarController.h"
 #import "LMTool.h"
 #import "LMFirstLaunchViewController.h"
+#import "LMBaseNavigationController.h"
+#import "LMLaunchDetailViewController.h"
+#import "LMSearchViewController.h"
+#import "LMBookDetailViewController.h"
+#import "LMBaseAlertView.h"
 
 @interface LMRootViewController ()
 
@@ -83,7 +88,12 @@ static dispatch_once_t onceToken;
     }
 }
 
+//更改当前显示vc
 -(void)setCurrentViewControllerIndex:(NSInteger)index {
+    NSInteger targetIndex = index;
+    if (index > 3) {
+        targetIndex = 0;
+    }
     LMBaseTabBarController* tabBarController;
     for (UIViewController* vc in self.childViewControllers) {
         if ([vc isKindOfClass:[LMBaseTabBarController class]]) {
@@ -91,8 +101,81 @@ static dispatch_once_t onceToken;
             break;
         }
     }
-    if (tabBarController && index < tabBarController.viewControllers.count) {
-        tabBarController.selectedIndex = index;
+    if (tabBarController && targetIndex < tabBarController.viewControllers.count) {
+        tabBarController.selectedIndex = targetIndex;
+    }
+}
+
+/** 回到TabBarController当前显示vc
+ *  @param index 当前item的角标 0：书架  1：精选   2：书城  3：我的
+ */
+-(void)backToTabBarControllerWithViewControllerIndex:(NSInteger )index {
+    [self openViewControllerCalss:nil paramString:nil];
+    [self setCurrentViewControllerIndex:index];
+}
+
+//跳转至vc
+-(void)openViewControllerCalss:(NSString* )classString paramString:(NSString* )paramString {
+    LMBaseTabBarController* tabBarController;
+    NSArray* windowArr = [UIApplication sharedApplication].windows;
+    for (NSInteger i = 0; i < windowArr.count; i ++) {
+        UIWindow* currentWindow = [windowArr objectAtIndex:i];
+        NSArray* viewsArr = currentWindow.subviews;
+        for (UIView* vi in viewsArr) {
+            if ([vi isKindOfClass:[LMBaseAlertView class]]) {
+                [vi removeFromSuperview];
+            }
+        }
+    }
+    for (UIViewController* vc in self.childViewControllers) {
+        if ([vc isKindOfClass:[LMBaseTabBarController class]]) {
+            tabBarController = (LMBaseTabBarController* )vc;
+            for (UIViewController* vc in tabBarController.viewControllers) {
+                LMBaseNavigationController* nvc = (LMBaseNavigationController* )vc;
+                
+                NSArray* vcArr = nvc.viewControllers;
+                for (NSInteger i = vcArr.count - 1; i >= 0; i --) {
+                    UIViewController* vc = [vcArr objectAtIndex:i];
+                    if (vc.presentedViewController) {
+                        [vc dismissViewControllerAnimated:NO completion:nil];
+                    }else {
+                        [vc.navigationController popViewControllerAnimated:NO];
+                    }
+                }
+            }
+            break;
+        }
+    }
+    if (tabBarController.viewControllers.count > 0) {
+        if (classString == nil || [classString isKindOfClass:[NSNull class]] || classString.length == 0) {
+            return;
+        }
+        Class class = NSClassFromString(classString);
+        if (class) {
+            if ([classString isEqualToString:@"LMLaunchDetailViewController"]) {
+                [self setCurrentViewControllerIndex:0];
+                LMLaunchDetailViewController* vc = [class new];
+                if (paramString != nil && ![paramString isKindOfClass:[NSNull class]]) {
+                    vc.urlString = paramString;
+                }
+                LMBaseNavigationController* bookShelfNVC = [tabBarController.viewControllers objectAtIndex:0];
+                [bookShelfNVC pushViewController:vc animated:YES];
+                
+            }else if ([classString isEqualToString:@"LMChoiceViewController"]) {
+                [self setCurrentViewControllerIndex:1];
+            }else if ([classString isEqualToString:@"LMSearchViewController"]) {
+                [self setCurrentViewControllerIndex:0];
+                LMSearchViewController* vc = [class new];
+                LMBaseNavigationController* bookShelfNVC = [tabBarController.viewControllers objectAtIndex:0];
+                [bookShelfNVC pushViewController:vc animated:YES];
+            }else if ([classString isEqualToString:@"LMBookDetailViewController"]) {
+                [self setCurrentViewControllerIndex:0];
+                LMBookDetailViewController* vc = [class new];
+                vc.bookId = paramString.intValue;
+                LMBaseNavigationController* bookShelfNVC = [tabBarController.viewControllers objectAtIndex:0];
+                [bookShelfNVC pushViewController:vc animated:YES];
+            }
+        }
     }
 }
 

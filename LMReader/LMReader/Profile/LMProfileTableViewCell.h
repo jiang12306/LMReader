@@ -11,5 +11,6 @@
 @interface LMProfileTableViewCell : LMBaseArrowTableViewCell
 
 @property (nonatomic, strong) UILabel* nameLab;//label
+@property (nonatomic, strong) UIImageView* coverIV;//imageView
 
 @end

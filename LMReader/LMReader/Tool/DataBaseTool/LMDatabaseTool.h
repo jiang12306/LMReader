@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Ftbook.pb.h"
 
 @interface LMDatabaseTool : NSObject
 
@@ -20,6 +19,20 @@
 
 
 
+//章节有更新列表
+//创建
+-(BOOL )createBookNewestChapterTable;
+//删除
+-(BOOL )deleteBookNewestChapterTable;
+//设置最新章节更新为已读
+-(BOOL )clearNewestMarkWithBookId:(NSInteger )bookId;
+//删除更新章节
+-(BOOL )deleteBookNewestChapterWithBookId:(UInt32 )bookId;
+//取书本是否有未读更新章节
+-(NSInteger )queryNewestMarkWithBookId:(NSInteger )bookId;
+//取书本未读更新章节
+-(NewestChapter* )queryNewestChapterWithBookId:(NSInteger )bookId;
+
 
 
 //阅读记录 表
@@ -29,11 +42,23 @@
 //删除
 -(BOOL )deleteReadRecordTable;
 //保存一条阅读记录
--(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(UInt32 )chapterId offset:(NSInteger )offset;
+-(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(UInt32 )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset;
 //删除一条阅读记录
 -(BOOL)deleteBookReadRecordWithBookId:(UInt32 )bookId;
+//删除过时的阅读记录
+-(BOOL )deleteBookReadRecordOver30Days;
+//取过时的阅读记录
+-(NSArray* )queryBookReadRecordOver30Days;
 //根据bookId取阅读记录
--(void)queryBookReadRecordWithBookId:(UInt32 )bookId recordBlock:(void (^) (BOOL hasRecord, UInt32 chapterId, NSInteger offset))block;
+-(void)queryBookReadRecordWithBookId:(UInt32 )bookId recordBlock:(void (^) (BOOL hasRecord, UInt32 chapterId, UInt32 sourceId, NSInteger offset))block;
+//根据bookId取阅读进度 标题
+-(NSString* )queryBookReadRecordProgressWithBookId:(UInt32 )bookId;
+//按照page、size取阅读记录
+-(NSArray* )queryBookReadRecordWithPage:(NSInteger )page size:(NSInteger )size;
+//删除本地有，服务端无的书籍
+-(BOOL)deleteLocalSurplusBooksWithArray:(NSArray *)booksArr;
+//取出所有阅读记录
+-(NSArray* )queryAllBookReadRecord;
 
 
 
@@ -72,15 +97,31 @@
 
 //保存 书架页面 书
 -(BOOL )saveUserBooksWithArray:(NSArray* )booksArr;
+//判断 书架页面 某本书是否已存在
+-(BOOL )checkUserBooksIsExistWithBookId:(UInt32 )bookId;
 //删除 书架页面 书
 -(BOOL )deleteUserBookWithBook:(Book* )book;
-//取出所有 书架页面 书
--(NSMutableArray<UserBook*>* )queryAllUserBooks;
+//取所有 书
+-(NSMutableArray* )queryAllUserBooks;
+//取出 书架页面 书 page默认0，size默认20
+-(NSMutableArray* )queryBookShelfUserBooksWithPage:(NSInteger )page size:(NSInteger )size;
 //置顶/取消置顶 书架页面 书
 -(BOOL )setUpside:(BOOL )upside book:(Book* )book;
 
 
 
 
+
+
+
+
+
+@end
+
+
+@interface LMBookNewestChapterModel : NSObject
+
+@property (nonatomic, strong) NewestChapter* newestChapter;
+@property (nonatomic, assign) NSInteger readState;
 
 @end

@@ -22,7 +22,7 @@
     CGRect screenRect = [UIScreen mainScreen].bounds;
     if (!self.lineView) {
         self.lineView = [[UIView alloc]initWithFrame:CGRectMake(10, 0, CGRectGetWidth(screenRect) - 10, 1)];
-        self.lineView.backgroundColor = [UIColor grayColor];
+        self.lineView.backgroundColor = [UIColor colorWithRed:224/255.f green:224/255.f blue:224/255.f alpha:1];
         [self.contentView addSubview:self.lineView];
     }
 }

@@ -43,6 +43,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
         [self.selectedBtn addTarget:self action:@selector(clickedSelectButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.selectedBtn setTitleEdgeInsets:UIEdgeInsetsMake(0, 0, 0, frame.size.width - 115)];
         [self.selectedBtn setImageEdgeInsets:UIEdgeInsetsMake(8, frame.size.width - 20, 7, 5)];
+        self.selectedBtn.layer.borderWidth = 1;
+        self.selectedBtn.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
         [self addSubview:self.selectedBtn];
         
         self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, cellHeight, frame.size.width, 0) style:UITableViewStylePlain];
@@ -74,6 +76,16 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 -(void)didSelectedIndex:(LMComboxViewBlock)callBlock {
     self.backBlock = callBlock;
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.frame.size.width, 0.01)];
+    return vi;
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.frame.size.width, 0.01)];
+    return vi;
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {

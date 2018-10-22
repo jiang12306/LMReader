@@ -7,12 +7,12 @@
 //
 
 #import "LMBaseViewController.h"
-#import "LMRegisterViewController.h"
+#import "LMCheckVerifyCodeViewController.h"
 
 @interface LMSetPasswordViewController : LMBaseViewController
 
 @property (nonatomic, copy) NSString* phoneStr;
 @property (nonatomic, copy) NSString* verifyStr;
-@property (nonatomic, assign) LMRegisterType type;
+@property (nonatomic, assign) SmsType type;
 
 @end

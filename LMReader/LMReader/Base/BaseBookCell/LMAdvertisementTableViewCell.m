@@ -28,10 +28,10 @@
 
 -(void)setupAdvertisement {
     if (!self.adLab) {
-        self.adLab = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, 100, 50)];
+        self.adLab = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, 100, 0)];
         self.adLab.font = [UIFont systemFontOfSize:20];
         [self.contentView addSubview:self.adLab];
-        self.adLab.text = @"广告";
+//        self.adLab.text = @"广告";
     }
 }
 

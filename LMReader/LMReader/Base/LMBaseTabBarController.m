@@ -10,6 +10,7 @@
 #import "LMBaseNavigationController.h"
 #import "LMBookShelfViewController.h"
 #import "LMChoiceViewController.h"
+#import "LMBookStoreViewController.h"
 #import "LMProfileViewController.h"
 
 @interface LMBaseTabBarController ()
@@ -21,10 +22,8 @@
 -(instancetype)init {
     self = [super init];
     if (self) {
-        NSArray* titleArr = @[@"书架", @"精选", @"我的"];
-        NSArray* imagesArr = @[@"tabBar_BookShelf", @"tabBar_Choice", @"tabBar_Profile"];
-        
-        [self.tabBar setTintColor:THEMECOLOR];
+        NSArray* titleArr = @[@"书架", @"精选", @"书城", @"我的"];
+        NSArray* imagesArr = @[@"tabBar_BookShelf", @"tabBar_Choice", @"tabBar_BookStore", @"tabBar_Profile"];
         
         LMBookShelfViewController* shelfVC = [[LMBookShelfViewController alloc]init];
         UIImage* shelfImage = [UIImage imageNamed:imagesArr[0]];
@@ -36,17 +35,23 @@
         UIImage* tintChoiceImage = [choiceImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         choiceVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[1] image:tintChoiceImage tag:1];
         
+        LMBookStoreViewController* bookStoreVC = [[LMBookStoreViewController alloc]init];
+        UIImage* bookStoreImage = [UIImage imageNamed:imagesArr[2]];
+        UIImage* tintbookStoreImage = [bookStoreImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        bookStoreVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[2] image:tintbookStoreImage tag:2];
+        
         LMProfileViewController* profileVC = [[LMProfileViewController alloc]init];
-        UIImage* profileImage = [UIImage imageNamed:imagesArr[2]];
+        UIImage* profileImage = [UIImage imageNamed:imagesArr[3]];
         UIImage* tintProfileImage = [profileImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        profileVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[2] image:tintProfileImage tag:2];
+        profileVC.tabBarItem = [[UITabBarItem alloc]initWithTitle:titleArr[3] image:tintProfileImage tag:3];
         
         LMBaseNavigationController* shelfNVC = [[LMBaseNavigationController alloc]initWithRootViewController:shelfVC];
         LMBaseNavigationController* choiceNVC = [[LMBaseNavigationController alloc]initWithRootViewController:choiceVC];
+        LMBaseNavigationController* bookStoreNVC = [[LMBaseNavigationController alloc]initWithRootViewController:bookStoreVC];
         LMBaseNavigationController* profileNVC = [[LMBaseNavigationController alloc]initWithRootViewController:profileVC];
         
-        self.viewControllers = @[shelfNVC, choiceNVC, profileNVC];
-        
+        self.tabBar.tintColor = THEMEORANGECOLOR;
+        self.viewControllers = @[shelfNVC, choiceNVC, bookStoreNVC, profileNVC];
     }
     return self;
 }

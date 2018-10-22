@@ -8,9 +8,7 @@
 
 #import "LMProfileViewController.h"
 #import "LMProfileTableViewCell.h"
-#import "LMBookStoreViewController.h"
 #import "LMSearchViewController.h"
-#import "LMSearchBarView.h"
 #import "LMReadRecordViewController.h"
 #import "LMReadPreferencesViewController.h"
 #import "LMSystemSettingViewController.h"
@@ -23,8 +21,12 @@
 #import <AVFoundation/AVCaptureDevice.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "LMTool.h"
+#import "LMLeftItemView.h"
+#import "LMRightItemView.h"
+#import "UIImageView+WebCache.h"
+#import "LMProfileBookCommentViewController.h"
 
-@interface LMProfileViewController () <UITableViewDelegate, UITableViewDataSource, LMSearchBarViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface LMProfileViewController () <UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
 @property (nonatomic, strong) UITableView* tableView;
 @property (nonatomic, strong) NSMutableArray* dataArray;
@@ -42,38 +44,29 @@ static NSString* cellIdentifier = @"cellIdentifier";
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    if (@available(ios 11.0, *)) {
-        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }else {
-        //表头底下不算面积
-        self.automaticallyAdjustsScrollViewInsets = YES;
-    }
-    
-    UIView* leftView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 80, 25)];
-    UILabel* leftItemLab = [[UILabel alloc]initWithFrame:leftView.frame];
-    leftItemLab.font = [UIFont systemFontOfSize:20];
-    leftItemLab.textColor = [UIColor whiteColor];
-    leftItemLab.textAlignment = NSTextAlignmentCenter;
-    leftItemLab.text = APPNAME;
-    [leftView addSubview:leftItemLab];
+    LMLeftItemView* leftView = [[LMLeftItemView alloc]initWithFrame:CGRectMake(0, 0, 80, 25)];
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:leftView];
     
-    UIView* rightView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 50, 25)];
-    UIButton* rightItemBtn = [[UIButton alloc]initWithFrame:rightView.frame];
-    rightItemBtn.titleLabel.font = [UIFont systemFontOfSize:20];
-    rightItemBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
-    [rightItemBtn setTitleEdgeInsets:UIEdgeInsetsMake(0, 5, 0, 0)];
-    [rightItemBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [rightItemBtn setTitle:@"书城" forState:UIControlStateNormal];
-    [rightItemBtn addTarget:self action:@selector(clickedRightBarButtonItem:) forControlEvents:UIControlEventTouchUpInside];
-    [rightView addSubview:rightItemBtn];
+    __weak LMProfileViewController* weakSelf = self;
+    
+    LMRightItemView* rightView = [[LMRightItemView alloc]initWithFrame:CGRectMake(0, 0, 44, 44)];
+    rightView.callBlock = ^(BOOL clicked) {
+        if (clicked) {
+            LMSearchViewController* searchVC = [[LMSearchViewController alloc]init];
+            [weakSelf.navigationController pushViewController:searchVC animated:YES];
+        }
+    };
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:rightView];
     
-    LMSearchBarView* titleView = [[LMSearchBarView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width - leftView.frame.size.width - rightView.frame.size.width - 60, 25)];
-    titleView.delegate = self;
-    self.navigationItem.titleView = titleView;
-    
-    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStyleGrouped];
+    CGFloat naviHeight = 20 + 44;
+    if ([LMTool isBangsScreen]) {
+        naviHeight = 44 + 44;
+    }
+    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) style:UITableViewStyleGrouped];
+    if (@available(ios 11.0, *)) {
+        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
+    }
+    self.tableView.backgroundColor = [UIColor whiteColor];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
@@ -91,6 +84,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
     
     self.avatorIV = [[UIImageView alloc]initWithFrame:CGRectMake(spaceX, spaceX, 60, 60)];
     self.avatorIV.image = [UIImage imageNamed:@"avator_LoginOut"];
+    self.avatorIV.contentMode = UIViewContentModeScaleAspectFill;
+    self.avatorIV.clipsToBounds = YES;
     [headerView addSubview:self.avatorIV];
     self.avatorIV.userInteractionEnabled = YES;
     UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedAvatorIV:)];
@@ -99,54 +94,99 @@ static NSString* cellIdentifier = @"cellIdentifier";
     self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(self.avatorIV.frame.origin.x + self.avatorIV.frame.size.width + spaceX, self.avatorIV.frame.origin.y, self.view.frame.size.width - self.avatorIV.frame.size.width - spaceX*4 - 20, 30)];
     self.nameLab.font = [UIFont systemFontOfSize:18];
     self.nameLab.text = @"昵称";
+    self.nameLab.textColor = THEMEORANGECOLOR;
     [headerView addSubview:self.nameLab];
+    
     self.timeLab = [[UILabel alloc]initWithFrame:CGRectMake(self.nameLab.frame.origin.x, self.nameLab.frame.origin.y + self.nameLab.frame.size.height, self.nameLab.frame.size.width, self.nameLab.frame.size.height)];
-    self.timeLab.font = [UIFont systemFontOfSize:16];
-    self.timeLab.text = @"相伴200天";
+    self.timeLab.font = [UIFont systemFontOfSize:15];
+    self.timeLab.textColor = [UIColor grayColor];
+    self.timeLab.lineBreakMode = NSLineBreakByTruncatingTail;
     [headerView addSubview:self.timeLab];
+    
     UIImageView* arrowIV = [[UIImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width - 10 - 10.5, 30, 10.5, 20)];
-    arrowIV.image = [UIImage imageNamed:@"cell_Arrow"];
+    UIImage* image = [UIImage imageNamed:@"cell_Arrow"];
+    UIImage* tintImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [arrowIV setTintColor:[UIColor grayColor]];
+    arrowIV.image = tintImage;
     [headerView addSubview:arrowIV];
     self.tableView.tableHeaderView = headerView;
     
-    self.dataArray = [NSMutableArray arrayWithObjects:@[@"阅读记录", @"阅读偏好", @"系统设置"], @[@"意见反馈", @"关于我们", @"版权声明"], nil];
+    self.dataArray = [NSMutableArray arrayWithObjects:@[@{@"name" : @"阅读记录", @"cover" : @"profile_ReadRecord"}, @{@"name" : @"阅读偏好", @"cover" : @"profile_ReadPreferences"}, @{@"name" : @"我的评论", @"cover" : @"profile_MyComment"}, @{@"name" : @"系统设置", @"cover" : @"profile_SystemSetting"}], @[@{@"name" : @"意见反馈", @"cover" : @"profile_FeedBack"}, @{@"name" : @"关于我们", @"cover" : @"profile_AboutUs"}, @{@"name" : @"版权声明", @"cover" : @"profile_Copyright"}], nil];
     [self.tableView reloadData];
+    
+    //添加通知
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(jumpToViewController:) name:@"jumpToViewController" object:nil];
 }
 
-//书城
--(void)clickedRightBarButtonItem:(UIButton* )sender {
-    LMBookStoreViewController* storeVC = [[LMBookStoreViewController alloc]init];
-    [self.navigationController pushViewController:storeVC animated:YES];
+//登录状态过期时，接收通知并重新跳转至登录界面
+-(void)jumpToViewController:(NSNotification* )notify {
+    LMLoginViewController* loginVC = [[LMLoginViewController alloc]init];
+    loginVC.userBlock = ^(LoginedRegUser *loginUser) {
+        NSString* tokenStr = loginUser.token;
+        if (tokenStr != nil && ![tokenStr isKindOfClass:[NSNull class]] && tokenStr.length > 0) {
+            
+        }
+    };
+    [self.navigationController pushViewController:loginVC animated:YES];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    //防止iOS11 刘海屏tabBar下移34
+    UITabBarController* tabBarController = self.tabBarController;
+    if (tabBarController) {
+        CGRect screenRect = [UIScreen mainScreen].bounds;
+        CGFloat tabBarHeight = 49;
+        if ([LMTool isBangsScreen]) {
+            tabBarHeight = 83;
+        }
+        tabBarController.tabBar.frame = CGRectMake(0, screenRect.size.height - tabBarHeight, screenRect.size.width, tabBarHeight);
+    }
+    
     //更新头像、昵称信息
     self.loginedRegUser = [LMTool getLoginedRegUser];
     NSString* nickStr = @"未登录";
-    NSString* timeStr = @"";
-    NSString* imageStr = @"avator_LoginOut";
+    NSString* timeStr = @"请先登录，让您享受更好服务";
     if (self.loginedRegUser != nil) {
+        timeStr = @"相伴0天";
         RegUser* user = self.loginedRegUser.user;
-        NSString* phoneNumStr = user.phoneNum;
-        if (phoneNumStr.length > 0) {
-            nickStr = phoneNumStr;
+        NSString* userNickStr = user.nickname;
+        if (userNickStr.length > 0) {
+            nickStr = userNickStr;
         }else {
-            NSString* uidStr = user.uid;
-            if (uidStr.length > 0) {
-                nickStr = uidStr;
+            NSString* phoneNumStr = user.phoneNum;
+            if (phoneNumStr.length > 0) {
+                nickStr = phoneNumStr;
+            }else {
+                NSString* uidStr = user.uid;
+                if (uidStr.length > 0) {
+                    nickStr = uidStr;
+                }
             }
         }
-        NSString* birthdayStr = user.birthday;
-        if (birthdayStr.length > 0) {
-            timeStr = birthdayStr;
+        UInt32 timeInt = user.registerTime;
+        NSInteger day = [LMTool convertTimeStampToDayTime:timeInt];
+        if (timeInt > 0 && day >= 0) {
+            timeStr = [NSString stringWithFormat:@"相伴%ld天", day];
         }
-        imageStr = @"avator_Login";
+        
+        NSData* imgData = user.iconB;
+        if (imgData != nil && imgData.length > 0) {
+            self.avatorIV.image = [UIImage imageWithData:imgData];
+        }else {
+            NSString* avator = user.icon;
+            if (avator != nil && avator.length > 0) {
+                [self.avatorIV sd_setImageWithURL:[NSURL URLWithString:avator] placeholderImage:[UIImage imageNamed:@"avator_LoginOut"]];
+            }else {
+                self.avatorIV.image = [UIImage imageNamed:@"avator_LoginOut"];
+            }
+        }
+    }else {
+        self.avatorIV.image = [UIImage imageNamed:@"avator_LoginOut"];
     }
     self.nameLab.text = nickStr;
     self.timeLab.text = timeStr;
-    self.avatorIV.image = [UIImage imageNamed:imageStr];
 }
 
 //个人中心
@@ -171,7 +211,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
 //切换头像
 -(void)tappedAvatorIV:(UITapGestureRecognizer* )tapGR {
     return;
-    
+    /*
     UIAlertController* controller = [UIAlertController alertControllerWithTitle:@"更改头像" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     UIAlertAction* maleAction = [UIAlertAction actionWithTitle:@"相册" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         
@@ -218,6 +258,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [controller addAction:femaleAction];
     [controller addAction:cancelAction];
     [self presentViewController:controller animated:YES completion:nil];
+     */
 }
 
 //前往系统设置打开权限
@@ -231,7 +272,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
         
     }];
     UIAlertAction* sureAction = [UIAlertAction actionWithTitle:@"前往设置" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:^(BOOL success) {
+            
+        }];
     }];
     [alertController addAction:cancelAction];
     [alertController addAction:sureAction];
@@ -252,6 +295,18 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 #pragma mark -UITableViewDataSource
+-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
+    vi.backgroundColor = [UIColor colorWithRed:233.f/255 green:233.f/255 blue:233.f/255 alpha:1];
+    return vi;
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.01)];
+    vi.backgroundColor = [UIColor colorWithRed:233.f/255 green:233.f/255 blue:233.f/255 alpha:1];
+    return vi;
+}
+
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 2;
 }
@@ -278,10 +333,22 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (!cell) {
         cell = [[LMProfileTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
+    NSInteger section = indexPath.section;
+    NSInteger row = indexPath.row;
     
-    NSArray* arr = [self.dataArray objectAtIndex:indexPath.section];
-    cell.nameLab.text = [arr objectAtIndex:indexPath.row];
+    NSArray* subArr = [self.dataArray objectAtIndex:section];
+    NSDictionary* detailDic = [subArr objectAtIndex:row];
+    NSString* nameStr = [detailDic objectForKey:@"name"];
+    NSString* imgStr = [detailDic objectForKey:@"cover"];
     
+    cell.nameLab.text = nameStr;
+    cell.coverIV.image = [UIImage imageNamed:imgStr];
+    
+    if (row == subArr.count - 1 && section != self.dataArray.count - 1) {
+        [cell showLineView:NO];
+    }else {
+        [cell showLineView:YES];
+    }
     return cell;
 }
 
@@ -304,6 +371,12 @@ static NSString* cellIdentifier = @"cellIdentifier";
             }
                 break;
             case 2:
+            {
+                LMProfileBookCommentViewController* bookCommentVC = [[LMProfileBookCommentViewController alloc]init];
+                [self.navigationController pushViewController:bookCommentVC animated:YES];
+            }
+                break;
+            case 3:
             {
                 LMSystemSettingViewController* settingVC = [[LMSystemSettingViewController alloc]init];
                 [self.navigationController pushViewController:settingVC animated:YES];
@@ -338,13 +411,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
     }
 }
 
-#pragma mark -LMSearchBarViewDelegate
--(void)searchBarViewDidStartSearch:(NSString *)inputText {
-    if (inputText.length > 0) {
-        LMSearchViewController* searchVC = [[LMSearchViewController alloc]init];
-        searchVC.searchStr = inputText;
-        [self.navigationController pushViewController:searchVC animated:YES];
-    }
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"jumpToViewController" object:nil];
 }
 
 - (void)didReceiveMemoryWarning {

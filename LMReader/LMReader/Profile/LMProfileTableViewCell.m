@@ -25,8 +25,14 @@
 }
 
 -(void)setupSubviews {
+    if (!self.coverIV) {
+        self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 12.5, 25, 25)];
+        self.coverIV.contentMode = UIViewContentModeScaleAspectFill;
+        self.coverIV.clipsToBounds = YES;
+        [self.contentView insertSubview:self.coverIV belowSubview:self.lineView];
+    }
     if (!self.nameLab) {
-        self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, 200, 50)];
+        self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + 10, 0, 200, 50)];
         self.nameLab.font = [UIFont systemFontOfSize:16];
         [self.contentView insertSubview:self.nameLab belowSubview:self.lineView];
     }

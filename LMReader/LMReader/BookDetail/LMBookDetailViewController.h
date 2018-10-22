@@ -10,6 +10,6 @@
 
 @interface LMBookDetailViewController : LMBaseViewController
 
-@property (nonatomic, strong) Book* book;
+@property (nonatomic, assign) UInt32 bookId;
 
 @end

@@ -53,4 +53,11 @@
 //取消 禁止 上拉加载
 -(void)cancelNoMoreData;
 
+
+
+
+
+-(void)hideMJRefreshHeader;
+-(void)showMJRefreshHeader;
+
 @end

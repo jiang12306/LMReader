@@ -11,6 +11,7 @@
 #import "LMBookDetailViewController.h"
 #import "LMBaseRefreshTableView.h"
 #import "UIImageView+WebCache.h"
+#import "LMTool.h"
 
 @interface LMSpecialChoiceDetailViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate>
 
@@ -18,6 +19,7 @@
 @property (nonatomic, strong) NSMutableArray* dataArray;
 @property (nonatomic, strong) UIView* headerView;
 @property (nonatomic, strong) UIImageView* headerIV;
+@property (nonatomic, strong) UIView* otherHeaderView;//briefLab跟detailLab
 @property (nonatomic, strong) UILabel* briefLab;//专题简介
 @property (nonatomic, strong) UILabel* detailLab;//专题详情
 @property (nonatomic, assign) NSInteger page;
@@ -29,19 +31,25 @@
 @implementation LMSpecialChoiceDetailViewController
 
 static NSString* cellIdentifier = @"cellIdentifier";
-static CGFloat cellHeight = 95;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (@available(ios 11.0, *)) {
-        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }else {
-        //表头底下不算面积
-        self.automaticallyAdjustsScrollViewInsets = YES;
-    }
-    self.title = @"专题详情";
     
-    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStylePlain];
+    NSString* titleStr = self.chart.name;
+    if (titleStr != nil && ![titleStr isKindOfClass:[NSNull class]]) {
+        self.title = titleStr;
+    }else {
+        self.title = @"专题详情";
+    }
+    
+    CGFloat naviHeight = 20 + 44;
+    if ([LMTool isBangsScreen]) {
+        naviHeight = 44 + 44;
+    }
+    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) style:UITableViewStylePlain];
+    if (@available(ios 11.0, *)) {
+        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
+    }
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.refreshDelegate = self;
@@ -53,22 +61,49 @@ static CGFloat cellHeight = 95;
     self.headerIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, self.headerView.frame.size.width - 10 * 2, 80)];
     self.headerIV.layer.cornerRadius = 5;
     self.headerIV.layer.masksToBounds = YES;
-    [self.headerIV sd_setImageWithURL:[NSURL URLWithString:self.chart.converUrl] placeholderImage:[UIImage imageNamed:@"test1"] options:SDWebImageRetryFailed];
+    NSString* coverStr = [self.chart.converUrl stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    [self.headerIV sd_setImageWithURL:[NSURL URLWithString:coverStr] placeholderImage:[UIImage imageNamed:@"defaultChoiceDetail"] options:SDWebImageRetryFailed];
+    [self.headerIV sd_setImageWithURL:[NSURL URLWithString:coverStr] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+        if (error == nil && image != nil) {
+            CGFloat imgWidth = image.size.width;
+            CGFloat imgHeight = image.size.height;
+            CGFloat headerIVHeight = imgHeight * self.headerIV.frame.size.width / imgWidth;
+            
+            self.headerIV.frame = CGRectMake(10, 10, self.headerView.frame.size.width - 10 * 2, headerIVHeight);
+            CGRect tempFrame = self.otherHeaderView.frame;
+            self.otherHeaderView.frame = CGRectMake(0, self.headerIV.frame.origin.y + self.headerIV.frame.size.height + 10, self.headerView.frame.size.width, tempFrame.size.height);
+            self.headerView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.origin.y + self.otherHeaderView.frame.size.height);
+            self.tableView.tableHeaderView = self.headerView;
+        }
+    }];
     [self.headerView addSubview:self.headerIV];
     
-    self.briefLab = [[UILabel alloc]initWithFrame:CGRectMake(10, self.headerIV.frame.origin.y + self.headerIV.frame.size.height, self.headerIV.frame.size.width, 40)];
-    self.briefLab.font = [UIFont systemFontOfSize:20];
+    self.otherHeaderView = [[UIView alloc]initWithFrame:CGRectMake(0, self.headerIV.frame.origin.y + self.headerIV.frame.size.height + 10, self.headerView.frame.size.width, 80)];
+    self.otherHeaderView.backgroundColor = [UIColor whiteColor];
+    [self.headerView addSubview:self.otherHeaderView];
+    
+    UILabel* colorLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 10, self.headerView.frame.size.width, 10)];
+    colorLab.backgroundColor = [UIColor colorWithRed:245.f/255 green:245.f/255 blue:245.f/255 alpha:1];
+    [self.otherHeaderView addSubview:colorLab];
+    
+    self.briefLab = [[UILabel alloc]initWithFrame:CGRectMake(10, colorLab.frame.origin.y + colorLab.frame.size.height, self.headerIV.frame.size.width - 10 * 2, 40)];
+    self.briefLab.font = [UIFont systemFontOfSize:18];
     self.briefLab.text = self.chart.name;
-    [self.headerView addSubview:self.briefLab];
+    [self.otherHeaderView addSubview:self.briefLab];
     
     self.detailLab = [[UILabel alloc]initWithFrame:CGRectMake(10, self.briefLab.frame.origin.y + self.briefLab.frame.size.height, self.briefLab.frame.size.width, 40)];
-    self.detailLab.font = [UIFont systemFontOfSize:16];
+    self.detailLab.font = [UIFont systemFontOfSize:15];
     self.detailLab.text = self.chart.abstract;
     self.detailLab.numberOfLines = 0;
-    self.detailLab.lineBreakMode = NSLineBreakByTruncatingTail;
-    [self.headerView addSubview:self.detailLab];
+    self.detailLab.lineBreakMode = NSLineBreakByCharWrapping;
+    [self.otherHeaderView addSubview:self.detailLab];
     
-    self.headerView.frame = CGRectMake(0, 0, self.view.frame.size.width, 10 + self.headerIV.frame.size.height + self.briefLab.frame.size.height + self.detailLab.frame.size.height);
+    CGRect detailFrame = self.detailLab.frame;
+    CGSize detailSize = [self.detailLab sizeThatFits:CGSizeMake(self.briefLab.frame.size.width, CGFLOAT_MAX)];
+    self.detailLab.frame = CGRectMake(detailFrame.origin.x, detailFrame.origin.y, detailFrame.size.width, detailSize.height + 10);
+    
+    self.otherHeaderView.frame = CGRectMake(0, self.headerIV.frame.origin.y + self.headerIV.frame.size.height, self.headerView.frame.size.width, self.detailLab.frame.origin.y + self.detailLab.frame.size.height);
+    self.headerView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.otherHeaderView.frame.origin.y + self.otherHeaderView.frame.size.height);
     
     self.tableView.tableHeaderView = self.headerView;
     
@@ -78,6 +113,16 @@ static CGFloat cellHeight = 95;
     self.dataArray = [NSMutableArray array];
     
     [self loadSpecialChoiceDetailDataWithPage:self.page isRefreshingOrLoadMoreData:NO];
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
+    return vi;
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
+    return vi;
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -97,7 +142,7 @@ static CGFloat cellHeight = 95;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return cellHeight;
+    return baseBookCellHeight;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -119,13 +164,12 @@ static CGFloat cellHeight = 95;
     Book* book = [self.dataArray objectAtIndex:indexPath.row];
     
     LMBookDetailViewController* bookDetailVC = [[LMBookDetailViewController alloc]init];
-    bookDetailVC.book = book;
+    bookDetailVC.bookId = book.bookId;
     [self.navigationController pushViewController:bookDetailVC animated:YES];
 }
 
 //加载数据
 -(void)loadSpecialChoiceDetailDataWithPage:(NSInteger )page isRefreshingOrLoadMoreData:(BOOL )loadMore {
-    [self showNetworkLoadingView];
     self.isRefreshing = YES;
     
     TopicChartBookReqBuilder* builder = [TopicChartBookReq builder];
@@ -134,45 +178,56 @@ static CGFloat cellHeight = 95;
     TopicChartBookReq* req = [builder build];
     NSData* reqData = [req data];
     
+    [self showNetworkLoadingView];
+    __weak LMSpecialChoiceDetailViewController* weakSelf = self;
+    
     LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
     [tool postWithCmd:12 ReqData:reqData successBlock:^(NSData *successData) {
-        FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
-        if (apiRes.cmd == 12) {
-            ErrCode err = apiRes.err;
-            if (err == ErrCodeErrNone) {
-                TopicChartBookRes* res = [TopicChartBookRes parseFromData:apiRes.body];
-                NSInteger currentSize = res.psize;
-                
-                NSArray* arr1 = res.books;
-                if (self.page == 0) {//第一页
-                    [self.dataArray removeAllObjects];
+        @try {
+            FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+            if (apiRes.cmd == 12) {
+                ErrCode err = apiRes.err;
+                if (err == ErrCodeErrNone) {
+                    TopicChartBookRes* res = [TopicChartBookRes parseFromData:apiRes.body];
+//                    NSInteger currentSize = res.psize;
+                    
+                    NSArray* arr1 = res.books;
+                    if (weakSelf.page == 0) {//第一页
+                        [weakSelf.dataArray removeAllObjects];
+                    }
+                    
+                    [weakSelf.dataArray addObjectsFromArray:arr1];
+                    
+                    if (arr1 == nil || arr1.count == 0) {//最后一页
+                        weakSelf.isEnd = YES;
+                        [weakSelf.tableView setupNoMoreData];
+                    }
+                    weakSelf.page ++;
+                    [weakSelf.tableView reloadData];
                 }
-                
-                [self.dataArray addObjectsFromArray:arr1];
-                
-                if (arr1.count < currentSize) {//最后一页
-                    self.isEnd = YES;
-                    [self.tableView setupNoMoreData];
-                }
-                self.page ++;
-                [self.tableView reloadData];
+            }
+            
+        } @catch (NSException *exception) {
+            [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+        } @finally {
+            
+            weakSelf.isRefreshing = NO;
+            [weakSelf hideNetworkLoadingView];
+            if (loadMore) {
+                [weakSelf.tableView stopLoadMoreData];
+            }else {
+                [weakSelf.tableView stopRefresh];
             }
         }
-        self.isRefreshing = NO;
-        [self hideNetworkLoadingView];
-        if (loadMore) {
-            [self.tableView stopLoadMoreData];
-        }else {
-            [self.tableView stopRefresh];
-        }
     } failureBlock:^(NSError *failureError) {
-        self.isRefreshing = NO;
-        [self hideNetworkLoadingView];
+        weakSelf.isRefreshing = NO;
+        [weakSelf hideNetworkLoadingView];
         if (loadMore) {
-            [self.tableView stopLoadMoreData];
+            [weakSelf.tableView stopLoadMoreData];
         }else {
-            [self.tableView stopRefresh];
+            [weakSelf.tableView stopRefresh];
         }
+        [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
     }];
 }
 

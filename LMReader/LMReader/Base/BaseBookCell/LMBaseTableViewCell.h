@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Ftbook.pb.h"
 
 @interface LMBaseTableViewCell : UITableViewCell
 

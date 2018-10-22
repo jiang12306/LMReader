@@ -10,6 +10,4 @@
 
 @interface LMSearchViewController : LMBaseViewController
 
-@property (nonatomic, copy) NSString* searchStr;
-
 @end

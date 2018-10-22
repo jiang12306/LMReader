@@ -7,6 +7,7 @@
 //
 
 #import "LMBaseTableViewCell.h"
+#import "LMBookShelfModel.h"
 
 @class LMBookShelfTableViewCell;
 
@@ -15,7 +16,8 @@
 @optional
 -(void)didStartScrollCell:(LMBookShelfTableViewCell* )selectedCell;//滑动cell 开始
 -(void)didClickCell:(LMBookShelfTableViewCell* )cell deleteButton:(UIButton* )btn;//点击 删除 按钮
--(void)didClickCell:(LMBookShelfTableViewCell* )cell upsideButton:(UIButton* )btn;//点击 置顶 按钮
+-(void)didClickCell:(LMBookShelfTableViewCell* )cell upsideButton:(UIButton* )btn;//点击 收藏 按钮
+-(void)didClickCell:(LMBookShelfTableViewCell* )cell briefButton:(UIButton* )btn;//点击 书籍详情 按钮
 
 @end;
 
@@ -23,15 +25,16 @@
 
 @property (nonatomic, strong) UIImageView* coverIV;//小说封面
 @property (nonatomic, strong) UILabel* nameLab;//书名 label
-@property (nonatomic, strong) UILabel* timeLab;//更新时间 label
-@property (nonatomic, strong) UILabel* briefLab;//简介 label
-@property (nonatomic, strong) UILabel* updateLab;//更新标识 label
+@property (nonatomic, strong) UILabel* lastChapterLab;//最新章节 label
+@property (nonatomic, strong) UILabel* statusLab;//状态 label
+@property (nonatomic, strong) UIButton* briefBtn;//书籍简介 button
+@property (nonatomic, strong) UILabel* markLab;//更新红点标记
 
 @property (nonatomic, weak) id<LMBookShelfTableViewCellDelegate> delegate;
 
 //显示/不显示 删除 置顶 按钮
 -(void)showUpsideAndDelete:(BOOL )isShow animation:(BOOL)animation;
 
--(void)setupContentUserBook:(UserBook* )userBook;
+-(void)setupBookShelfModel:(LMBookShelfModel* )model;
 
 @end

@@ -30,13 +30,6 @@ typedef enum {
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    if (@available(ios 11.0, *)) {
-        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }else {
-        //表头底下不算面积
-        self.automaticallyAdjustsScrollViewInsets = YES;
-    }
-    
     self.title = @"意见反馈";
     
     CGFloat spaceX = 10;
@@ -44,7 +37,10 @@ typedef enum {
     CGFloat labHeight = 30;
     
     self.scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    self.scrollView.backgroundColor = [UIColor colorWithRed:234/255.f green:234/255.f blue:241/255.f alpha:1];
+    if (@available(ios 11.0, *)) {
+        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
+    }
+    self.scrollView.backgroundColor = [UIColor whiteColor];
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
     [self.view addSubview:self.scrollView];
@@ -81,6 +77,8 @@ typedef enum {
     self.textView.backgroundColor = [UIColor whiteColor];
     self.textView.layer.cornerRadius = 3;
     self.textView.layer.masksToBounds = YES;
+    self.textView.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
+    self.textView.layer.borderWidth = 1;
     [self.scrollView addSubview:self.textView];
     
     UILabel* phoneLab = [[UILabel alloc]initWithFrame:CGRectMake(spaceX, self.textView.frame.origin.y + self.textView.frame.size.height + spaceY, 60, labHeight)];
@@ -93,6 +91,8 @@ typedef enum {
     self.phoneTF.backgroundColor = [UIColor whiteColor];
     self.phoneTF.layer.cornerRadius = 5;
     self.phoneTF.layer.masksToBounds = YES;
+    self.phoneTF.layer.borderWidth = 1;
+    self.phoneTF.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
     self.phoneTF.keyboardType = UIKeyboardTypeNumberPad;
     self.phoneTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     [self.scrollView addSubview:self.phoneTF];
@@ -106,24 +106,51 @@ typedef enum {
     self.emailTF.backgroundColor = [UIColor whiteColor];
     self.emailTF.layer.cornerRadius = 5;
     self.emailTF.layer.masksToBounds = YES;
+    self.emailTF.layer.borderWidth = 1;
+    self.emailTF.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
     self.emailTF.keyboardType = UIKeyboardTypeEmailAddress;
     self.emailTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     [self.scrollView addSubview:self.emailTF];
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(spaceX, emailLab.frame.origin.y + emailLab.frame.size.height + spaceY, self.view.frame.size.width - spaceX * 2, 35)];
-    self.sendBtn.backgroundColor = THEMECOLOR;
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(spaceX, emailLab.frame.origin.y + emailLab.frame.size.height + spaceY, self.view.frame.size.width - spaceX * 2, 40)];
+    self.sendBtn.backgroundColor = THEMEORANGECOLOR;
     self.sendBtn.layer.cornerRadius = 5;
     self.sendBtn.layer.masksToBounds = YES;
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.scrollView addSubview:self.sendBtn];
+    
+    self.scrollView.contentSize = CGSizeMake(0, self.view.frame.size.height);
+    
+    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapped:)];
+    tap.cancelsTouchesInView = NO;
+    [self.view addGestureRecognizer:tap];
+    
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+-(void)tapped:(UITapGestureRecognizer* )tapGR {
+    [self stopEditing];
+}
+
+-(void)stopEditing {
+    if ([self.textView isFirstResponder]) {
+        [self.textView resignFirstResponder];
+    }
+    if ([self.phoneTF isFirstResponder]) {
+        [self.phoneTF resignFirstResponder];
+    }
+    if ([self.emailTF isFirstResponder]) {
+        [self.emailTF resignFirstResponder];
+    }
 }
 
 -(void)clickedSendButton:(UIButton* )sender {
     NSString* wordsStr = [self.textView.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSString* phoneStr = [self.phoneTF.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSString* emailStr = [self.emailTF.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    NSString *pattern = @"^1+[34578]+\\d{9}";
+    NSString *pattern = @"^1+[345678]+\\d{9}";
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", pattern];
     BOOL isMatch = [pred evaluateWithObject:phoneStr];
     if (wordsStr.length == 0) {
@@ -134,6 +161,12 @@ typedef enum {
         [self showMBProgressHUDWithText:@"手机号码格式不正确"];
         return;
     }
+    if (phoneStr.length > 11) {
+        [self showMBProgressHUDWithText:@"手机号码格式不正确"];
+        return;
+    }
+    
+    [self stopEditing];
     
     [self showNetworkLoadingView];
     
@@ -149,30 +182,65 @@ typedef enum {
     FeedbackReq* req = [builder build];
     NSData* reqData = [req data];
     
+    __weak LMFeedBackViewController* weakSelf = self;
+    
     LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
     [tool postWithCmd:16 ReqData:reqData successBlock:^(NSData *successData) {
-        
-        [self hideNetworkLoadingView];
-        
-        FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
-        if (apiRes.cmd == 16) {
-            ErrCode err = apiRes.err;
-            if (err == ErrCodeErrNone) {
-                
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * 1), dispatch_get_main_queue(), ^{
+        @try {
+            FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+            if (apiRes.cmd == 16) {
+                ErrCode err = apiRes.err;
+                if (err == ErrCodeErrNone) {
                     
-                    [self.navigationController popViewControllerAnimated:YES];
-                });
-                
-                [self showMBProgressHUDWithText:@"感谢您的反馈，我们将尽快处理"];
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * 1), dispatch_get_main_queue(), ^{
+                        
+                        [weakSelf.navigationController popViewControllerAnimated:YES];
+                    });
+                    
+                    [weakSelf showMBProgressHUDWithText:@"感谢您的反馈，我们将尽快处理"];
+                }
             }
+        } @catch (NSException *exception) {
+            [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+        } @finally {
+            
         }
+        
+        [weakSelf hideNetworkLoadingView];
         
     } failureBlock:^(NSError *failureError) {
         
-        [self showMBProgressHUDWithText:@"网络请求失败"];
-        [self hideNetworkLoadingView];
+        [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+        [weakSelf hideNetworkLoadingView];
     }];
+}
+
+-(void)keyboardWillShow:(NSNotification* )notify {
+    NSDictionary *userInfo = notify.userInfo;
+    NSNumber* rectValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGFloat keyboardHeight = rectValue.CGRectValue.size.height;
+    NSNumber* animationNum = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    CGFloat heightY = 0;
+    if ([UIScreen mainScreen].bounds.size.height <= 568) {
+        CGFloat tempY = self.emailTF.frame.origin.y + self.emailTF.frame.size.height - keyboardHeight;
+        
+        heightY = tempY > 0 ? tempY : 0;
+    }
+    
+    [UIView animateWithDuration:animationNum.floatValue animations:^{
+        self.scrollView.contentSize = CGSizeMake(0, self.view.frame.size.height + heightY);
+        self.scrollView.contentOffset = CGPointMake(0, heightY);
+    }];
+}
+
+-(void)keyboardWillHide:(NSNotification* )notify {
+    self.scrollView.contentSize = CGSizeMake(0, self.view.frame.size.height);
+    self.scrollView.contentOffset = CGPointMake(0, 0);
+}
+
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:UIKeyboardWillHideNotification object:nil];
 }
 
 - (void)didReceiveMemoryWarning {

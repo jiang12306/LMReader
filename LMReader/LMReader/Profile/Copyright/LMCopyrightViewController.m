@@ -8,8 +8,12 @@
 
 #import "LMCopyrightViewController.h"
 #import <WebKit/WebKit.h>
+#import "LMTool.h"
 
-@interface LMCopyrightViewController () <WKUIDelegate, WKNavigationDelegate>
+@interface LMCopyrightViewController () <WKUIDelegate, WKNavigationDelegate, UIWebViewDelegate>
+
+@property (nonatomic, strong) WKWebView* webView;
+@property (nonatomic, strong) UIProgressView *progressView;
 
 @end
 
@@ -20,11 +24,80 @@
     
     self.title = @"版权声明";
     
-    WKWebView* webView = [[WKWebView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    [self.view addSubview:webView];
-    webView.UIDelegate = self;
-    webView.navigationDelegate = self;
-    [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.csdn.net"]]];
+    NSString* tempStr = copyrightHost;
+    NSString* encodeStr = [tempStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    NSURL* encodeUrl = [NSURL URLWithString:encodeStr];
+    
+    CGFloat naviHeight = 44 + 20;
+    if ([LMTool isBangsScreen]) {
+        naviHeight = 44 + 44;
+    }
+    self.webView = [[WKWebView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight)];
+    [self.view addSubview:self.webView];
+    self.webView.UIDelegate = self;
+    self.webView.navigationDelegate = self;
+    [self.webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionNew context:nil];//添加进度监听
+    
+    self.progressView = [[UIProgressView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
+    self.progressView.tintColor = [UIColor greenColor];
+    self.progressView.trackTintColor = [UIColor whiteColor];
+    [self.view addSubview:self.progressView];
+    
+    [self.webView loadRequest:[NSURLRequest requestWithURL:encodeUrl]];
+    
+}
+
+#pragma mark -WKNavigationDelegate
+- (void)webView:(WKWebView*)webView decidePolicyForNavigationAction:(WKNavigationAction*)navigationAction decisionHandler:(void(^)(WKNavigationActionPolicy))decisionHandler{
+    
+    WKNavigationActionPolicy policy = WKNavigationActionPolicyAllow;
+    
+    NSURL* url = navigationAction.request.URL;
+    NSString* hostStr = [url absoluteString];
+    if ([hostStr rangeOfString:@"itunes.apple.com"].location != NSNotFound && [[UIApplication sharedApplication] canOpenURL:url]) {
+        
+        policy =WKNavigationActionPolicyCancel;
+    }
+    
+    decisionHandler(policy);
+}
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation {
+    NSString* titleStr = webView.title;
+    if (titleStr != nil && titleStr.length > 0) {
+        self.title = titleStr;
+    }
+}
+
+- (void)webView:(WKWebView *)webView didFailNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
+    
+    [self showReloadButton];
+}
+
+// 计算wkWebView进度条
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if (object == self.webView && [keyPath isEqualToString:@"estimatedProgress"]) {
+        CGFloat newprogress = [[change objectForKey:NSKeyValueChangeNewKey] doubleValue];
+        if (newprogress == 1) {
+            self.progressView.hidden = YES;
+            [self.progressView setProgress:0 animated:NO];
+        }else {
+            self.progressView.hidden = NO;
+            [self.progressView setProgress:newprogress animated:YES];
+        }
+    }
+}
+
+-(void)clickedSelfReloadButton:(UIButton *)sender {
+    [super clickedSelfReloadButton:sender];
+    
+    [self.webView reload];
+}
+
+-(void)dealloc {
+    [self.webView stopLoading];
+    [self.webView removeObserver:self forKeyPath:@"estimatedProgress"];//取消监听
+    self.webView = nil;
 }
 
 - (void)didReceiveMemoryWarning {
