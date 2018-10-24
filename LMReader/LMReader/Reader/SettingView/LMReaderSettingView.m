@@ -16,13 +16,13 @@
 @property (nonatomic, assign) NSInteger lineSpaceIndex;
 
 @property (nonnull, strong) UILabel* brightLab;
-@property (nonnull, strong) UIImageView* brightSmallIV;
+@property (nonnull, strong) UIButton* brightSmallBtn;
 @property (nonatomic, strong) UISlider* brightSlider;
-@property (nonnull, strong) UIImageView* brightBigIV;
+@property (nonnull, strong) UIButton* brightBigBtn;
 @property (nonnull, strong) UILabel* fontLab;
-@property (nonnull, strong) UIImageView* fontSmallIV;
+@property (nonnull, strong) UIButton* fontSmallBtn;
 @property (nonatomic, strong) UISlider* fontSlider;
-@property (nonnull, strong) UIImageView* fontBigIV;
+@property (nonnull, strong) UIButton* fontBigBtn;
 @property (nonnull, strong) UILabel* bgLab;
 @property (nonnull, strong) UIButton* bgBtn1;
 @property (nonnull, strong) UIButton* bgBtn2;
@@ -59,21 +59,21 @@ CGFloat settingBtnHeight = 30;
         //亮度
         self.brightLab = [self createLabelWithFrame:CGRectMake(10, 0, labWidth, labHeight) title:@"亮度"];
         [self addSubview:self.brightLab];
-        self.brightSmallIV = [self createImageViewWithFrame:CGRectMake(labWidth + 10, 20, ivSmallWidth, ivSmallWidth) img:[UIImage imageNamed:@"readerSetting_Light_Low"]];
-        [self addSubview:self.brightSmallIV];
-        self.brightBigIV = [self createImageViewWithFrame:CGRectMake(screenWidth - ivBigWidth - 10, 15, ivBigWidth, ivBigWidth) img:[UIImage imageNamed:@"readerSetting_Light_High"]];
-        [self addSubview:self.brightBigIV];
-        self.brightSlider = [self createSliderWithFrame:CGRectMake(self.brightSmallIV.frame.origin.x + self.brightSmallIV.frame.size.width + 10, 20, self.brightBigIV.frame.origin.x - self.brightSmallIV.frame.origin.x - self.brightSmallIV.frame.size.width - 20, 20) minValue:0 maxValue:1 valueFloat:bright selector:@selector(didSlideBrightSlider:)];
+        self.brightSmallBtn = [self createAddOrReduceButtonWithFrame:CGRectMake(labWidth + 10, 15, ivBigWidth, ivBigWidth) image:[UIImage imageNamed:@"readerSetting_Light_Low"] edgeInsets:UIEdgeInsetsMake(5, 5, 5, 5) selector:@selector(clickedBrightSmallButton:)];//[self createImageViewWithFrame:CGRectMake(labWidth + 10, 20, ivSmallWidth, ivSmallWidth) img:[UIImage imageNamed:@"readerSetting_Light_Low"]];
+        [self addSubview:self.brightSmallBtn];
+        self.brightBigBtn = [self createAddOrReduceButtonWithFrame:CGRectMake(screenWidth - ivBigWidth - 10, 15, ivBigWidth, ivBigWidth) image:[UIImage imageNamed:@"readerSetting_Light_High"] edgeInsets:UIEdgeInsetsMake(0, 0, 0, 0) selector:@selector(clickedBrightBigButton:)];//[self createImageViewWithFrame:CGRectMake(screenWidth - ivBigWidth - 10, 15, ivBigWidth, ivBigWidth) img:[UIImage imageNamed:@"readerSetting_Light_High"]];
+        [self addSubview:self.brightBigBtn];
+        self.brightSlider = [self createSliderWithFrame:CGRectMake(self.brightSmallBtn.frame.origin.x + self.brightSmallBtn.frame.size.width + 10, 20, self.brightBigBtn.frame.origin.x - self.brightSmallBtn.frame.origin.x - self.brightSmallBtn.frame.size.width - 20, 20) minValue:0 maxValue:1 valueFloat:bright selector:@selector(didSlideBrightSlider:)];
         [self addSubview:self.brightSlider];
         
         //字号
         self.fontLab = [self createLabelWithFrame:CGRectMake(10, self.brightLab.frame.origin.y + self.brightLab.frame.size.height, labWidth, labHeight) title:@"字号"];
         [self addSubview:self.fontLab];
-        self.fontSmallIV = [self createImageViewWithFrame:CGRectMake(labWidth + 10, self.fontLab.frame.origin.y + 20, ivSmallWidth, ivSmallWidth) img:[UIImage imageNamed:@"readerSetting_Font1"]];
-        [self addSubview:self.fontSmallIV];
-        self.fontBigIV = [self createImageViewWithFrame:CGRectMake(screenWidth - ivBigWidth - 10, self.fontLab.frame.origin.y + 15, ivBigWidth, ivBigWidth) img:[UIImage imageNamed:@"readerSetting_Font2"]];
-        [self addSubview:self.fontBigIV];
-        self.fontSlider = [self createSliderWithFrame:CGRectMake(self.brightSmallIV.frame.origin.x + self.brightSmallIV.frame.size.width + 10, self.fontLab.frame.origin.y + 20, self.brightSlider.frame.size.width, 20) minValue:miniFont maxValue:maxFont valueFloat:fontSize selector:@selector(didSlideFontSlider:)];
+        self.fontSmallBtn = [self createAddOrReduceButtonWithFrame:CGRectMake(labWidth + 10, self.fontLab.frame.origin.y + 15, ivBigWidth, ivBigWidth) image:[UIImage imageNamed:@"readerSetting_Font1"] edgeInsets:UIEdgeInsetsMake(5, 5, 5, 5) selector:@selector(clickedFontSmallButton:)];//[self createImageViewWithFrame:CGRectMake(labWidth + 10, self.fontLab.frame.origin.y + 20, ivSmallWidth, ivSmallWidth) img:[UIImage imageNamed:@"readerSetting_Font1"]];
+        [self addSubview:self.fontSmallBtn];
+        self.fontBigBtn = [self createAddOrReduceButtonWithFrame:CGRectMake(screenWidth - ivBigWidth - 10, self.fontLab.frame.origin.y + 15, ivBigWidth, ivBigWidth) image:[UIImage imageNamed:@"readerSetting_Font2"] edgeInsets:UIEdgeInsetsMake(0, 0, 0, 0) selector:@selector(clickedFontBigButton:)];//[self createImageViewWithFrame:CGRectMake(screenWidth - ivBigWidth - 10, self.fontLab.frame.origin.y + 15, ivBigWidth, ivBigWidth) img:[UIImage imageNamed:@"readerSetting_Font2"]];
+        [self addSubview:self.fontBigBtn];
+        self.fontSlider = [self createSliderWithFrame:CGRectMake(self.brightSmallBtn.frame.origin.x + self.brightSmallBtn.frame.size.width + 10, self.fontLab.frame.origin.y + 20, self.brightSlider.frame.size.width, 20) minValue:miniFont maxValue:maxFont valueFloat:fontSize selector:@selector(didSlideFontSlider:)];
         [self addSubview:self.fontSlider];
         
         //背景
@@ -142,6 +142,50 @@ CGFloat settingBtnHeight = 30;
     return slider;
 }
 
+-(void)clickedBrightSmallButton:(UIButton* )sender {
+    CGFloat value = self.brightSlider.value - 0.1;
+    if (value < self.brightSlider.minimumValue) {
+        value = self.brightSlider.minimumValue;
+    }
+    [self.brightSlider setValue:value animated:YES];
+    
+    //
+    [self didSlideBrightSlider:self.brightSlider];
+}
+
+-(void)clickedBrightBigButton:(UIButton* )sender {
+    CGFloat value = self.brightSlider.value + 0.1;
+    if (value > self.brightSlider.maximumValue) {
+        value = self.brightSlider.maximumValue;
+    }
+    [self.brightSlider setValue:value animated:YES];
+    
+    //
+    [self didSlideBrightSlider:self.brightSlider];
+}
+
+-(void)clickedFontSmallButton:(UIButton* )sender {
+    CGFloat value = self.fontSlider.value - 1;
+    if (value < self.fontSlider.minimumValue) {
+        value = self.fontSlider.minimumValue;
+    }
+    [self.fontSlider setValue:value animated:YES];
+    
+    //
+    [self didSlideFontSlider:self.fontSlider];
+}
+
+-(void)clickedFontBigButton:(UIButton* )sender {
+    CGFloat value = self.fontSlider.value + 1;
+    if (value > self.fontSlider.maximumValue) {
+        value = self.fontSlider.maximumValue;
+    }
+    [self.fontSlider setValue:value animated:YES];
+    
+    //
+    [self didSlideFontSlider:self.fontSlider];
+}
+
 -(void)tappedSlider:(UITapGestureRecognizer* )tapGR {
     UIView* tapVi = tapGR.view;
     CGPoint touchPoint = [tapGR locationInView:tapVi];
@@ -174,6 +218,14 @@ CGFloat settingBtnHeight = 30;
     UIImageView* iv = [[UIImageView alloc]initWithFrame:frame];
     iv.image = img;
     return iv;
+}
+
+-(UIButton* )createAddOrReduceButtonWithFrame:(CGRect )frame image:(UIImage* )image edgeInsets:(UIEdgeInsets )edgeInsets selector:(SEL )selector {
+    UIButton* btn = [[UIButton alloc]initWithFrame:frame];
+    [btn setImage:image forState:UIControlStateNormal];
+    [btn setImageEdgeInsets:edgeInsets];
+    [btn addTarget:self action:selector forControlEvents:UIControlEventTouchUpInside];
+    return btn;
 }
 
 //UIButton

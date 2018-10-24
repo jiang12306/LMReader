@@ -6480,11 +6480,21 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 @end
 
 #define InitSwitchRes_ad_control @"adControl"
+#define InitSwitchRes_skip_n @"skipN"
+#define InitSwitchRes_less_m @"lessM"
 @interface InitSwitchRes : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
+  BOOL hasSkipN_:1;
+  BOOL hasLessM_:1;
+  UInt32 skipN;
+  UInt32 lessM;
   NSMutableArray * adControlArray;
 }
+- (BOOL) hasSkipN;
+- (BOOL) hasLessM;
 @property (readonly, strong) NSArray<AdControl*> * adControl;
+@property (readonly) UInt32 skipN;
+@property (readonly) UInt32 lessM;
 - (AdControl*)adControlAtIndex:(NSUInteger)index;
 
 + (instancetype) defaultInstance;
@@ -6527,6 +6537,16 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (InitSwitchResBuilder *)addAdControl:(AdControl*)value;
 - (InitSwitchResBuilder *)setAdControlArray:(NSArray<AdControl*> *)array;
 - (InitSwitchResBuilder *)clearAdControl;
+
+- (BOOL) hasSkipN;
+- (UInt32) skipN;
+- (InitSwitchResBuilder*) setSkipN:(UInt32) value;
+- (InitSwitchResBuilder*) clearSkipN;
+
+- (BOOL) hasLessM;
+- (UInt32) lessM;
+- (InitSwitchResBuilder*) setLessM:(UInt32) value;
+- (InitSwitchResBuilder*) clearLessM;
 @end
 
 #define FtAdReq_adl_id @"adlId"

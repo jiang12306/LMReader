@@ -200,6 +200,8 @@ static CGFloat cellHeight = 44;
                             [weakSelf hideNetworkLoadingView];
                             [weakSelf showMBProgressHUDWithText:@"获取失败"];
                             return;
+                        }else {
+                            [weakSelf.dataArray removeAllObjects];
                         }
                         
                         UrlReadParse* parse = [self.parseArray firstObject];

@@ -1309,6 +1309,19 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     return resultStr;
 }
 
+//去掉换行，开头不添加两字符空白对齐
++(NSString* )replaceSeveralNewLineNotAddSpaceWithText:(NSString* )originalStr {
+    if (originalStr == nil || [originalStr isKindOfClass:[NSNull class]]) {
+        return @"";
+    }
+    NSString* changedStr = [originalStr stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString* regexStr = @"(\\r|\\n|\\t){1,}[ ]?";
+    NSString* replaceStr = @"";
+    NSRegularExpression* expression = [NSRegularExpression regularExpressionWithPattern:regexStr options:NSRegularExpressionUseUnixLineSeparators error:nil];
+    NSString* resultStr = [expression stringByReplacingMatchesInString:changedStr options:NSMatchingReportCompletion range:NSMakeRange(0, changedStr.length) withTemplate:replaceStr];
+    return resultStr;
+}
+
 //根据转码（如gbk）转换成utf-8
 +(NSStringEncoding )convertEncodingStringWithEncoding:(NSString* )encoding {
     if (encoding == nil || [encoding isKindOfClass:[NSNull class]]) {
@@ -1325,30 +1338,36 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
 
 //根据书籍hostUrl以及章节briefStr组合得到章节的具体章节url
 +(NSString* )getChapterUrlStrWithHostUrlStr:(NSString* )urlStr briefStr:(NSString* )briefStr {
+    NSString* originBriefStr = [LMTool replaceSeveralNewLineNotAddSpaceWithText:briefStr];
     NSString* bookChapterUrlStr = nil;
     NSString *regex =@"[a-zA-z]+://[^\\s]*";
     NSPredicate *urlTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
-    if ([urlTest evaluateWithObject:briefStr]) {
-        bookChapterUrlStr = briefStr;
+    if ([urlTest evaluateWithObject:originBriefStr]) {
+        bookChapterUrlStr = originBriefStr;
     }else {
+        NSURL* bookUrl = [NSURL URLWithString:originBriefStr relativeToURL:[NSURL URLWithString:urlStr]];
+        bookChapterUrlStr = bookUrl.absoluteString;
+        if ([urlTest evaluateWithObject:bookChapterUrlStr]) {
+            return bookChapterUrlStr;
+        }
         if ([urlStr rangeOfString:@"/index.htm"].location != NSNotFound) {
             if ([urlStr rangeOfString:@"/index.html"].location != NSNotFound) {
                 NSString* subUrlStr = [urlStr stringByReplacingOccurrencesOfString:@"/index.html" withString:@""];
-                if ([briefStr hasPrefix:@"/"]) {
-                    bookChapterUrlStr = [NSString stringWithFormat:@"%@%@", subUrlStr,briefStr];
+                if ([originBriefStr hasPrefix:@"/"]) {
+                    bookChapterUrlStr = [NSString stringWithFormat:@"%@%@", subUrlStr,originBriefStr];
                 }else {
-                    bookChapterUrlStr = [NSString stringWithFormat:@"%@/%@", subUrlStr, briefStr];
+                    bookChapterUrlStr = [NSString stringWithFormat:@"%@/%@", subUrlStr, originBriefStr];
                 }
             }else {
                 NSString* subUrlStr = [urlStr stringByReplacingOccurrencesOfString:@"/index.htm" withString:@""];
-                if ([briefStr hasPrefix:@"/"]) {
-                    bookChapterUrlStr = [NSString stringWithFormat:@"%@%@", subUrlStr,briefStr];
+                if ([originBriefStr hasPrefix:@"/"]) {
+                    bookChapterUrlStr = [NSString stringWithFormat:@"%@%@", subUrlStr,originBriefStr];
                 }else {
-                    bookChapterUrlStr = [NSString stringWithFormat:@"%@/%@", subUrlStr, briefStr];
+                    bookChapterUrlStr = [NSString stringWithFormat:@"%@/%@", subUrlStr, originBriefStr];
                 }
             }
         }else {
-            NSURL* bookUrl = [NSURL URLWithString:briefStr relativeToURL:[NSURL URLWithString:urlStr]];
+            NSURL* bookUrl = [NSURL URLWithString:originBriefStr relativeToURL:[NSURL URLWithString:urlStr]];
             bookChapterUrlStr = bookUrl.absoluteString;
         }
     }

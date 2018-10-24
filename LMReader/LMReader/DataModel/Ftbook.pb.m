@@ -29027,14 +29027,32 @@ static AdControl* defaultAdControlInstance = nil;
 
 @interface InitSwitchRes ()
 @property (strong) NSMutableArray<AdControl*> * adControlArray;
+@property UInt32 skipN;
+@property UInt32 lessM;
 @end
 
 @implementation InitSwitchRes
 
 @synthesize adControlArray;
 @dynamic adControl;
+- (BOOL) hasSkipN {
+  return !!hasSkipN_;
+}
+- (void) setHasSkipN:(BOOL) _value_ {
+  hasSkipN_ = !!_value_;
+}
+@synthesize skipN;
+- (BOOL) hasLessM {
+  return !!hasLessM_;
+}
+- (void) setHasLessM:(BOOL) _value_ {
+  hasLessM_ = !!_value_;
+}
+@synthesize lessM;
 - (instancetype) init {
   if ((self = [super init])) {
+    self.skipN = 0;
+    self.lessM = 0;
   }
   return self;
 }
@@ -29071,6 +29089,12 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   [self.adControlArray enumerateObjectsUsingBlock:^(AdControl *element, NSUInteger idx, BOOL *stop) {
     [output writeMessage:1 value:element];
   }];
+  if (self.hasSkipN) {
+    [output writeUInt32:2 value:self.skipN];
+  }
+  if (self.hasLessM) {
+    [output writeUInt32:3 value:self.lessM];
+  }
   [self.unknownFields writeToCodedOutputStream:output];
 }
 - (SInt32) serializedSize {
@@ -29083,6 +29107,12 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   [self.adControlArray enumerateObjectsUsingBlock:^(AdControl *element, NSUInteger idx, BOOL *stop) {
     size_ += computeMessageSize(1, element);
   }];
+  if (self.hasSkipN) {
+    size_ += computeUInt32Size(2, self.skipN);
+  }
+  if (self.hasLessM) {
+    size_ += computeUInt32Size(3, self.lessM);
+  }
   size_ += self.unknownFields.serializedSize;
   memoizedSerializedSize = size_;
   return size_;
@@ -29124,6 +29154,12 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
                      withIndent:[NSString stringWithFormat:@"%@  ", indent]];
     [output appendFormat:@"%@}\n", indent];
   }];
+  if (self.hasSkipN) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"skipN", [NSNumber numberWithInteger:self.skipN]];
+  }
+  if (self.hasLessM) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"lessM", [NSNumber numberWithInteger:self.lessM]];
+  }
   [self.unknownFields writeDescriptionTo:output withIndent:indent];
 }
 - (void) storeInDictionary:(NSMutableDictionary *)dictionary {
@@ -29131,6 +29167,12 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
     NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
     [element storeInDictionary:elementDictionary];
     [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"adControl"];
+  }
+  if (self.hasSkipN) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.skipN] forKey: @"skipN"];
+  }
+  if (self.hasLessM) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.lessM] forKey: @"lessM"];
   }
   [self.unknownFields storeInDictionary:dictionary];
 }
@@ -29144,6 +29186,10 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   InitSwitchRes *otherMessage = other;
   return
       [self.adControlArray isEqualToArray:otherMessage.adControlArray] &&
+      self.hasSkipN == otherMessage.hasSkipN &&
+      (!self.hasSkipN || self.skipN == otherMessage.skipN) &&
+      self.hasLessM == otherMessage.hasLessM &&
+      (!self.hasLessM || self.lessM == otherMessage.lessM) &&
       (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
 }
 - (NSUInteger) hash {
@@ -29151,6 +29197,12 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   [self.adControlArray enumerateObjectsUsingBlock:^(AdControl *element, NSUInteger idx, BOOL *stop) {
     hashCode = hashCode * 31 + [element hash];
   }];
+  if (self.hasSkipN) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.skipN] hash];
+  }
+  if (self.hasLessM) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.lessM] hash];
+  }
   hashCode = hashCode * 31 + [self.unknownFields hash];
   return hashCode;
 }
@@ -29201,6 +29253,12 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
       [resultInitSwitchRes.adControlArray addObjectsFromArray:other.adControlArray];
     }
   }
+  if (other.hasSkipN) {
+    [self setSkipN:other.skipN];
+  }
+  if (other.hasLessM) {
+    [self setLessM:other.lessM];
+  }
   [self mergeUnknownFields:other.unknownFields];
   return self;
 }
@@ -29228,6 +29286,14 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
         [self addAdControl:[subBuilder buildPartial]];
         break;
       }
+      case 16: {
+        [self setSkipN:[input readUInt32]];
+        break;
+      }
+      case 24: {
+        [self setLessM:[input readUInt32]];
+        break;
+      }
     }
   }
 }
@@ -29250,6 +29316,38 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
 }
 - (InitSwitchResBuilder *)clearAdControl {
   resultInitSwitchRes.adControlArray = nil;
+  return self;
+}
+- (BOOL) hasSkipN {
+  return resultInitSwitchRes.hasSkipN;
+}
+- (UInt32) skipN {
+  return resultInitSwitchRes.skipN;
+}
+- (InitSwitchResBuilder*) setSkipN:(UInt32) value {
+  resultInitSwitchRes.hasSkipN = YES;
+  resultInitSwitchRes.skipN = value;
+  return self;
+}
+- (InitSwitchResBuilder*) clearSkipN {
+  resultInitSwitchRes.hasSkipN = NO;
+  resultInitSwitchRes.skipN = 0;
+  return self;
+}
+- (BOOL) hasLessM {
+  return resultInitSwitchRes.hasLessM;
+}
+- (UInt32) lessM {
+  return resultInitSwitchRes.lessM;
+}
+- (InitSwitchResBuilder*) setLessM:(UInt32) value {
+  resultInitSwitchRes.hasLessM = YES;
+  resultInitSwitchRes.lessM = value;
+  return self;
+}
+- (InitSwitchResBuilder*) clearLessM {
+  resultInitSwitchRes.hasLessM = NO;
+  resultInitSwitchRes.lessM = 0;
   return self;
 }
 @end

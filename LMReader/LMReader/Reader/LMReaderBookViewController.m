@@ -2404,7 +2404,27 @@
     paraStyle.lineBreakMode = NSLineBreakByCharWrapping;
     paraStyle.lineSpacing = self.lineSpace;
     
-    NSMutableAttributedString* beforeAttributedStr = [[NSMutableAttributedString alloc]initWithString:resultStr attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:self.fontSize], NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];
+    NSMutableAttributedString* beforeAttributedStr = [[NSMutableAttributedString alloc]initWithString:resultStr attributes:@{NSFontAttributeName : [UIFont fontWithName:@"PingFang SC" size:self.fontSize], NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];//[UIFont systemFontOfSize:self.fontSize]
+    
+    
+    //Chiang
+    NSMutableArray* tempPageArray = [NSMutableArray array];
+    NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:beforeAttributedStr];
+    NSLayoutManager* layoutManager = [[NSLayoutManager alloc] init];
+    [textStorage addLayoutManager:layoutManager];
+    while (YES) {
+        NSTextContainer *textContainer = [[NSTextContainer alloc] initWithSize:contentLabRect.size];
+        [layoutManager addTextContainer:textContainer];
+        
+        NSRange rang = [layoutManager glyphRangeForTextContainer:textContainer];
+        if (rang.length <= 0) {
+            break;
+        }
+        NSInteger loc = rang.location;
+        [tempPageArray addObject:@(loc)];
+    }
+    
+    /*
     CTFramesetterRef beforeFrameSetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef) beforeAttributedStr);
     CGPathRef path = CGPathCreateWithRect(CGRectMake(0, 0, CGRectGetWidth(contentRect), CGRectGetHeight(contentRect)), NULL);
     
@@ -2446,6 +2466,9 @@
     }
     CGPathRelease(path);
     CFRelease(beforeFrameSetter);
+    */
+     
+     
     
     NSInteger chapterIndex = 0;
     if (self.readerBook.chaptersArr.count > 0) {
@@ -2456,9 +2479,17 @@
     BOOL insertAdSwitch = NO;
     NSInteger innerFromWhich = 0;
     NSInteger insertFromWhich = 0;
+    NSInteger stepChapterIndex = 5;
+    NSInteger stepPageIndex = 2;//前n章节中，少于x页的章节不显示广告
     NSData* adData = [LMTool unArchiveAdvertisementSwitchData];
     if (adData != nil && ![adData isKindOfClass:[NSNull class]] && adData.length > 0) {
         InitSwitchRes* res = [InitSwitchRes parseFromData:adData];
+        if ([res hasSkipN] && res.skipN > 0) {
+            stepChapterIndex = res.skipN;
+        }
+        if ([res hasLessM] && res.lessM > 0) {
+            stepPageIndex = res.lessM;
+        }
         for (AdControl* subControl in res.adControl) {
             if (subControl.adlId == 3 && subControl.state == 1) {
                 innerAdSwitch = YES;
@@ -2495,7 +2526,7 @@
         
         LMReaderBookPage* insertBookPage = nil;
         if (innerAdSwitch == YES || insertAdSwitch == YES) {
-            if (i == tempPageArray.count - 1 && ((chapterIndex < 5 && i >= 2) || (chapterIndex >= 5))) {//前5章中，如果该章小于3页，则该章不显示广告；第6章之后均显示广告
+            if (i == tempPageArray.count - 1 && chapterIndex >= stepChapterIndex && i >= stepPageIndex) {//前n章中，不显示广告；任意章页数小于x均不显示广告
                 NSString* lastPageText = [bookPage.text stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
                 NSAttributedString* attributeStr = [[NSAttributedString alloc]initWithString:lastPageText attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:self.fontSize], NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];
                 UILabel* lastPageLab = [[UILabel alloc]initWithFrame:contentLabRect];
@@ -2555,7 +2586,8 @@
     
     //初始化设置pageVC
     if (!self.pageVC) {
-        self.pageVC = [[LMPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStylePageCurl navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];
+        self.pageVC = [[LMPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStylePageCurl navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:@{UIPageViewControllerOptionSpineLocationKey : @1}];
+        self.pageVC.doubleSided = YES;
         self.pageVC.gestureDelegate = self;
         self.pageVC.delegate = self;
         self.pageVC.dataSource = self;

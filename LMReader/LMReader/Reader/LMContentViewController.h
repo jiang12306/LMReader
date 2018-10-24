@@ -19,14 +19,15 @@ typedef NS_ENUM(NSInteger, LMReadModel) {
     LMReaderBackgroundType4 = 4
 };
 
+#define contentBottomLabelHeight ([LMTool isBangsScreen]?(44):(20 + 10))
 #define contentNaviHeight ([LMTool isBangsScreen]?88:64)
-#define contentBottomHeight ([LMTool isBangsScreen]?83:55)
+#define contentBottomHeight ([LMTool isBangsScreen]?83:49)
 #define contentScreenWidth [UIScreen mainScreen].bounds.size.width
 #define contentScreenHeight [UIScreen mainScreen].bounds.size.height
 //计算label文本用
 #define contentRect CGRectMake(10, contentNaviHeight, contentScreenWidth - 10*2, contentScreenHeight - contentNaviHeight - contentBottomHeight)
 //label尺寸
-#define contentLabRect CGRectMake(10, contentNaviHeight, contentScreenWidth - 10*2, contentScreenHeight - contentNaviHeight - contentBottomHeight + 20)
+#define contentLabRect CGRectMake(10, contentNaviHeight, contentScreenWidth - 10*2, contentScreenHeight - contentNaviHeight - contentBottomLabelHeight)
 
 
 static CGFloat contentTencentInnerAdScale = 0.74;//720.f / 1280;//上图下文，腾讯内嵌广告高、宽比

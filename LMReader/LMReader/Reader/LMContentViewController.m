@@ -89,11 +89,13 @@
     paraStyle.lineSpacing = self.lineSpace;
     if (self.content != nil && ![self.content isKindOfClass:[NSNull class]] && self.content.length > 0) {
         self.content = [self.content stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];//去掉尾部换行
-        NSAttributedString* attributeStr = [[NSAttributedString alloc]initWithString:self.content attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:self.fontSize], NSParagraphStyleAttributeName : paraStyle, NSForegroundColorAttributeName : textColor, NSKernAttributeName:@(1)}];
+        NSAttributedString* attributeStr = [[NSAttributedString alloc]initWithString:self.content attributes:@{NSFontAttributeName : [UIFont fontWithName:@"PingFang SC" size:self.fontSize], NSForegroundColorAttributeName : textColor, NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];//[UIFont systemFontOfSize:self.fontSize]
         
         self.contentLabel.attributedText = attributeStr;
         
         [self.contentLabel sizeToFit];
+//        CGSize labSize = [self.contentLabel sizeThatFits:CGSizeMake(contentLabRect.size.width, CGFLOAT_MAX)];
+//        self.contentLabel.frame = CGRectMake(contentLabRect.origin.x, contentLabRect.origin.y, contentLabRect.size.width, labSize.height);
     }
     
     if (self.titleStr != nil) {
