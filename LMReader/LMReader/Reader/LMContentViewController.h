@@ -19,18 +19,23 @@ typedef NS_ENUM(NSInteger, LMReadModel) {
     LMReaderBackgroundType4 = 4
 };
 
-#define contentBottomLabelHeight ([LMTool isBangsScreen]?(44):(20 + 10))
-#define contentNaviHeight ([LMTool isBangsScreen]?88:64)
-#define contentBottomHeight ([LMTool isBangsScreen]?83:49)
+//底部时间、电池等距离屏幕底部高度
+#define contentBottomLabelHeight ([LMTool isBangsScreen]?(44):(20))
+//状态栏高度
+#define contentStatusBarHeight ([LMTool isBangsScreen]?44:20)
+//标题高度
+#define contentTitleLabHeight (20)
+//正文距离title和电池间距高度
+#define contentTopAndBottomSpace (10)
+//屏幕宽
 #define contentScreenWidth [UIScreen mainScreen].bounds.size.width
+//屏幕高
 #define contentScreenHeight [UIScreen mainScreen].bounds.size.height
-//计算label文本用
-#define contentRect CGRectMake(10, contentNaviHeight, contentScreenWidth - 10*2, contentScreenHeight - contentNaviHeight - contentBottomHeight)
 //label尺寸
-#define contentLabRect CGRectMake(10, contentNaviHeight, contentScreenWidth - 10*2, contentScreenHeight - contentNaviHeight - contentBottomLabelHeight)
+#define contentLabRect CGRectMake(10, contentStatusBarHeight + contentTitleLabHeight + contentTopAndBottomSpace, contentScreenWidth - 10*2, contentScreenHeight - contentStatusBarHeight - contentTitleLabHeight - contentBottomLabelHeight - contentTopAndBottomSpace * 2)
 
 
-static CGFloat contentTencentInnerAdScale = 0.74;//720.f / 1280;//上图下文，腾讯内嵌广告高、宽比
+static CGFloat contentTencentInnerAdScale = 0.83;//584.f / 710;//上图下文，腾讯内嵌广告高、宽比
 static CGFloat contentTencentInsertAdScale = 1200.f / 800;//纯图，腾讯插屏广告高、宽比
 static CGFloat contentBaiduInnerAdScale = 2.f / 3;//横幅，百度内嵌广告高、宽比
 static CGFloat contentBaiduInsertAdScale = 5.f / 6;//插屏，百度插屏广告高、宽比

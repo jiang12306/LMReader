@@ -11,7 +11,6 @@
 #import "LMTool.h"
 #import "LMBookCommentTableViewCell.h"
 #import "UIImageView+WebCache.h"
-#import "LMAuthorBookViewController.h"
 #import "LMBookEditCommentViewController.h"
 #import "LMShareView.h"
 #import "LMShareMessage.h"
@@ -24,13 +23,17 @@
 @property (nonatomic, strong) NSMutableArray* dataArray;//
 @property (nonatomic, assign) NSInteger page;
 @property (nonatomic, strong) UIView* controlView;//
+@property (nonatomic, strong) UIButton* controlHotBtn;
+@property (nonatomic, strong) UIButton* controlLastBtn;
 @property (nonatomic, strong) UIButton* hotBtn;
 @property (nonatomic, strong) UIButton* lastBtn;
-
-@property (nonatomic, strong) UISegmentedControl* segmentedControl;
-@property (nonatomic, strong) UISegmentedControl* titleSegmentedControl;
+@property (nonatomic, assign) NSInteger currentIndex;/**<1.最热评论；2.最新评论*/
 
 @property (nonatomic, strong) Book* book;
+
+@property (nonatomic, assign) CGFloat bookCoverWidth;//
+@property (nonatomic, assign) CGFloat bookCoverHeight;//
+@property (nonatomic, assign) CGFloat bookFontScale;//
 
 @end
 
@@ -41,9 +44,24 @@ static NSString* cellIdentifier = @"cellIdentifier";
 -(void)viewDidLoad {
     [super viewDidLoad];
     
+    self.bookCoverWidth = 105.f;
+    self.bookCoverHeight = 145.f;
+    
+    CGFloat maxBookWidth = (self.view.frame.size.width - 20 * 4 - 10 * 3) / 3.f;
+    self.bookFontScale = (self.view.frame.size.width / 414.f);
+    if (self.bookFontScale > 1) {
+        self.bookFontScale = 1;
+    }
+    if (self.bookCoverWidth * self.bookFontScale > maxBookWidth) {
+        self.bookFontScale = maxBookWidth / self.bookCoverWidth;
+    }
+    self.bookCoverWidth *= self.bookFontScale;
+    self.bookCoverHeight *= self.bookFontScale;
+    
     UIView* shareItemView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 40, 40)];
     UIButton* shareItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, shareItemView.frame.size.width, shareItemView.frame.size.height)];
-    [shareItemBtn setImage:[UIImage imageNamed:@"rightBarButtonItem_Share"] forState:UIControlStateNormal];
+    [shareItemBtn setImage:[[UIImage imageNamed:@"rightBarButtonItem_Share"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [shareItemBtn setTintColor:UIColorFromRGB(0x656565)];
     [shareItemBtn setImageEdgeInsets:UIEdgeInsetsMake(7, 7, 7, 7)];
     [shareItemBtn addTarget:self action:@selector(clickedShareButton:) forControlEvents:UIControlEventTouchUpInside];
     [shareItemView addSubview:shareItemBtn];
@@ -78,6 +96,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     //评论刷新 通知
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(refreshComment:) name:@"refreshComment" object:nil];
     
+    self.currentIndex = 1;
     self.page = 0;
     self.dataArray = [NSMutableArray array];
     
@@ -144,8 +163,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
                 [self.tableView cancelNoRefreshData];
                 
                 self.page = 0;
-                self.segmentedControl.selectedSegmentIndex = 0;
-                self.titleSegmentedControl.selectedSegmentIndex = 0;
+                self.currentIndex = 1;
+                self.hotBtn.selected = YES;
+                self.controlHotBtn.selected = YES;
+                self.lastBtn.selected = NO;
+                self.lastBtn.selected = NO;
                 
                 [self loadBookCommentWithPage:self.page loadMore:NO];
             }
@@ -154,57 +176,79 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(void)setupTableHeaderView {
-    CGFloat headerSpaceY = 10;
-    CGFloat bookIVWidth = 75;
-    CGFloat bookIVHeight = 100;
-    UIView* headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, bookIVHeight + 10 + 15)];
+    UIView* headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
     headerView.backgroundColor = [UIColor whiteColor];
     
     NSString* picStr = [self.book.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(headerSpaceY, headerSpaceY, bookIVWidth, bookIVHeight)];
-    iv.layer.borderColor = [UIColor colorWithRed:200.f / 255 green:200.f / 255 blue:200.f / 255 alpha:1].CGColor;
-    iv.layer.borderWidth = 0.5;
-    iv.layer.shadowColor = [UIColor grayColor].CGColor;
-    iv.layer.shadowOffset = CGSizeMake(-5, 5);
-    iv.layer.shadowOpacity = 0.4;
+    UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, self.bookCoverWidth, self.bookCoverHeight)];
     iv.contentMode = UIViewContentModeScaleAspectFill;
     iv.clipsToBounds = YES;
     [iv sd_setImageWithURL:[NSURL URLWithString:picStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage"]];
     [headerView addSubview:iv];
     
-    UILabel* nameLab = [[UILabel alloc]initWithFrame:CGRectMake(iv.frame.origin.x + iv.frame.size.width + headerSpaceY, iv.frame.origin.y, self.view.frame.size.width - bookIVWidth - headerSpaceY * 3, 20)];
+    if ([self.book hasMarkUrl]) {
+        NSString* markUrlStr = [self.book.markUrl stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+        CGFloat markIVWidth = 50;
+        CGFloat markTopSpace = 4;
+        if (self.view.frame.size.width <= 320) {
+            markIVWidth = 40;
+            markTopSpace = 3;
+        }
+        UIImageView* markIV = [[UIImageView alloc]initWithFrame:CGRectMake(iv.frame.origin.x + iv.frame.size.width - markIVWidth + markTopSpace, iv.frame.origin.y - markTopSpace, markIVWidth, markIVWidth)];
+        [headerView addSubview:markIV];
+        
+        UIImage* markImg = [[SDImageCache sharedImageCache] imageFromCacheForKey:markUrlStr];
+        if (markImg != nil) {
+            markIV.image = markImg;
+        }else {
+            [markIV sd_setImageWithURL:[NSURL URLWithString:markUrlStr] placeholderImage:nil options:SDWebImageProgressiveDownload completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+                if (error == nil && image != nil) {
+                    
+                }
+            }];
+        }
+    }
+    
+    UILabel* briefLab = [[UILabel alloc]initWithFrame:CGRectMake(iv.frame.origin.x + iv.frame.size.width + 20, iv.frame.origin.y, headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, 20)];
+    briefLab.numberOfLines = 0;
+    briefLab.lineBreakMode = NSLineBreakByTruncatingTail;
+    briefLab.font = [UIFont systemFontOfSize:12];
+    NSString* briefStr = self.book.abstract;
+    if (briefStr == nil || briefStr.length == 0) {
+        briefStr = @"暂无简介";
+    }
+    briefLab.text = briefStr;
+    [headerView addSubview:briefLab];
+    CGSize briefSize = [briefLab sizeThatFits:CGSizeMake(headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, 9999)];
+    if (briefSize.height > briefLab.font.lineHeight * 3) {
+        briefSize.height = briefLab.font.lineHeight * 3;
+    }
+    
+    UILabel* nameLab = [[UILabel alloc]initWithFrame:CGRectMake(iv.frame.origin.x + iv.frame.size.width + 20, iv.frame.origin.y, headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, 20)];
     nameLab.numberOfLines = 0;
     nameLab.lineBreakMode = NSLineBreakByCharWrapping;
     nameLab.font = [UIFont systemFontOfSize:18];
     nameLab.text = self.book.name;
     [headerView addSubview:nameLab];
-    CGRect nameRect = nameLab.frame;
-    CGSize nameSize = [nameLab sizeThatFits:CGSizeMake(nameRect.size.width, 9999)];
-    nameLab.frame = CGRectMake(iv.frame.origin.x + iv.frame.size.width + headerSpaceY, iv.frame.origin.y, nameRect.size.width, nameSize.height);
+    CGSize nameSize = [nameLab sizeThatFits:CGSizeMake(headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, 9999)];
     
-    UILabel* authorLab = [[UILabel alloc]initWithFrame:CGRectMake(nameLab.frame.origin.x, iv.frame.origin.y + (iv.frame.size.height - 20) / 2, 100, 20)];
-    authorLab.font = [UIFont systemFontOfSize:16];
-    authorLab.textColor = THEMEORANGECOLOR;
-    authorLab.text = self.book.author;
-    [headerView addSubview:authorLab];
-    CGRect authorFrame = authorLab.frame;
-    CGSize authorSize = [authorLab sizeThatFits:CGSizeMake(9999, authorFrame.size.height)];
-    authorLab.frame = CGRectMake(authorFrame.origin.x, authorFrame.origin.y, authorSize.width, authorFrame.size.height);
+    CGFloat tempSpaceY = (self.bookCoverHeight - nameSize.height - briefSize.height - 20) / 4;
+    if (tempSpaceY < 0) {
+        tempSpaceY = 0;
+    }
+    nameLab.frame = CGRectMake(iv.frame.origin.x + iv.frame.size.width + 20, iv.frame.origin.y + tempSpaceY, headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, nameSize.height);
+    briefLab.frame = CGRectMake(nameLab.frame.origin.x, nameLab.frame.origin.y + nameLab.frame.size.height + tempSpaceY, headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, briefSize.height);
     
-    authorLab.userInteractionEnabled = YES;
-    UITapGestureRecognizer* authorTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(clickedAuthorButton)];
-    [authorLab addGestureRecognizer:authorTap];
-    
-    UIButton* editCommentBtn = [[UIButton alloc]initWithFrame:CGRectMake(headerView.frame.size.width - 10 - 25, iv.frame.origin.y + iv.frame.size.height - 25, 25, 25)];
-    editCommentBtn.tintColor = [UIColor colorWithRed:220.f/255 green:110.f/255 blue:100.f/255 alpha:1];
+    UIButton* editCommentBtn = [[UIButton alloc]initWithFrame:CGRectMake(headerView.frame.size.width - 20 - 25, briefLab.frame.origin.y + briefLab.frame.size.height + tempSpaceY, 25, 25)];
+    editCommentBtn.tintColor = THEMEORANGECOLOR;
     UIImage* btnImg = [[UIImage imageNamed:@"editComment"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [editCommentBtn setImage:btnImg forState:UIControlStateNormal];
     [editCommentBtn setImageEdgeInsets:UIEdgeInsetsMake(1, 1, 1, 1)];
     [editCommentBtn addTarget:self action:@selector(clickedEditCommentButton:) forControlEvents:UIControlEventTouchUpInside];
     [headerView addSubview:editCommentBtn];
     
-    UILabel* commentCountLab = [[UILabel alloc]initWithFrame:CGRectMake(nameLab.frame.origin.x, iv.frame.origin.y + iv.frame.size.height - 20, self.view.frame.size.width - bookIVWidth - headerSpaceY * 3, 20)];
-    commentCountLab.font = [UIFont systemFontOfSize:14];
+    UILabel* commentCountLab = [[UILabel alloc]initWithFrame:CGRectMake(nameLab.frame.origin.x, editCommentBtn.frame.origin.y, editCommentBtn.frame.origin.x - iv.frame.origin.x - iv.frame.size.width - 20 * 2, 20)];
+    commentCountLab.font = [UIFont systemFontOfSize:15];
     commentCountLab.textColor = [UIColor grayColor];
     NSString* commentCountStr = @"暂无评论";
     if (self.book.commentsCount > 0) {
@@ -213,35 +257,67 @@ static NSString* cellIdentifier = @"cellIdentifier";
     commentCountLab.text = commentCountStr;
     [headerView addSubview:commentCountLab];
     
-    UILabel* lineLab = [[UILabel alloc]initWithFrame:CGRectMake(10, headerView.frame.size.height - 1, headerView.frame.size.width - 10 * 2, 1)];
-    lineLab.backgroundColor = [UIColor colorWithRed:200.f/255 green:200.f/255 blue:200.f/255 alpha:1];
-    [headerView addSubview:lineLab];
-    
-    self.segmentedControl = [[UISegmentedControl alloc]initWithItems:@[@"最热评论", @"最新评论"]];
-    self.segmentedControl.frame = CGRectMake(10, iv.frame.origin.y + iv.frame.size.height + 20, headerView.frame.size.width - 20, 30);
-    self.segmentedControl.backgroundColor = [UIColor whiteColor];
-    self.segmentedControl.tintColor = THEMEORANGECOLOR;
-    if (self.titleSegmentedControl) {
-        self.segmentedControl.selectedSegmentIndex = self.titleSegmentedControl.selectedSegmentIndex;
-    }else {
-        self.segmentedControl.selectedSegmentIndex = 0;
+    CGFloat btnStartY = iv.frame.origin.y + iv.frame.size.height + 20;
+    if (commentCountLab.frame.origin.y + commentCountLab.frame.size.height > iv.frame.origin.y + iv.frame.size.height) {
+        btnStartY = commentCountLab.frame.origin.y + commentCountLab.frame.size.height + 20;
     }
-    [self.segmentedControl addTarget:self action:@selector(clickedSegmentedControl:) forControlEvents:UIControlEventValueChanged];
-    [headerView addSubview:self.segmentedControl];
+    self.hotBtn = [[UIButton alloc]initWithFrame:CGRectMake(20, btnStartY, (headerView.frame.size.width - 20 * 3) / 2, 40)];
+    self.hotBtn.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    self.hotBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+    [self.hotBtn setTitle:@"最热评论" forState:UIControlStateNormal];
+    [self.hotBtn setTitleColor:[UIColor colorWithRed:50.f/255 green:50.f/255 blue:50.f/255 alpha:1] forState:UIControlStateNormal];
+    [self.hotBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateSelected];
+    [self.hotBtn addTarget:self action:@selector(clickedHeaderTitleButton:) forControlEvents:UIControlEventTouchUpInside];
+    [headerView addSubview:self.hotBtn];
     
-    headerView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.segmentedControl.frame.origin.y + self.segmentedControl.frame.size.height + 10);
+    self.lastBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.hotBtn.frame.origin.x + self.hotBtn.frame.size.width + 20, self.hotBtn.frame.origin.y, self.hotBtn.frame.size.width, self.hotBtn.frame.size.height)];
+    self.lastBtn.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    self.lastBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+    [self.lastBtn setTitle:@"最新评论" forState:UIControlStateNormal];
+    [self.lastBtn setTitleColor:[UIColor colorWithRed:50.f/255 green:50.f/255 blue:50.f/255 alpha:1] forState:UIControlStateNormal];
+    [self.lastBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateSelected];
+    [self.lastBtn addTarget:self action:@selector(clickedHeaderTitleButton:) forControlEvents:UIControlEventTouchUpInside];
+    [headerView addSubview:self.lastBtn];
+    
+    if (self.currentIndex == 2) {
+        self.lastBtn.selected = YES;
+        self.hotBtn.selected = NO;
+    }else {
+        self.hotBtn.selected = YES;
+        self.lastBtn.selected = NO;
+    }
+    
+    headerView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.hotBtn.frame.origin.y + self.hotBtn.frame.size.height + 20);
     
     if (!self.controlView) {
-        self.controlView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 50)];
+        self.controlView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 80)];
         self.controlView.backgroundColor = [UIColor whiteColor];
         
-        self.titleSegmentedControl = [[UISegmentedControl alloc]initWithItems:@[@"最热评论", @"最新评论"]];
-        self.titleSegmentedControl.frame = CGRectMake(10, 10, self.controlView.frame.size.width - 20, 30);
-        self.titleSegmentedControl.backgroundColor = [UIColor whiteColor];
-        self.titleSegmentedControl.tintColor = THEMEORANGECOLOR;
-        self.titleSegmentedControl.selectedSegmentIndex = 0;
-        [self.titleSegmentedControl addTarget:self action:@selector(clickedSegmentedControl:) forControlEvents:UIControlEventValueChanged];
-        [self.controlView addSubview:self.titleSegmentedControl];
+        self.controlHotBtn = [[UIButton alloc]initWithFrame:CGRectMake(20, 20, self.hotBtn.frame.size.width, 40)];
+        self.controlHotBtn.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+        self.controlHotBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+        [self.controlHotBtn setTitle:@"最热评论" forState:UIControlStateNormal];
+        [self.controlHotBtn setTitleColor:[UIColor colorWithRed:50.f/255 green:50.f/255 blue:50.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.controlHotBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateSelected];
+        [self.controlHotBtn addTarget:self action:@selector(clickedHeaderTitleButton:) forControlEvents:UIControlEventTouchUpInside];
+        [self.controlView addSubview:self.controlHotBtn];
+        
+        self.controlLastBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.controlHotBtn.frame.origin.x + self.controlHotBtn.frame.size.width + 20, self.controlHotBtn.frame.origin.y, self.hotBtn.frame.size.width, self.hotBtn.frame.size.height)];
+        self.controlLastBtn.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+        self.controlLastBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+        [self.controlLastBtn setTitle:@"最新评论" forState:UIControlStateNormal];
+        [self.controlLastBtn setTitleColor:[UIColor colorWithRed:50.f/255 green:50.f/255 blue:50.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.controlLastBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateSelected];
+        [self.controlLastBtn addTarget:self action:@selector(clickedHeaderTitleButton:) forControlEvents:UIControlEventTouchUpInside];
+        [self.controlView addSubview:self.controlLastBtn];
+        
+        if (self.currentIndex == 2) {
+            self.controlLastBtn.selected = YES;
+            self.controlHotBtn.selected = NO;
+        }else {
+            self.controlHotBtn.selected = YES;
+            self.controlLastBtn.selected = NO;
+        }
         
         [self.view insertSubview:self.controlView aboveSubview:self.tableView];
         self.controlView.hidden = YES;
@@ -278,16 +354,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
     }
 }
 
-//点击作者名称
--(void)clickedAuthorButton {
-    LMAuthorBookViewController* authorBookVC = [[LMAuthorBookViewController alloc]init];
-    authorBookVC.author = self.book.author;
-    [self.navigationController pushViewController:authorBookVC animated:YES];
-}
-
 -(void)loadBookCommentWithPage:(NSInteger )page loadMore:(BOOL )loadMore {
     UInt32 sortType = 1;
-    if (self.segmentedControl.selectedSegmentIndex == 1) {
+    if (self.currentIndex == 2) {
         sortType = 0;
     }
     BookCommentsReqBuilder* builder = [BookCommentsReq builder];
@@ -353,28 +422,40 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 //
--(void)clickedSegmentedControl:(UISegmentedControl* )seg {
+-(void)clickedHeaderTitleButton:(UIButton* )sender {
+    if (sender.selected == YES) {
+        return;
+    }
     [self.tableView cancelNoRefreshData];
     [self.tableView cancelNoMoreData];
     
-    if (self.segmentedControl.selectedSegmentIndex == 0) {
-        self.page = 0;
-        [self loadBookCommentWithPage:self.page loadMore:NO];
-    }else if (self.segmentedControl.selectedSegmentIndex == 1) {
-        self.page = 0;
-        [self loadBookCommentWithPage:self.page loadMore:NO];
+    if (sender == self.hotBtn || sender == self.controlHotBtn) {
+        
+        self.currentIndex = 1;
+        
+        self.hotBtn.selected = YES;
+        self.controlHotBtn.selected = YES;
+        self.lastBtn.selected = NO;
+        self.controlLastBtn.selected = NO;
+    }else if (sender == self.lastBtn || sender == self.controlLastBtn) {
+        
+        self.currentIndex = 2;
+        
+        self.lastBtn.selected = YES;
+        self.controlLastBtn.selected = YES;
+        self.hotBtn.selected = NO;
+        self.controlHotBtn.selected = NO;
     }
     
-    if (seg == self.titleSegmentedControl) {
-        self.segmentedControl.selectedSegmentIndex = seg.selectedSegmentIndex;
-    }else if (seg == self.segmentedControl) {
-        self.titleSegmentedControl.selectedSegmentIndex = seg.selectedSegmentIndex;
-    }
-    NSLog(@"###########titleControl = %ld, control = %ld", self.titleSegmentedControl.selectedSegmentIndex, self.segmentedControl.selectedSegmentIndex);
+    self.page = 0;
+    [self loadBookCommentWithPage:self.page loadMore:NO];
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView* tempVi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.01)];
+    UIView* tempVi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
+    if (self.book != nil) {
+        tempVi.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    }
     return tempVi;
 }
 
@@ -402,7 +483,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 0.01;
+    return 10;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
@@ -417,11 +498,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
     Comment* comment = [self.dataArray objectAtIndex:row];
     NSString* commentStr = comment.text;
     if (commentStr != nil && commentStr.length > 0) {
-        CGFloat contentHeight = [LMBookCommentTableViewCell caculateLabelHeightWithWidth:self.view.frame.size.width - 10 * 2 text:commentStr font:[UIFont systemFontOfSize:CommentContentFontSize] maxLines:0];
+        CGFloat contentHeight = [LMBookCommentTableViewCell caculateLabelHeightWithWidth:self.view.frame.size.width - CommentAvatorIVWidth - 20 * 3 text:commentStr font:[UIFont systemFontOfSize:CommentContentFontSize] maxLines:0];
         
-        return CommentAvatorIVWidth + CommentStarViewHeight + contentHeight + 10 * 4;
+        return CommentAvatorIVWidth + 10 + contentHeight + 20 * 2;
     }else {
-        return CommentAvatorIVWidth + CommentStarViewHeight + 10 * 3;
+        return CommentAvatorIVWidth + 20 * 2;
     }
 }
 
@@ -431,7 +512,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (!cell) {
         cell = [[LMBookCommentTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
-    
+    [cell showLineView:NO];
     cell.delegate = self;
     
     Comment* comment = [self.dataArray objectAtIndex:row];
@@ -509,8 +590,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
                     
                     //刷新
                     self.page = 0;
-                    self.segmentedControl.selectedSegmentIndex = 0;
-                    self.titleSegmentedControl.selectedSegmentIndex = 0;
+                    self.currentIndex = 1;
+                    self.hotBtn.selected = YES;
+                    self.controlHotBtn.selected = YES;
+                    self.lastBtn.selected = NO;
+                    self.lastBtn.selected = NO;
                     
                     [self loadBookCommentWithPage:self.page loadMore:NO];
                 }
@@ -530,9 +614,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
 #pragma mark -KVO
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
     if (object == self.tableView && [keyPath isEqualToString:@"contentOffset"]) {
-        CGFloat originY = self.segmentedControl.frame.origin.y - 10;
+        CGFloat originY = self.hotBtn.frame.origin.y - 20;
         CGFloat contentOffsetY = self.tableView.contentOffset.y;
-//        NSLog(@"originY = %f, contentOffsety = %f", originY, contentOffsetY);
         if (contentOffsetY >= originY) {
             self.controlView.hidden = NO;
         }else {

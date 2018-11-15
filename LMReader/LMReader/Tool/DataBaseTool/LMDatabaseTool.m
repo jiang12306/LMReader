@@ -9,7 +9,6 @@
 #import "LMDatabaseTool.h"
 #import "FMDB.h"
 #import "LMTool.h"
-#import "LMBookShelfModel.h"
 
 @implementation LMDatabaseTool
 
@@ -49,6 +48,7 @@ static NSString* databaseName = @"book.db";
     
     //阅读记录
     [self createReadRecordTable];
+    
 }
 
 //删除首次启动时创建的数据表
@@ -318,6 +318,8 @@ static NSString* databaseName = @"book.db";
 #define Read_source_id @"ReadSourceId"
 #define Read_currentOffset @"ReadOffset"
 #define Read_time @"ReadTime"
+#define Read_progress @"ReadProgress"
+
 
 //创建
 -(BOOL )createReadRecordTable {
@@ -328,6 +330,12 @@ static NSString* databaseName = @"book.db";
         NSString* sql = [NSString stringWithFormat:@"create table if not exists %@ (%@ integer not null primary key autoincrement, %@ integer not null unique, %@ text, %@ integer, %@ integer, %@ text, %@ integer, %@ integer, %@ datetime)", Read_table_name, DatabaseId, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time];
         NSLog(@"%s, sql = %@", __FUNCTION__, sql);
         res = [db executeUpdate:sql];
+        
+        //插入 阅读进度 列
+        if (![db columnExists:Read_progress inTableWithName:Read_table_name]) {
+            NSString *alertStr = [NSString stringWithFormat:@"alter table %@ add %@ text", Read_table_name, Read_progress];
+            res = [db executeUpdate:alertStr];
+        }
     }
     
     [db close];
@@ -348,8 +356,21 @@ static NSString* databaseName = @"book.db";
     return res;
 }
 
+//清空阅读记录
+-(BOOL )deleteAllReadRecord {
+    NSString* dbPath = [self getDatabasePath];
+    FMDatabase* db = [FMDatabase databaseWithPath:dbPath];
+    BOOL res = [db open];
+    if (res == YES) {
+        NSString* sql = [NSString stringWithFormat:@"delete from %@;", Read_table_name];
+        res = [db executeUpdate:sql];
+    }
+    [db close];
+    return res;
+}
+
 //保存一条阅读记录
--(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(UInt32 )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset {
+-(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(UInt32 )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset progressStr:(NSString* )progressStr {
     NSDate* currentDate = [self getCurrentDate];
     
     NSString* dbPath = [self getDatabasePath];
@@ -362,9 +383,9 @@ static NSString* databaseName = @"book.db";
         NSNumber* sourceIdNumber = [NSNumber numberWithUnsignedInt:sourceId];
         NSNumber* offsetNumber = [NSNumber numberWithInteger:offset];
         
-        NSString* sql = [NSString stringWithFormat:@"insert or replace into %@ (%@, %@, %@, %@, %@, %@, %@, %@) values (?, ?, ?, ?, ?, ?, ?, ?);", Read_table_name, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time];
+        NSString* sql = [NSString stringWithFormat:@"insert or replace into %@ (%@, %@, %@, %@, %@, %@, %@, %@, %@) values (?, ?, ?, ?, ?, ?, ?, ?, ?);", Read_table_name, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time, Read_progress];
         
-        res = [db executeUpdate:sql, bookNumber, bookName, chapterIdNumber, chapterNoNumber, chapterTitle, sourceIdNumber, offsetNumber, currentDate];
+        res = [db executeUpdate:sql, bookNumber, bookName, chapterIdNumber, chapterNoNumber, chapterTitle, sourceIdNumber, offsetNumber, currentDate, progressStr];
     }
     [db close];
     return res;
@@ -451,6 +472,11 @@ static NSString* databaseName = @"book.db";
             NSDate* date = [rs dateForColumn:Read_time];
             [dic setObject:date forKey:@"date"];
             
+            NSString* progressStr = [rs stringForColumn:Read_progress];
+            if (progressStr != nil && ![progressStr isKindOfClass:[NSNull class]] && progressStr.length > 0) {
+                [dic setObject:progressStr forKey:@"progress"];
+            }
+            
             [arr addObject:dic];
         }
     }
@@ -500,7 +526,7 @@ static NSString* databaseName = @"book.db";
         FMResultSet* rs = [db executeQuery:sql, bookNumber];
         while ([rs next]) {
             hasRecord = YES;
-            resultStr = [rs stringForColumn:Read_chapter_title];
+            resultStr = [rs stringForColumn:Read_progress];
             break;
         }
     }
@@ -563,6 +589,11 @@ static NSString* databaseName = @"book.db";
             NSDate* date = [rs dateForColumn:Read_time];
             [dic setObject:date forKey:@"date"];
             
+            NSString* progressStr = [rs stringForColumn:Read_progress];
+            if (progressStr != nil && ![progressStr isKindOfClass:[NSNull class]] && progressStr.length > 0) {
+                [dic setObject:progressStr forKey:@"progress"];
+            }
+            
             [arr addObject:dic];
         }
     }
@@ -618,6 +649,11 @@ static NSString* databaseName = @"book.db";
             NSDate* date = [rs dateForColumn:Read_time];
             [dic setObject:date forKey:@"date"];
             
+            NSString* progressStr = [rs stringForColumn:Read_progress];
+            if (progressStr != nil && ![progressStr isKindOfClass:[NSNull class]] && progressStr.length > 0) {
+                [dic setObject:progressStr forKey:@"progress"];
+            }
+            
             [arr addObject:dic];
         }
     }
@@ -637,6 +673,7 @@ static NSString* databaseName = @"book.db";
 #define Book_table_name @"bookShelf"
 #define Book_book_time @"bookShelfTime"
 
+
 //创建
 -(BOOL )createBookShelfTable {
     NSString* dbPath = [self getDatabasePath];
@@ -646,6 +683,12 @@ static NSString* databaseName = @"book.db";
         NSString* sql = [NSString stringWithFormat:@"create table if not exists %@ (%@ integer not null primary key autoincrement, %@ integer not null unique, %@ text, %@ text, %@ integer, %@ text, %@ text, %@ text, %@ integer, %@ text, %@ integer, %@ integer, %@ datetime)", Book_table_name, DatabaseId, Book_book_id, Book_name, Book_book_type, Book_book_length, Book_author, Book_key_word, Book_abstract, Book_clicked, Book_pic, Book_book_state, UserBook_is_top, Book_book_time];
         NSLog(@"%s, sql = %@", __FUNCTION__, sql);
         res = [db executeUpdate:sql];
+        
+        //插入 标签 列
+        if (![db columnExists:Book_mark_url inTableWithName:Book_table_name]) {
+            NSString *alertStr = [NSString stringWithFormat:@"alter table %@ add %@ text", Book_table_name, Book_mark_url];
+            res = [db executeUpdate:alertStr];
+        }
     }
     
     [db close];
@@ -806,9 +849,11 @@ static NSString* databaseName = @"book.db";
             NSNumber* clickedNumber = [NSNumber numberWithUnsignedInt:book.clicked];
             NSNumber* stateNumber = [NSNumber numberWithInt:book.bookState];
             NSNumber* topNumber = [NSNumber numberWithInt:userBook.isTop];
+            NSString* markUrlStr = book.markUrl;
             
-            NSString* bookSql = [NSString stringWithFormat:@"insert or replace into %@ (%@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", Book_table_name, Book_book_id, Book_name, Book_book_type, Book_book_length, Book_author, Book_key_word, Book_abstract, Book_clicked, Book_pic, Book_book_state, UserBook_is_top, Book_book_time];
-            res = [db executeUpdate:bookSql, bookIdNumber, book.name, typeStr, lengthNumber, book.author, keyWordStr, book.abstract, clickedNumber, book.pic, stateNumber, topNumber, currentDate];
+            NSString* bookSql = [NSString stringWithFormat:@"insert or replace into %@ (%@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", Book_table_name, Book_book_id, Book_name, Book_book_type, Book_book_length, Book_author, Book_key_word, Book_abstract, Book_clicked, Book_pic, Book_book_state, UserBook_is_top, Book_book_time, Book_mark_url];
+            res = [db executeUpdate:bookSql, bookIdNumber, book.name, typeStr, lengthNumber, book.author, keyWordStr, book.abstract, clickedNumber, book.pic, stateNumber, topNumber, currentDate, markUrlStr];
+            
             
             NSNumber* sourceIdNumber = [NSNumber numberWithUnsignedInt:source.id];
             BOOL lastChapterResult = [self insertLastChapterData:lastChapter bookIdNumber:bookIdNumber sourceIdNumber:sourceIdNumber db:db date:currentDate];
@@ -828,7 +873,7 @@ static NSString* databaseName = @"book.db";
         }
     }
     [db close];
-    return NO;
+    return res;
 }
 
 //判断 书架页面 某本书是否已存在
@@ -1028,28 +1073,15 @@ static NSString* databaseName = @"book.db";
     return arr;
 }
 
-//取出所有 书架页面 书 page默认0，size默认20
--(NSMutableArray* )queryBookShelfUserBooksWithPage:(NSInteger )page size:(NSInteger )size {
+//取出所有 书架页面 书
+-(NSMutableArray* )queryAllBookShelfUserBooks {
     NSMutableArray * arr = [NSMutableArray array];
     NSString* dbPath = [self getDatabasePath];
     FMDatabase* db = [FMDatabase databaseWithPath:dbPath];
     BOOL res = [db open];
     if (res == YES) {
-        NSInteger querySize = size;
-        if (size == 0) {
-            querySize = 20;
-        }
-        NSInteger startInteger = page * querySize;
-        NSNumber* startNumber = [NSNumber numberWithInteger:startInteger];
-        NSNumber* totalNumber = [NSNumber numberWithInteger:size];
-        NSString* bookShelfSql = [NSString stringWithFormat:@"select * from %@ order by %@ desc, %@ desc limit ? offset ?", Book_table_name, UserBook_is_top, Book_book_time];
-        FMResultSet* rs;
-        if (page == 0 && size == 0) {//取所有
-            bookShelfSql = [NSString stringWithFormat:@"select * from %@ order by %@ desc, %@ desc", Book_table_name, UserBook_is_top, Book_book_time];
-            rs = [db executeQuery:bookShelfSql];
-        }else {
-            rs = [db executeQuery:bookShelfSql, totalNumber, startNumber];
-        }
+        NSString* bookShelfSql = [NSString stringWithFormat:@"select * from %@ order by %@ desc, %@ desc", Book_table_name, UserBook_is_top, Book_book_time];
+        FMResultSet* rs = [db executeQuery:bookShelfSql];
         while ([rs next]) {
             BookBuilder* bookBuilder = [Book builder];
             int bookId = [rs intForColumn:Book_book_id];
@@ -1082,6 +1114,10 @@ static NSString* databaseName = @"book.db";
                 bookState = BookStateStatePause;
             }
             [bookBuilder setBookState:bookState];
+            NSString* markUrlStr = [rs stringForColumn:Book_mark_url];
+            if (markUrlStr != nil && ![markUrlStr isKindOfClass:[NSNull class]] && markUrlStr.length > 0) {
+                [bookBuilder setMarkUrl:markUrlStr];
+            }
             
             //lastChapter
             ChapterBuilder* chapterBuilder = [Chapter builder];
@@ -1156,11 +1192,150 @@ static NSString* databaseName = @"book.db";
             model.userBook = userBook;
             model.markState = chapterModel.readState;
             
+            NSString* progressStr = nil;
+            NSString* sql = [NSString stringWithFormat:@"select * from %@ where %@ = ? order by %@ desc;", Read_table_name, Read_book_id, Read_time];
+            NSNumber* bookNumber = [NSNumber numberWithUnsignedInt:bookId];
+            FMResultSet* rs = [db executeQuery:sql, bookNumber];
+            while ([rs next]) {
+                progressStr = [rs stringForColumn:Read_progress];
+                break;
+            }
+            if (progressStr != nil && ![progressStr isKindOfClass:[NSNull class]] && progressStr.length > 0) {
+                model.progressStr = progressStr;
+            }
+            
             [arr addObject:model];
         }
     }
     [db close];
     return arr;
+}
+
+//取一本 书架页面 书
+-(LMBookShelfModel* )queryBookShelfUserBooksWithBookId:(NSInteger )bookId {
+    LMBookShelfModel* model = nil;
+    NSString* dbPath = [self getDatabasePath];
+    FMDatabase* db = [FMDatabase databaseWithPath:dbPath];
+    BOOL res = [db open];
+    if (res == YES) {
+        NSNumber* queryBookIdNumber = [NSNumber numberWithInteger:bookId];
+        NSString* bookShelfSql = [NSString stringWithFormat:@"select * from %@ where %@ = ?", Book_table_name, Book_book_id];
+        FMResultSet* rs = [db executeQuery:bookShelfSql, queryBookIdNumber];
+        while ([rs next]) {
+            BookBuilder* bookBuilder = [Book builder];
+            int bookId = [rs intForColumn:Book_book_id];
+            [bookBuilder setBookId:bookId];
+            [bookBuilder setName:[rs stringForColumn:Book_name]];
+            NSString* typeStr = [rs stringForColumn:Book_book_type];
+            NSArray* typeArr = nil;
+            if (typeStr != nil && ![typeStr isKindOfClass:[NSNull class]] && typeStr.length > 0) {
+                typeArr = [typeStr componentsSeparatedByString:@","];
+            }
+            [bookBuilder setBookTypeArray:typeArr];
+            [bookBuilder setBookLength:[rs intForColumn:Book_book_length]];
+            [bookBuilder setAuthor:[rs stringForColumn:Book_author]];
+            NSString* keyWordStr = [rs stringForColumn:Book_key_word];
+            NSArray* keyWordArr = nil;
+            if (keyWordStr != nil && ![keyWordStr isKindOfClass:[NSNull class]] && keyWordStr.length > 0) {
+                keyWordArr = [keyWordStr componentsSeparatedByString:@","];
+            }
+            [bookBuilder setKeyWordArray:keyWordArr];
+            [bookBuilder setAbstract:[rs stringForColumn:Book_abstract]];
+            [bookBuilder setClicked:[rs intForColumn:Book_clicked]];
+            [bookBuilder setPic:[rs stringForColumn:Book_pic]];
+            BookState bookState = BookStateStateUnknown;
+            int bookStateInt = [rs intForColumn:Book_book_state];
+            if (bookStateInt == 1) {
+                bookState = BookStateStateWriting;
+            }else if (bookStateInt == 2) {
+                bookState = BookStateStateFinished;
+            }else if (bookStateInt == 3) {
+                bookState = BookStateStatePause;
+            }
+            [bookBuilder setBookState:bookState];
+            NSString* markUrlStr = [rs stringForColumn:Book_mark_url];
+            if (markUrlStr != nil && ![markUrlStr isKindOfClass:[NSNull class]] && markUrlStr.length > 0) {
+                [bookBuilder setMarkUrl:markUrlStr];
+            }
+            
+            //lastChapter
+            ChapterBuilder* chapterBuilder = [Chapter builder];
+            NSString* chapterSql = [NSString stringWithFormat:@"select * from %@ where %@ = ? order by %@ desc", Chapter_table_name, Chapter_foreign_BookId, Chapter_time];
+            FMResultSet* chapterRS = [db executeQuery:chapterSql, [NSNumber numberWithInt:bookId]];
+            while ([chapterRS next]) {
+                int sourceId = [chapterRS intForColumn:Chapter_foreign_SourceId];
+                
+                int bookNono = [chapterRS intForColumn:Chapter_bookNo_no];
+                NSString* bookNoname = [chapterRS stringForColumn:Chapter_bookNo_name];
+                BookNoBuilder* bookNoBuilder = [BookNo builder];
+                [bookNoBuilder setNo:bookNono];
+                [bookNoBuilder setName:bookNoname];
+                BookNo* bookNo = [bookNoBuilder build];
+                
+                [chapterBuilder setBookNo:bookNo];
+                [chapterBuilder setChapterNo:[chapterRS intForColumn:Chapter_chapter_no]];
+                [chapterBuilder setChapterTitle:[chapterRS stringForColumn:Chapter_chapter_title]];
+                [chapterBuilder setChapterContent:[chapterRS stringForColumn:Chapter_chapter_content]];
+                [chapterBuilder setUpdatedAt:[chapterRS unsignedLongLongIntForColumn:Chapter_updated_at]];
+                [chapterBuilder setId:[chapterRS intForColumn:Chapter_chapter_id]];
+                
+                //source
+                NSString* sourceSql = [NSString stringWithFormat:@"select * from %@ where %@ = ? order by %@ desc", Source_table_name, Source_id, Source_time];
+                FMResultSet* sourceRS = [db executeQuery:sourceSql, [NSNumber numberWithInt:sourceId]];
+                while ([sourceRS next]) {
+                    SourceBuilder* sourceBuilder = [Source builder];
+                    [sourceBuilder setId:[sourceRS intForColumn:Source_id]];
+                    [sourceBuilder setName:[sourceRS stringForColumn:Source_name]];
+                    [sourceBuilder setUrl:[sourceRS stringForColumn:Source_url]];
+                    SourceState sourceState = SourceStateSourcestateUnknown;
+                    int sourceStateInt = [sourceRS intForColumn:Source_source_state];
+                    if (sourceStateInt == 1) {
+                        sourceState = SourceStateSourcestateWorking;
+                    }else if (sourceStateInt == 2) {
+                        sourceState = SourceStateSourcestateStop;
+                    }else if (sourceStateInt == 2) {
+                        sourceState = SourceStateSourcestatePause;
+                    }
+                    [sourceBuilder setSourceState:sourceState];
+                    CopyrightState copyrightState = CopyrightStateCopyrightstateHave;
+                    int copyrightInt = [sourceRS intForColumn:Source_copyright_state];
+                    if (copyrightInt == 1) {
+                        copyrightState = CopyrightStateCopyrightstateNo;
+                    }
+                    [sourceBuilder setCopyrightState:copyrightState];
+                    Source* source = [sourceBuilder build];
+                    
+                    [chapterBuilder setSource:source];
+                    break;
+                }
+                
+                Chapter* lastChapter = [chapterBuilder build];
+                [bookBuilder setLastChapter:lastChapter];//最新章节
+                
+                break;
+            }
+            
+            LMBookNewestChapterModel* chapterModel = [self queryBookNewestChapter:bookId];
+            
+            Book* book = [bookBuilder build];
+            
+            UserBookBuilder* userBookBuilder = [UserBook builder];
+            [userBookBuilder setIsTop:[rs intForColumn:UserBook_is_top]];
+            [userBookBuilder setBook:book];
+            if (chapterModel.newestChapter != nil) {
+                [userBookBuilder setNewestChapter:chapterModel.newestChapter];
+            }
+            UserBook* userBook = [userBookBuilder build];
+            
+            model = [[LMBookShelfModel alloc]init];
+            model.userBook = userBook;
+            model.markState = chapterModel.readState;
+            
+            break;
+        }
+    }
+    [db close];
+    return model;
 }
 
 //置顶/取消置顶 书架页面 书

@@ -13,8 +13,9 @@
 @property (nonatomic, assign) CGFloat titleHeight;
 @property (nonatomic, assign) CGFloat briefHeight;
 @property (nonatomic, assign) CGFloat cellHeight;
+@property (nonatomic, assign) CGFloat ivHeight;
 @property (nonatomic, strong) TopicChart* topicChart;
 
-+(CGFloat )caculateSpecialChoiceModelTextHeightWithText:(NSString* )text width:(CGFloat )width font:(UIFont* )font;
++(CGFloat )caculateSpecialChoiceModelTextHeightWithText:(NSString* )text width:(CGFloat )width font:(UIFont* )font maxLines:(NSInteger )maxLines;
 
 @end

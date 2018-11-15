@@ -267,6 +267,816 @@ NSString *NSStringFromCommentDoType(CommentDoType value) {
   }
 }
 
+@interface JsonParse ()
+@property (strong) NSString* jsonKey;
+@property UInt32 jsonType;
+@end
+
+@implementation JsonParse
+
+- (BOOL) hasJsonKey {
+  return !!hasJsonKey_;
+}
+- (void) setHasJsonKey:(BOOL) _value_ {
+  hasJsonKey_ = !!_value_;
+}
+@synthesize jsonKey;
+- (BOOL) hasJsonType {
+  return !!hasJsonType_;
+}
+- (void) setHasJsonType:(BOOL) _value_ {
+  hasJsonType_ = !!_value_;
+}
+@synthesize jsonType;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.jsonKey = @"";
+    self.jsonType = 0;
+  }
+  return self;
+}
+static JsonParse* defaultJsonParseInstance = nil;
++ (void) initialize {
+  if (self == [JsonParse class]) {
+    defaultJsonParseInstance = [[JsonParse alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultJsonParseInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultJsonParseInstance;
+}
+- (BOOL) isInitialized {
+  if (!self.hasJsonKey) {
+    return NO;
+  }
+  if (!self.hasJsonType) {
+    return NO;
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasJsonKey) {
+    [output writeString:1 value:self.jsonKey];
+  }
+  if (self.hasJsonType) {
+    [output writeUInt32:2 value:self.jsonType];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasJsonKey) {
+    size_ += computeStringSize(1, self.jsonKey);
+  }
+  if (self.hasJsonType) {
+    size_ += computeUInt32Size(2, self.jsonType);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (JsonParse*) parseFromData:(NSData*) data {
+  return (JsonParse*)[[[JsonParse builder] mergeFromData:data] build];
+}
++ (JsonParse*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (JsonParse*)[[[JsonParse builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (JsonParse*) parseFromInputStream:(NSInputStream*) input {
+  return (JsonParse*)[[[JsonParse builder] mergeFromInputStream:input] build];
+}
++ (JsonParse*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (JsonParse*)[[[JsonParse builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (JsonParse*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (JsonParse*)[[[JsonParse builder] mergeFromCodedInputStream:input] build];
+}
++ (JsonParse*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (JsonParse*)[[[JsonParse builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (JsonParseBuilder*) builder {
+  return [[JsonParseBuilder alloc] init];
+}
++ (JsonParseBuilder*) builderWithPrototype:(JsonParse*) prototype {
+  return [[JsonParse builder] mergeFrom:prototype];
+}
+- (JsonParseBuilder*) builder {
+  return [JsonParse builder];
+}
+- (JsonParseBuilder*) toBuilder {
+  return [JsonParse builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasJsonKey) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"jsonKey", self.jsonKey];
+  }
+  if (self.hasJsonType) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"jsonType", [NSNumber numberWithInteger:self.jsonType]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasJsonKey) {
+    [dictionary setObject: self.jsonKey forKey: @"jsonKey"];
+  }
+  if (self.hasJsonType) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.jsonType] forKey: @"jsonType"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[JsonParse class]]) {
+    return NO;
+  }
+  JsonParse *otherMessage = other;
+  return
+      self.hasJsonKey == otherMessage.hasJsonKey &&
+      (!self.hasJsonKey || [self.jsonKey isEqual:otherMessage.jsonKey]) &&
+      self.hasJsonType == otherMessage.hasJsonType &&
+      (!self.hasJsonType || self.jsonType == otherMessage.jsonType) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasJsonKey) {
+    hashCode = hashCode * 31 + [self.jsonKey hash];
+  }
+  if (self.hasJsonType) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.jsonType] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface JsonParseBuilder()
+@property (strong) JsonParse* resultJsonParse;
+@end
+
+@implementation JsonParseBuilder
+@synthesize resultJsonParse;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultJsonParse = [[JsonParse alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultJsonParse;
+}
+- (JsonParseBuilder*) clear {
+  self.resultJsonParse = [[JsonParse alloc] init];
+  return self;
+}
+- (JsonParseBuilder*) clone {
+  return [JsonParse builderWithPrototype:resultJsonParse];
+}
+- (JsonParse*) defaultInstance {
+  return [JsonParse defaultInstance];
+}
+- (JsonParse*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (JsonParse*) buildPartial {
+  JsonParse* returnMe = resultJsonParse;
+  self.resultJsonParse = nil;
+  return returnMe;
+}
+- (JsonParseBuilder*) mergeFrom:(JsonParse*) other {
+  if (other == [JsonParse defaultInstance]) {
+    return self;
+  }
+  if (other.hasJsonKey) {
+    [self setJsonKey:other.jsonKey];
+  }
+  if (other.hasJsonType) {
+    [self setJsonType:other.jsonType];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (JsonParseBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (JsonParseBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 10: {
+        [self setJsonKey:[input readString]];
+        break;
+      }
+      case 16: {
+        [self setJsonType:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasJsonKey {
+  return resultJsonParse.hasJsonKey;
+}
+- (NSString*) jsonKey {
+  return resultJsonParse.jsonKey;
+}
+- (JsonParseBuilder*) setJsonKey:(NSString*) value {
+  resultJsonParse.hasJsonKey = YES;
+  resultJsonParse.jsonKey = value;
+  return self;
+}
+- (JsonParseBuilder*) clearJsonKey {
+  resultJsonParse.hasJsonKey = NO;
+  resultJsonParse.jsonKey = @"";
+  return self;
+}
+- (BOOL) hasJsonType {
+  return resultJsonParse.hasJsonType;
+}
+- (UInt32) jsonType {
+  return resultJsonParse.jsonType;
+}
+- (JsonParseBuilder*) setJsonType:(UInt32) value {
+  resultJsonParse.hasJsonType = YES;
+  resultJsonParse.jsonType = value;
+  return self;
+}
+- (JsonParseBuilder*) clearJsonType {
+  resultJsonParse.hasJsonType = NO;
+  resultJsonParse.jsonType = 0;
+  return self;
+}
+@end
+
+@interface KanapiJiaston ()
+@property UInt32 bid;
+@property (strong) NSMutableArray<JsonParse*> * listParseArray;
+@property (strong) NSString* cidKey;
+@property (strong) NSString* ctitleKey;
+@property (strong) NSString* curlStr;
+@property (strong) NSMutableArray<JsonParse*> * contentParseArray;
+@property (strong) NSString* contentKey;
+@end
+
+@implementation KanapiJiaston
+
+- (BOOL) hasBid {
+  return !!hasBid_;
+}
+- (void) setHasBid:(BOOL) _value_ {
+  hasBid_ = !!_value_;
+}
+@synthesize bid;
+@synthesize listParseArray;
+@dynamic listParse;
+- (BOOL) hasCidKey {
+  return !!hasCidKey_;
+}
+- (void) setHasCidKey:(BOOL) _value_ {
+  hasCidKey_ = !!_value_;
+}
+@synthesize cidKey;
+- (BOOL) hasCtitleKey {
+  return !!hasCtitleKey_;
+}
+- (void) setHasCtitleKey:(BOOL) _value_ {
+  hasCtitleKey_ = !!_value_;
+}
+@synthesize ctitleKey;
+- (BOOL) hasCurlStr {
+  return !!hasCurlStr_;
+}
+- (void) setHasCurlStr:(BOOL) _value_ {
+  hasCurlStr_ = !!_value_;
+}
+@synthesize curlStr;
+@synthesize contentParseArray;
+@dynamic contentParse;
+- (BOOL) hasContentKey {
+  return !!hasContentKey_;
+}
+- (void) setHasContentKey:(BOOL) _value_ {
+  hasContentKey_ = !!_value_;
+}
+@synthesize contentKey;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.bid = 0;
+    self.cidKey = @"";
+    self.ctitleKey = @"";
+    self.curlStr = @"";
+    self.contentKey = @"";
+  }
+  return self;
+}
+static KanapiJiaston* defaultKanapiJiastonInstance = nil;
++ (void) initialize {
+  if (self == [KanapiJiaston class]) {
+    defaultKanapiJiastonInstance = [[KanapiJiaston alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultKanapiJiastonInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultKanapiJiastonInstance;
+}
+- (NSArray<JsonParse*> *)listParse {
+  return listParseArray;
+}
+- (JsonParse*)listParseAtIndex:(NSUInteger)index {
+  return [listParseArray objectAtIndex:index];
+}
+- (NSArray<JsonParse*> *)contentParse {
+  return contentParseArray;
+}
+- (JsonParse*)contentParseAtIndex:(NSUInteger)index {
+  return [contentParseArray objectAtIndex:index];
+}
+- (BOOL) isInitialized {
+  if (!self.hasBid) {
+    return NO;
+  }
+  __block BOOL isInitlistParse = YES;
+   [self.listParse enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitlistParse = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitlistParse) return isInitlistParse;
+  __block BOOL isInitcontentParse = YES;
+   [self.contentParse enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitcontentParse = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitcontentParse) return isInitcontentParse;
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasBid) {
+    [output writeUInt32:1 value:self.bid];
+  }
+  [self.listParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:2 value:element];
+  }];
+  if (self.hasCidKey) {
+    [output writeString:3 value:self.cidKey];
+  }
+  if (self.hasCtitleKey) {
+    [output writeString:4 value:self.ctitleKey];
+  }
+  if (self.hasCurlStr) {
+    [output writeString:5 value:self.curlStr];
+  }
+  [self.contentParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:6 value:element];
+  }];
+  if (self.hasContentKey) {
+    [output writeString:7 value:self.contentKey];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasBid) {
+    size_ += computeUInt32Size(1, self.bid);
+  }
+  [self.listParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(2, element);
+  }];
+  if (self.hasCidKey) {
+    size_ += computeStringSize(3, self.cidKey);
+  }
+  if (self.hasCtitleKey) {
+    size_ += computeStringSize(4, self.ctitleKey);
+  }
+  if (self.hasCurlStr) {
+    size_ += computeStringSize(5, self.curlStr);
+  }
+  [self.contentParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(6, element);
+  }];
+  if (self.hasContentKey) {
+    size_ += computeStringSize(7, self.contentKey);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (KanapiJiaston*) parseFromData:(NSData*) data {
+  return (KanapiJiaston*)[[[KanapiJiaston builder] mergeFromData:data] build];
+}
++ (KanapiJiaston*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (KanapiJiaston*)[[[KanapiJiaston builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (KanapiJiaston*) parseFromInputStream:(NSInputStream*) input {
+  return (KanapiJiaston*)[[[KanapiJiaston builder] mergeFromInputStream:input] build];
+}
++ (KanapiJiaston*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (KanapiJiaston*)[[[KanapiJiaston builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (KanapiJiaston*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (KanapiJiaston*)[[[KanapiJiaston builder] mergeFromCodedInputStream:input] build];
+}
++ (KanapiJiaston*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (KanapiJiaston*)[[[KanapiJiaston builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (KanapiJiastonBuilder*) builder {
+  return [[KanapiJiastonBuilder alloc] init];
+}
++ (KanapiJiastonBuilder*) builderWithPrototype:(KanapiJiaston*) prototype {
+  return [[KanapiJiaston builder] mergeFrom:prototype];
+}
+- (KanapiJiastonBuilder*) builder {
+  return [KanapiJiaston builder];
+}
+- (KanapiJiastonBuilder*) toBuilder {
+  return [KanapiJiaston builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasBid) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"bid", [NSNumber numberWithInteger:self.bid]];
+  }
+  [self.listParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"listParse"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  if (self.hasCidKey) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"cidKey", self.cidKey];
+  }
+  if (self.hasCtitleKey) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"ctitleKey", self.ctitleKey];
+  }
+  if (self.hasCurlStr) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"curlStr", self.curlStr];
+  }
+  [self.contentParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"contentParse"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  if (self.hasContentKey) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"contentKey", self.contentKey];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasBid) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.bid] forKey: @"bid"];
+  }
+  for (JsonParse* element in self.listParseArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"listParse"];
+  }
+  if (self.hasCidKey) {
+    [dictionary setObject: self.cidKey forKey: @"cidKey"];
+  }
+  if (self.hasCtitleKey) {
+    [dictionary setObject: self.ctitleKey forKey: @"ctitleKey"];
+  }
+  if (self.hasCurlStr) {
+    [dictionary setObject: self.curlStr forKey: @"curlStr"];
+  }
+  for (JsonParse* element in self.contentParseArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"contentParse"];
+  }
+  if (self.hasContentKey) {
+    [dictionary setObject: self.contentKey forKey: @"contentKey"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[KanapiJiaston class]]) {
+    return NO;
+  }
+  KanapiJiaston *otherMessage = other;
+  return
+      self.hasBid == otherMessage.hasBid &&
+      (!self.hasBid || self.bid == otherMessage.bid) &&
+      [self.listParseArray isEqualToArray:otherMessage.listParseArray] &&
+      self.hasCidKey == otherMessage.hasCidKey &&
+      (!self.hasCidKey || [self.cidKey isEqual:otherMessage.cidKey]) &&
+      self.hasCtitleKey == otherMessage.hasCtitleKey &&
+      (!self.hasCtitleKey || [self.ctitleKey isEqual:otherMessage.ctitleKey]) &&
+      self.hasCurlStr == otherMessage.hasCurlStr &&
+      (!self.hasCurlStr || [self.curlStr isEqual:otherMessage.curlStr]) &&
+      [self.contentParseArray isEqualToArray:otherMessage.contentParseArray] &&
+      self.hasContentKey == otherMessage.hasContentKey &&
+      (!self.hasContentKey || [self.contentKey isEqual:otherMessage.contentKey]) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasBid) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.bid] hash];
+  }
+  [self.listParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  if (self.hasCidKey) {
+    hashCode = hashCode * 31 + [self.cidKey hash];
+  }
+  if (self.hasCtitleKey) {
+    hashCode = hashCode * 31 + [self.ctitleKey hash];
+  }
+  if (self.hasCurlStr) {
+    hashCode = hashCode * 31 + [self.curlStr hash];
+  }
+  [self.contentParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  if (self.hasContentKey) {
+    hashCode = hashCode * 31 + [self.contentKey hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface KanapiJiastonBuilder()
+@property (strong) KanapiJiaston* resultKanapiJiaston;
+@end
+
+@implementation KanapiJiastonBuilder
+@synthesize resultKanapiJiaston;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultKanapiJiaston = [[KanapiJiaston alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultKanapiJiaston;
+}
+- (KanapiJiastonBuilder*) clear {
+  self.resultKanapiJiaston = [[KanapiJiaston alloc] init];
+  return self;
+}
+- (KanapiJiastonBuilder*) clone {
+  return [KanapiJiaston builderWithPrototype:resultKanapiJiaston];
+}
+- (KanapiJiaston*) defaultInstance {
+  return [KanapiJiaston defaultInstance];
+}
+- (KanapiJiaston*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (KanapiJiaston*) buildPartial {
+  KanapiJiaston* returnMe = resultKanapiJiaston;
+  self.resultKanapiJiaston = nil;
+  return returnMe;
+}
+- (KanapiJiastonBuilder*) mergeFrom:(KanapiJiaston*) other {
+  if (other == [KanapiJiaston defaultInstance]) {
+    return self;
+  }
+  if (other.hasBid) {
+    [self setBid:other.bid];
+  }
+  if (other.listParseArray.count > 0) {
+    if (resultKanapiJiaston.listParseArray == nil) {
+      resultKanapiJiaston.listParseArray = [[NSMutableArray alloc] initWithArray:other.listParseArray];
+    } else {
+      [resultKanapiJiaston.listParseArray addObjectsFromArray:other.listParseArray];
+    }
+  }
+  if (other.hasCidKey) {
+    [self setCidKey:other.cidKey];
+  }
+  if (other.hasCtitleKey) {
+    [self setCtitleKey:other.ctitleKey];
+  }
+  if (other.hasCurlStr) {
+    [self setCurlStr:other.curlStr];
+  }
+  if (other.contentParseArray.count > 0) {
+    if (resultKanapiJiaston.contentParseArray == nil) {
+      resultKanapiJiaston.contentParseArray = [[NSMutableArray alloc] initWithArray:other.contentParseArray];
+    } else {
+      [resultKanapiJiaston.contentParseArray addObjectsFromArray:other.contentParseArray];
+    }
+  }
+  if (other.hasContentKey) {
+    [self setContentKey:other.contentKey];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (KanapiJiastonBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (KanapiJiastonBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setBid:[input readUInt32]];
+        break;
+      }
+      case 18: {
+        JsonParseBuilder* subBuilder = [JsonParse builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addListParse:[subBuilder buildPartial]];
+        break;
+      }
+      case 26: {
+        [self setCidKey:[input readString]];
+        break;
+      }
+      case 34: {
+        [self setCtitleKey:[input readString]];
+        break;
+      }
+      case 42: {
+        [self setCurlStr:[input readString]];
+        break;
+      }
+      case 50: {
+        JsonParseBuilder* subBuilder = [JsonParse builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addContentParse:[subBuilder buildPartial]];
+        break;
+      }
+      case 58: {
+        [self setContentKey:[input readString]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasBid {
+  return resultKanapiJiaston.hasBid;
+}
+- (UInt32) bid {
+  return resultKanapiJiaston.bid;
+}
+- (KanapiJiastonBuilder*) setBid:(UInt32) value {
+  resultKanapiJiaston.hasBid = YES;
+  resultKanapiJiaston.bid = value;
+  return self;
+}
+- (KanapiJiastonBuilder*) clearBid {
+  resultKanapiJiaston.hasBid = NO;
+  resultKanapiJiaston.bid = 0;
+  return self;
+}
+- (NSMutableArray<JsonParse*> *)listParse {
+  return resultKanapiJiaston.listParseArray;
+}
+- (JsonParse*)listParseAtIndex:(NSUInteger)index {
+  return [resultKanapiJiaston listParseAtIndex:index];
+}
+- (KanapiJiastonBuilder *)addListParse:(JsonParse*)value {
+  if (resultKanapiJiaston.listParseArray == nil) {
+    resultKanapiJiaston.listParseArray = [[NSMutableArray alloc]init];
+  }
+  [resultKanapiJiaston.listParseArray addObject:value];
+  return self;
+}
+- (KanapiJiastonBuilder *)setListParseArray:(NSArray<JsonParse*> *)array {
+  resultKanapiJiaston.listParseArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (KanapiJiastonBuilder *)clearListParse {
+  resultKanapiJiaston.listParseArray = nil;
+  return self;
+}
+- (BOOL) hasCidKey {
+  return resultKanapiJiaston.hasCidKey;
+}
+- (NSString*) cidKey {
+  return resultKanapiJiaston.cidKey;
+}
+- (KanapiJiastonBuilder*) setCidKey:(NSString*) value {
+  resultKanapiJiaston.hasCidKey = YES;
+  resultKanapiJiaston.cidKey = value;
+  return self;
+}
+- (KanapiJiastonBuilder*) clearCidKey {
+  resultKanapiJiaston.hasCidKey = NO;
+  resultKanapiJiaston.cidKey = @"";
+  return self;
+}
+- (BOOL) hasCtitleKey {
+  return resultKanapiJiaston.hasCtitleKey;
+}
+- (NSString*) ctitleKey {
+  return resultKanapiJiaston.ctitleKey;
+}
+- (KanapiJiastonBuilder*) setCtitleKey:(NSString*) value {
+  resultKanapiJiaston.hasCtitleKey = YES;
+  resultKanapiJiaston.ctitleKey = value;
+  return self;
+}
+- (KanapiJiastonBuilder*) clearCtitleKey {
+  resultKanapiJiaston.hasCtitleKey = NO;
+  resultKanapiJiaston.ctitleKey = @"";
+  return self;
+}
+- (BOOL) hasCurlStr {
+  return resultKanapiJiaston.hasCurlStr;
+}
+- (NSString*) curlStr {
+  return resultKanapiJiaston.curlStr;
+}
+- (KanapiJiastonBuilder*) setCurlStr:(NSString*) value {
+  resultKanapiJiaston.hasCurlStr = YES;
+  resultKanapiJiaston.curlStr = value;
+  return self;
+}
+- (KanapiJiastonBuilder*) clearCurlStr {
+  resultKanapiJiaston.hasCurlStr = NO;
+  resultKanapiJiaston.curlStr = @"";
+  return self;
+}
+- (NSMutableArray<JsonParse*> *)contentParse {
+  return resultKanapiJiaston.contentParseArray;
+}
+- (JsonParse*)contentParseAtIndex:(NSUInteger)index {
+  return [resultKanapiJiaston contentParseAtIndex:index];
+}
+- (KanapiJiastonBuilder *)addContentParse:(JsonParse*)value {
+  if (resultKanapiJiaston.contentParseArray == nil) {
+    resultKanapiJiaston.contentParseArray = [[NSMutableArray alloc]init];
+  }
+  [resultKanapiJiaston.contentParseArray addObject:value];
+  return self;
+}
+- (KanapiJiastonBuilder *)setContentParseArray:(NSArray<JsonParse*> *)array {
+  resultKanapiJiaston.contentParseArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (KanapiJiastonBuilder *)clearContentParse {
+  resultKanapiJiaston.contentParseArray = nil;
+  return self;
+}
+- (BOOL) hasContentKey {
+  return resultKanapiJiaston.hasContentKey;
+}
+- (NSString*) contentKey {
+  return resultKanapiJiaston.contentKey;
+}
+- (KanapiJiastonBuilder*) setContentKey:(NSString*) value {
+  resultKanapiJiaston.hasContentKey = YES;
+  resultKanapiJiaston.contentKey = value;
+  return self;
+}
+- (KanapiJiastonBuilder*) clearContentKey {
+  resultKanapiJiaston.hasContentKey = NO;
+  resultKanapiJiaston.contentKey = @"";
+  return self;
+}
+@end
+
 @interface UrlReadParse ()
 @property (strong) NSString* listUrl;
 @property (strong) NSString* listParse;
@@ -274,6 +1084,7 @@ NSString *NSStringFromCommentDoType(CommentDoType value) {
 @property (strong) NSString* contentParse;
 @property (strong) Source* source;
 @property UInt32 ioffset;
+@property (strong) KanapiJiaston* api;
 @end
 
 @implementation UrlReadParse
@@ -320,6 +1131,13 @@ NSString *NSStringFromCommentDoType(CommentDoType value) {
   hasIoffset_ = !!_value_;
 }
 @synthesize ioffset;
+- (BOOL) hasApi {
+  return !!hasApi_;
+}
+- (void) setHasApi:(BOOL) _value_ {
+  hasApi_ = !!_value_;
+}
+@synthesize api;
 - (instancetype) init {
   if ((self = [super init])) {
     self.listUrl = @"";
@@ -328,6 +1146,7 @@ NSString *NSStringFromCommentDoType(CommentDoType value) {
     self.contentParse = @"";
     self.source = [Source defaultInstance];
     self.ioffset = 0;
+    self.api = [KanapiJiaston defaultInstance];
   }
   return self;
 }
@@ -352,6 +1171,11 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
       return NO;
     }
   }
+  if (self.hasApi) {
+    if (!self.api.isInitialized) {
+      return NO;
+    }
+  }
   return YES;
 }
 - (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
@@ -372,6 +1196,9 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
   }
   if (self.hasIoffset) {
     [output writeUInt32:6 value:self.ioffset];
+  }
+  if (self.hasApi) {
+    [output writeMessage:7 value:self.api];
   }
   [self.unknownFields writeToCodedOutputStream:output];
 }
@@ -399,6 +1226,9 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
   }
   if (self.hasIoffset) {
     size_ += computeUInt32Size(6, self.ioffset);
+  }
+  if (self.hasApi) {
+    size_ += computeMessageSize(7, self.api);
   }
   size_ += self.unknownFields.serializedSize;
   memoizedSerializedSize = size_;
@@ -456,6 +1286,12 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
   if (self.hasIoffset) {
     [output appendFormat:@"%@%@: %@\n", indent, @"ioffset", [NSNumber numberWithInteger:self.ioffset]];
   }
+  if (self.hasApi) {
+    [output appendFormat:@"%@%@ {\n", indent, @"api"];
+    [self.api writeDescriptionTo:output
+                         withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }
   [self.unknownFields writeDescriptionTo:output withIndent:indent];
 }
 - (void) storeInDictionary:(NSMutableDictionary *)dictionary {
@@ -478,6 +1314,11 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
   }
   if (self.hasIoffset) {
     [dictionary setObject: [NSNumber numberWithInteger:self.ioffset] forKey: @"ioffset"];
+  }
+  if (self.hasApi) {
+   NSMutableDictionary *messageDictionary = [NSMutableDictionary dictionary]; 
+   [self.api storeInDictionary:messageDictionary];
+   [dictionary setObject:[NSDictionary dictionaryWithDictionary:messageDictionary] forKey:@"api"];
   }
   [self.unknownFields storeInDictionary:dictionary];
 }
@@ -502,6 +1343,8 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
       (!self.hasSource || [self.source isEqual:otherMessage.source]) &&
       self.hasIoffset == otherMessage.hasIoffset &&
       (!self.hasIoffset || self.ioffset == otherMessage.ioffset) &&
+      self.hasApi == otherMessage.hasApi &&
+      (!self.hasApi || [self.api isEqual:otherMessage.api]) &&
       (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
 }
 - (NSUInteger) hash {
@@ -523,6 +1366,9 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
   }
   if (self.hasIoffset) {
     hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.ioffset] hash];
+  }
+  if (self.hasApi) {
+    hashCode = hashCode * 31 + [self.api hash];
   }
   hashCode = hashCode * 31 + [self.unknownFields hash];
   return hashCode;
@@ -585,6 +1431,9 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
   if (other.hasIoffset) {
     [self setIoffset:other.ioffset];
   }
+  if (other.hasApi) {
+    [self mergeApi:other.api];
+  }
   [self mergeUnknownFields:other.unknownFields];
   return self;
 }
@@ -633,6 +1482,15 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
       }
       case 48: {
         [self setIoffset:[input readUInt32]];
+        break;
+      }
+      case 58: {
+        KanapiJiastonBuilder* subBuilder = [KanapiJiaston builder];
+        if (self.hasApi) {
+          [subBuilder mergeFrom:self.api];
+        }
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self setApi:[subBuilder buildPartial]];
         break;
       }
     }
@@ -748,6 +1606,36 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
   resultUrlReadParse.ioffset = 0;
   return self;
 }
+- (BOOL) hasApi {
+  return resultUrlReadParse.hasApi;
+}
+- (KanapiJiaston*) api {
+  return resultUrlReadParse.api;
+}
+- (UrlReadParseBuilder*) setApi:(KanapiJiaston*) value {
+  resultUrlReadParse.hasApi = YES;
+  resultUrlReadParse.api = value;
+  return self;
+}
+- (UrlReadParseBuilder*) setApiBuilder:(KanapiJiastonBuilder*) builderForValue {
+  return [self setApi:[builderForValue build]];
+}
+- (UrlReadParseBuilder*) mergeApi:(KanapiJiaston*) value {
+  if (resultUrlReadParse.hasApi &&
+      resultUrlReadParse.api != [KanapiJiaston defaultInstance]) {
+    resultUrlReadParse.api =
+      [[[KanapiJiaston builderWithPrototype:resultUrlReadParse.api] mergeFrom:value] buildPartial];
+  } else {
+    resultUrlReadParse.api = value;
+  }
+  resultUrlReadParse.hasApi = YES;
+  return self;
+}
+- (UrlReadParseBuilder*) clearApi {
+  resultUrlReadParse.hasApi = NO;
+  resultUrlReadParse.api = [KanapiJiaston defaultInstance];
+  return self;
+}
 @end
 
 @interface Book ()
@@ -765,6 +1653,8 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
 @property (strong) NSMutableArray<UrlReadParse*> * parsesArray;
 @property (strong) NSMutableArray<Comment*> * commentsArray;
 @property UInt32 commentsCount;
+@property (strong) NSString* markUrl;
+@property Float32 avgScore;
 @end
 
 @implementation Book
@@ -847,6 +1737,20 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
   hasCommentsCount_ = !!_value_;
 }
 @synthesize commentsCount;
+- (BOOL) hasMarkUrl {
+  return !!hasMarkUrl_;
+}
+- (void) setHasMarkUrl:(BOOL) _value_ {
+  hasMarkUrl_ = !!_value_;
+}
+@synthesize markUrl;
+- (BOOL) hasAvgScore {
+  return !!hasAvgScore_;
+}
+- (void) setHasAvgScore:(BOOL) _value_ {
+  hasAvgScore_ = !!_value_;
+}
+@synthesize avgScore;
 - (instancetype) init {
   if ((self = [super init])) {
     self.bookId = 0;
@@ -859,6 +1763,8 @@ static UrlReadParse* defaultUrlReadParseInstance = nil;
     self.bookState = BookStateStateUnknown;
     self.lastChapter = [Chapter defaultInstance];
     self.commentsCount = 0;
+    self.markUrl = @"";
+    self.avgScore = 5;
   }
   return self;
 }
@@ -977,6 +1883,12 @@ static Book* defaultBookInstance = nil;
   if (self.hasCommentsCount) {
     [output writeUInt32:21 value:self.commentsCount];
   }
+  if (self.hasMarkUrl) {
+    [output writeString:22 value:self.markUrl];
+  }
+  if (self.hasAvgScore) {
+    [output writeFloat:24 value:self.avgScore];
+  }
   [self.unknownFields writeToCodedOutputStream:output];
 }
 - (SInt32) serializedSize {
@@ -1039,6 +1951,12 @@ static Book* defaultBookInstance = nil;
   }];
   if (self.hasCommentsCount) {
     size_ += computeUInt32Size(21, self.commentsCount);
+  }
+  if (self.hasMarkUrl) {
+    size_ += computeStringSize(22, self.markUrl);
+  }
+  if (self.hasAvgScore) {
+    size_ += computeFloatSize(24, self.avgScore);
   }
   size_ += self.unknownFields.serializedSize;
   memoizedSerializedSize = size_;
@@ -1126,6 +2044,12 @@ static Book* defaultBookInstance = nil;
   if (self.hasCommentsCount) {
     [output appendFormat:@"%@%@: %@\n", indent, @"commentsCount", [NSNumber numberWithInteger:self.commentsCount]];
   }
+  if (self.hasMarkUrl) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"markUrl", self.markUrl];
+  }
+  if (self.hasAvgScore) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"avgScore", [NSNumber numberWithFloat:self.avgScore]];
+  }
   [self.unknownFields writeDescriptionTo:output withIndent:indent];
 }
 - (void) storeInDictionary:(NSMutableDictionary *)dictionary {
@@ -1173,6 +2097,12 @@ static Book* defaultBookInstance = nil;
   if (self.hasCommentsCount) {
     [dictionary setObject: [NSNumber numberWithInteger:self.commentsCount] forKey: @"commentsCount"];
   }
+  if (self.hasMarkUrl) {
+    [dictionary setObject: self.markUrl forKey: @"markUrl"];
+  }
+  if (self.hasAvgScore) {
+    [dictionary setObject: [NSNumber numberWithFloat:self.avgScore] forKey: @"avgScore"];
+  }
   [self.unknownFields storeInDictionary:dictionary];
 }
 - (BOOL) isEqual:(id)other {
@@ -1208,6 +2138,10 @@ static Book* defaultBookInstance = nil;
       [self.commentsArray isEqualToArray:otherMessage.commentsArray] &&
       self.hasCommentsCount == otherMessage.hasCommentsCount &&
       (!self.hasCommentsCount || self.commentsCount == otherMessage.commentsCount) &&
+      self.hasMarkUrl == otherMessage.hasMarkUrl &&
+      (!self.hasMarkUrl || [self.markUrl isEqual:otherMessage.markUrl]) &&
+      self.hasAvgScore == otherMessage.hasAvgScore &&
+      (!self.hasAvgScore || self.avgScore == otherMessage.avgScore) &&
       (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
 }
 - (NSUInteger) hash {
@@ -1253,6 +2187,12 @@ static Book* defaultBookInstance = nil;
   }];
   if (self.hasCommentsCount) {
     hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.commentsCount] hash];
+  }
+  if (self.hasMarkUrl) {
+    hashCode = hashCode * 31 + [self.markUrl hash];
+  }
+  if (self.hasAvgScore) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithFloat:self.avgScore] hash];
   }
   hashCode = hashCode * 31 + [self.unknownFields hash];
   return hashCode;
@@ -1355,6 +2295,12 @@ static Book* defaultBookInstance = nil;
   if (other.hasCommentsCount) {
     [self setCommentsCount:other.commentsCount];
   }
+  if (other.hasMarkUrl) {
+    [self setMarkUrl:other.markUrl];
+  }
+  if (other.hasAvgScore) {
+    [self setAvgScore:other.avgScore];
+  }
   [self mergeUnknownFields:other.unknownFields];
   return self;
 }
@@ -1444,6 +2390,14 @@ static Book* defaultBookInstance = nil;
       }
       case 168: {
         [self setCommentsCount:[input readUInt32]];
+        break;
+      }
+      case 178: {
+        [self setMarkUrl:[input readString]];
+        break;
+      }
+      case 197: {
+        [self setAvgScore:[input readFloat]];
         break;
       }
     }
@@ -1705,6 +2659,38 @@ static Book* defaultBookInstance = nil;
 - (BookBuilder*) clearCommentsCount {
   resultBook.hasCommentsCount = NO;
   resultBook.commentsCount = 0;
+  return self;
+}
+- (BOOL) hasMarkUrl {
+  return resultBook.hasMarkUrl;
+}
+- (NSString*) markUrl {
+  return resultBook.markUrl;
+}
+- (BookBuilder*) setMarkUrl:(NSString*) value {
+  resultBook.hasMarkUrl = YES;
+  resultBook.markUrl = value;
+  return self;
+}
+- (BookBuilder*) clearMarkUrl {
+  resultBook.hasMarkUrl = NO;
+  resultBook.markUrl = @"";
+  return self;
+}
+- (BOOL) hasAvgScore {
+  return resultBook.hasAvgScore;
+}
+- (Float32) avgScore {
+  return resultBook.avgScore;
+}
+- (BookBuilder*) setAvgScore:(Float32) value {
+  resultBook.hasAvgScore = YES;
+  resultBook.avgScore = value;
+  return self;
+}
+- (BookBuilder*) clearAvgScore {
+  resultBook.hasAvgScore = NO;
+  resultBook.avgScore = 5;
   return self;
 }
 @end
@@ -9074,6 +10060,7 @@ static UserBookStoreRes* defaultUserBookStoreResInstance = nil;
 @interface UserBookStoreOperateReq ()
 @property UserBookStoreOperateType type;
 @property UInt32 bookId;
+@property (strong) PBAppendableArray * bookIdsArray;
 @end
 
 @implementation UserBookStoreOperateReq
@@ -9092,6 +10079,8 @@ static UserBookStoreRes* defaultUserBookStoreResInstance = nil;
   hasBookId_ = !!_value_;
 }
 @synthesize bookId;
+@synthesize bookIdsArray;
+@dynamic bookIds;
 - (instancetype) init {
   if ((self = [super init])) {
     self.type = UserBookStoreOperateTypeOperateAdd;
@@ -9111,6 +10100,12 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
 - (instancetype) defaultInstance {
   return defaultUserBookStoreOperateReqInstance;
 }
+- (PBArray *)bookIds {
+  return bookIdsArray;
+}
+- (UInt32)bookIdsAtIndex:(NSUInteger)index {
+  return [bookIdsArray uint32AtIndex:index];
+}
 - (BOOL) isInitialized {
   if (!self.hasType) {
     return NO;
@@ -9127,6 +10122,13 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
   if (self.hasBookId) {
     [output writeUInt32:2 value:self.bookId];
   }
+  const NSUInteger bookIdsArrayCount = self.bookIdsArray.count;
+  if (bookIdsArrayCount > 0) {
+    const UInt32 *values = (const UInt32 *)self.bookIdsArray.data;
+    for (NSUInteger i = 0; i < bookIdsArrayCount; ++i) {
+      [output writeUInt32:3 value:values[i]];
+    }
+  }
   [self.unknownFields writeToCodedOutputStream:output];
 }
 - (SInt32) serializedSize {
@@ -9141,6 +10143,16 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
   }
   if (self.hasBookId) {
     size_ += computeUInt32Size(2, self.bookId);
+  }
+  {
+    __block SInt32 dataSize = 0;
+    const NSUInteger count = self.bookIdsArray.count;
+    const UInt32 *values = (const UInt32 *)self.bookIdsArray.data;
+    for (NSUInteger i = 0; i < count; ++i) {
+      dataSize += computeUInt32SizeNoTag(values[i]);
+    }
+    size_ += dataSize;
+    size_ += (SInt32)(1 * count);
   }
   size_ += self.unknownFields.serializedSize;
   memoizedSerializedSize = size_;
@@ -9183,6 +10195,9 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
   if (self.hasBookId) {
     [output appendFormat:@"%@%@: %@\n", indent, @"bookId", [NSNumber numberWithInteger:self.bookId]];
   }
+  [self.bookIdsArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"bookIds", obj];
+  }];
   [self.unknownFields writeDescriptionTo:output withIndent:indent];
 }
 - (void) storeInDictionary:(NSMutableDictionary *)dictionary {
@@ -9192,6 +10207,12 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
   if (self.hasBookId) {
     [dictionary setObject: [NSNumber numberWithInteger:self.bookId] forKey: @"bookId"];
   }
+  NSMutableArray * bookIdsArrayArray = [NSMutableArray new];
+  NSUInteger bookIdsArrayCount=self.bookIdsArray.count;
+  for(int i=0;i<bookIdsArrayCount;i++){
+    [bookIdsArrayArray addObject: @([self.bookIdsArray uint32AtIndex:i])];
+  }
+  [dictionary setObject: bookIdsArrayArray forKey: @"bookIds"];
   [self.unknownFields storeInDictionary:dictionary];
 }
 - (BOOL) isEqual:(id)other {
@@ -9207,6 +10228,7 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
       (!self.hasType || self.type == otherMessage.type) &&
       self.hasBookId == otherMessage.hasBookId &&
       (!self.hasBookId || self.bookId == otherMessage.bookId) &&
+      [self.bookIdsArray isEqualToArray:otherMessage.bookIdsArray] &&
       (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
 }
 - (NSUInteger) hash {
@@ -9217,6 +10239,9 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
   if (self.hasBookId) {
     hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.bookId] hash];
   }
+  [self.bookIdsArray enumerateObjectsUsingBlock:^(NSNumber *obj, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [obj longValue];
+  }];
   hashCode = hashCode * 31 + [self.unknownFields hash];
   return hashCode;
 }
@@ -9266,6 +10291,13 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
   if (other.hasBookId) {
     [self setBookId:other.bookId];
   }
+  if (other.bookIdsArray.count > 0) {
+    if (resultUserBookStoreOperateReq.bookIdsArray == nil) {
+      resultUserBookStoreOperateReq.bookIdsArray = [other.bookIdsArray copy];
+    } else {
+      [resultUserBookStoreOperateReq.bookIdsArray appendArray:other.bookIdsArray];
+    }
+  }
   [self mergeUnknownFields:other.unknownFields];
   return self;
 }
@@ -9298,6 +10330,10 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
       }
       case 16: {
         [self setBookId:[input readUInt32]];
+        break;
+      }
+      case 24: {
+        [self addBookIds:[input readUInt32]];
         break;
       }
     }
@@ -9333,6 +10369,31 @@ static UserBookStoreOperateReq* defaultUserBookStoreOperateReqInstance = nil;
 - (UserBookStoreOperateReqBuilder*) clearBookId {
   resultUserBookStoreOperateReq.hasBookId = NO;
   resultUserBookStoreOperateReq.bookId = 0;
+  return self;
+}
+- (PBAppendableArray *)bookIds {
+  return resultUserBookStoreOperateReq.bookIdsArray;
+}
+- (UInt32)bookIdsAtIndex:(NSUInteger)index {
+  return [resultUserBookStoreOperateReq bookIdsAtIndex:index];
+}
+- (UserBookStoreOperateReqBuilder *)addBookIds:(UInt32)value {
+  if (resultUserBookStoreOperateReq.bookIdsArray == nil) {
+    resultUserBookStoreOperateReq.bookIdsArray = [PBAppendableArray arrayWithValueType:PBArrayValueTypeUInt32];
+  }
+  [resultUserBookStoreOperateReq.bookIdsArray addUint32:value];
+  return self;
+}
+- (UserBookStoreOperateReqBuilder *)setBookIdsArray:(NSArray *)array {
+  resultUserBookStoreOperateReq.bookIdsArray = [PBAppendableArray arrayWithArray:array valueType:PBArrayValueTypeUInt32];
+  return self;
+}
+- (UserBookStoreOperateReqBuilder *)setBookIdsValues:(const UInt32 *)values count:(NSUInteger)count {
+  resultUserBookStoreOperateReq.bookIdsArray = [PBAppendableArray arrayWithValues:values count:count valueType:PBArrayValueTypeUInt32];
+  return self;
+}
+- (UserBookStoreOperateReqBuilder *)clearBookIds {
+  resultUserBookStoreOperateReq.bookIdsArray = nil;
   return self;
 }
 @end
@@ -30377,6 +31438,1489 @@ static AdShowedLogReq* defaultAdShowedLogReqInstance = nil;
 - (AdShowedLogReqBuilder*) clearAdId {
   resultAdShowedLogReq.hasAdId = NO;
   resultAdShowedLogReq.adId = 0;
+  return self;
+}
+@end
+
+@interface SelfDefinedHomeReq ()
+@property UInt32 page;
+@end
+
+@implementation SelfDefinedHomeReq
+
+- (BOOL) hasPage {
+  return !!hasPage_;
+}
+- (void) setHasPage:(BOOL) _value_ {
+  hasPage_ = !!_value_;
+}
+@synthesize page;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.page = 0;
+  }
+  return self;
+}
+static SelfDefinedHomeReq* defaultSelfDefinedHomeReqInstance = nil;
++ (void) initialize {
+  if (self == [SelfDefinedHomeReq class]) {
+    defaultSelfDefinedHomeReqInstance = [[SelfDefinedHomeReq alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSelfDefinedHomeReqInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSelfDefinedHomeReqInstance;
+}
+- (BOOL) isInitialized {
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasPage) {
+    [output writeUInt32:1 value:self.page];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasPage) {
+    size_ += computeUInt32Size(1, self.page);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SelfDefinedHomeReq*) parseFromData:(NSData*) data {
+  return (SelfDefinedHomeReq*)[[[SelfDefinedHomeReq builder] mergeFromData:data] build];
+}
++ (SelfDefinedHomeReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedHomeReq*)[[[SelfDefinedHomeReq builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedHomeReq*) parseFromInputStream:(NSInputStream*) input {
+  return (SelfDefinedHomeReq*)[[[SelfDefinedHomeReq builder] mergeFromInputStream:input] build];
+}
++ (SelfDefinedHomeReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedHomeReq*)[[[SelfDefinedHomeReq builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedHomeReq*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SelfDefinedHomeReq*)[[[SelfDefinedHomeReq builder] mergeFromCodedInputStream:input] build];
+}
++ (SelfDefinedHomeReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedHomeReq*)[[[SelfDefinedHomeReq builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedHomeReqBuilder*) builder {
+  return [[SelfDefinedHomeReqBuilder alloc] init];
+}
++ (SelfDefinedHomeReqBuilder*) builderWithPrototype:(SelfDefinedHomeReq*) prototype {
+  return [[SelfDefinedHomeReq builder] mergeFrom:prototype];
+}
+- (SelfDefinedHomeReqBuilder*) builder {
+  return [SelfDefinedHomeReq builder];
+}
+- (SelfDefinedHomeReqBuilder*) toBuilder {
+  return [SelfDefinedHomeReq builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasPage) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"page", [NSNumber numberWithInteger:self.page]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasPage) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.page] forKey: @"page"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SelfDefinedHomeReq class]]) {
+    return NO;
+  }
+  SelfDefinedHomeReq *otherMessage = other;
+  return
+      self.hasPage == otherMessage.hasPage &&
+      (!self.hasPage || self.page == otherMessage.page) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasPage) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.page] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SelfDefinedHomeReqBuilder()
+@property (strong) SelfDefinedHomeReq* resultSelfDefinedHomeReq;
+@end
+
+@implementation SelfDefinedHomeReqBuilder
+@synthesize resultSelfDefinedHomeReq;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSelfDefinedHomeReq = [[SelfDefinedHomeReq alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSelfDefinedHomeReq;
+}
+- (SelfDefinedHomeReqBuilder*) clear {
+  self.resultSelfDefinedHomeReq = [[SelfDefinedHomeReq alloc] init];
+  return self;
+}
+- (SelfDefinedHomeReqBuilder*) clone {
+  return [SelfDefinedHomeReq builderWithPrototype:resultSelfDefinedHomeReq];
+}
+- (SelfDefinedHomeReq*) defaultInstance {
+  return [SelfDefinedHomeReq defaultInstance];
+}
+- (SelfDefinedHomeReq*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SelfDefinedHomeReq*) buildPartial {
+  SelfDefinedHomeReq* returnMe = resultSelfDefinedHomeReq;
+  self.resultSelfDefinedHomeReq = nil;
+  return returnMe;
+}
+- (SelfDefinedHomeReqBuilder*) mergeFrom:(SelfDefinedHomeReq*) other {
+  if (other == [SelfDefinedHomeReq defaultInstance]) {
+    return self;
+  }
+  if (other.hasPage) {
+    [self setPage:other.page];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SelfDefinedHomeReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SelfDefinedHomeReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setPage:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasPage {
+  return resultSelfDefinedHomeReq.hasPage;
+}
+- (UInt32) page {
+  return resultSelfDefinedHomeReq.page;
+}
+- (SelfDefinedHomeReqBuilder*) setPage:(UInt32) value {
+  resultSelfDefinedHomeReq.hasPage = YES;
+  resultSelfDefinedHomeReq.page = value;
+  return self;
+}
+- (SelfDefinedHomeReqBuilder*) clearPage {
+  resultSelfDefinedHomeReq.hasPage = NO;
+  resultSelfDefinedHomeReq.page = 0;
+  return self;
+}
+@end
+
+@interface SelfDefinedTopic ()
+@property UInt32 id;
+@property (strong) NSString* name;
+@property UInt32 style;
+@property (strong) NSMutableArray<Book*> * booksArray;
+@end
+
+@implementation SelfDefinedTopic
+
+- (BOOL) hasId {
+  return !!hasId_;
+}
+- (void) setHasId:(BOOL) _value_ {
+  hasId_ = !!_value_;
+}
+@synthesize id;
+- (BOOL) hasName {
+  return !!hasName_;
+}
+- (void) setHasName:(BOOL) _value_ {
+  hasName_ = !!_value_;
+}
+@synthesize name;
+- (BOOL) hasStyle {
+  return !!hasStyle_;
+}
+- (void) setHasStyle:(BOOL) _value_ {
+  hasStyle_ = !!_value_;
+}
+@synthesize style;
+@synthesize booksArray;
+@dynamic books;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.id = 0;
+    self.name = @"";
+    self.style = 0;
+  }
+  return self;
+}
+static SelfDefinedTopic* defaultSelfDefinedTopicInstance = nil;
++ (void) initialize {
+  if (self == [SelfDefinedTopic class]) {
+    defaultSelfDefinedTopicInstance = [[SelfDefinedTopic alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSelfDefinedTopicInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSelfDefinedTopicInstance;
+}
+- (NSArray<Book*> *)books {
+  return booksArray;
+}
+- (Book*)booksAtIndex:(NSUInteger)index {
+  return [booksArray objectAtIndex:index];
+}
+- (BOOL) isInitialized {
+  if (!self.hasId) {
+    return NO;
+  }
+  if (!self.hasName) {
+    return NO;
+  }
+  if (!self.hasStyle) {
+    return NO;
+  }
+  __block BOOL isInitbooks = YES;
+   [self.books enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitbooks = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitbooks) return isInitbooks;
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasId) {
+    [output writeUInt32:1 value:self.id];
+  }
+  if (self.hasName) {
+    [output writeString:2 value:self.name];
+  }
+  if (self.hasStyle) {
+    [output writeUInt32:3 value:self.style];
+  }
+  [self.booksArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:5 value:element];
+  }];
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasId) {
+    size_ += computeUInt32Size(1, self.id);
+  }
+  if (self.hasName) {
+    size_ += computeStringSize(2, self.name);
+  }
+  if (self.hasStyle) {
+    size_ += computeUInt32Size(3, self.style);
+  }
+  [self.booksArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(5, element);
+  }];
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SelfDefinedTopic*) parseFromData:(NSData*) data {
+  return (SelfDefinedTopic*)[[[SelfDefinedTopic builder] mergeFromData:data] build];
+}
++ (SelfDefinedTopic*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedTopic*)[[[SelfDefinedTopic builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedTopic*) parseFromInputStream:(NSInputStream*) input {
+  return (SelfDefinedTopic*)[[[SelfDefinedTopic builder] mergeFromInputStream:input] build];
+}
++ (SelfDefinedTopic*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedTopic*)[[[SelfDefinedTopic builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedTopic*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SelfDefinedTopic*)[[[SelfDefinedTopic builder] mergeFromCodedInputStream:input] build];
+}
++ (SelfDefinedTopic*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedTopic*)[[[SelfDefinedTopic builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedTopicBuilder*) builder {
+  return [[SelfDefinedTopicBuilder alloc] init];
+}
++ (SelfDefinedTopicBuilder*) builderWithPrototype:(SelfDefinedTopic*) prototype {
+  return [[SelfDefinedTopic builder] mergeFrom:prototype];
+}
+- (SelfDefinedTopicBuilder*) builder {
+  return [SelfDefinedTopic builder];
+}
+- (SelfDefinedTopicBuilder*) toBuilder {
+  return [SelfDefinedTopic builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasId) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"id", [NSNumber numberWithInteger:self.id]];
+  }
+  if (self.hasName) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"name", self.name];
+  }
+  if (self.hasStyle) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"style", [NSNumber numberWithInteger:self.style]];
+  }
+  [self.booksArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"books"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasId) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.id] forKey: @"id"];
+  }
+  if (self.hasName) {
+    [dictionary setObject: self.name forKey: @"name"];
+  }
+  if (self.hasStyle) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.style] forKey: @"style"];
+  }
+  for (Book* element in self.booksArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"books"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SelfDefinedTopic class]]) {
+    return NO;
+  }
+  SelfDefinedTopic *otherMessage = other;
+  return
+      self.hasId == otherMessage.hasId &&
+      (!self.hasId || self.id == otherMessage.id) &&
+      self.hasName == otherMessage.hasName &&
+      (!self.hasName || [self.name isEqual:otherMessage.name]) &&
+      self.hasStyle == otherMessage.hasStyle &&
+      (!self.hasStyle || self.style == otherMessage.style) &&
+      [self.booksArray isEqualToArray:otherMessage.booksArray] &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasId) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.id] hash];
+  }
+  if (self.hasName) {
+    hashCode = hashCode * 31 + [self.name hash];
+  }
+  if (self.hasStyle) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.style] hash];
+  }
+  [self.booksArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SelfDefinedTopicBuilder()
+@property (strong) SelfDefinedTopic* resultSelfDefinedTopic;
+@end
+
+@implementation SelfDefinedTopicBuilder
+@synthesize resultSelfDefinedTopic;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSelfDefinedTopic = [[SelfDefinedTopic alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSelfDefinedTopic;
+}
+- (SelfDefinedTopicBuilder*) clear {
+  self.resultSelfDefinedTopic = [[SelfDefinedTopic alloc] init];
+  return self;
+}
+- (SelfDefinedTopicBuilder*) clone {
+  return [SelfDefinedTopic builderWithPrototype:resultSelfDefinedTopic];
+}
+- (SelfDefinedTopic*) defaultInstance {
+  return [SelfDefinedTopic defaultInstance];
+}
+- (SelfDefinedTopic*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SelfDefinedTopic*) buildPartial {
+  SelfDefinedTopic* returnMe = resultSelfDefinedTopic;
+  self.resultSelfDefinedTopic = nil;
+  return returnMe;
+}
+- (SelfDefinedTopicBuilder*) mergeFrom:(SelfDefinedTopic*) other {
+  if (other == [SelfDefinedTopic defaultInstance]) {
+    return self;
+  }
+  if (other.hasId) {
+    [self setId:other.id];
+  }
+  if (other.hasName) {
+    [self setName:other.name];
+  }
+  if (other.hasStyle) {
+    [self setStyle:other.style];
+  }
+  if (other.booksArray.count > 0) {
+    if (resultSelfDefinedTopic.booksArray == nil) {
+      resultSelfDefinedTopic.booksArray = [[NSMutableArray alloc] initWithArray:other.booksArray];
+    } else {
+      [resultSelfDefinedTopic.booksArray addObjectsFromArray:other.booksArray];
+    }
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SelfDefinedTopicBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SelfDefinedTopicBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setId:[input readUInt32]];
+        break;
+      }
+      case 18: {
+        [self setName:[input readString]];
+        break;
+      }
+      case 24: {
+        [self setStyle:[input readUInt32]];
+        break;
+      }
+      case 42: {
+        BookBuilder* subBuilder = [Book builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addBooks:[subBuilder buildPartial]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasId {
+  return resultSelfDefinedTopic.hasId;
+}
+- (UInt32) id {
+  return resultSelfDefinedTopic.id;
+}
+- (SelfDefinedTopicBuilder*) setId:(UInt32) value {
+  resultSelfDefinedTopic.hasId = YES;
+  resultSelfDefinedTopic.id = value;
+  return self;
+}
+- (SelfDefinedTopicBuilder*) clearId {
+  resultSelfDefinedTopic.hasId = NO;
+  resultSelfDefinedTopic.id = 0;
+  return self;
+}
+- (BOOL) hasName {
+  return resultSelfDefinedTopic.hasName;
+}
+- (NSString*) name {
+  return resultSelfDefinedTopic.name;
+}
+- (SelfDefinedTopicBuilder*) setName:(NSString*) value {
+  resultSelfDefinedTopic.hasName = YES;
+  resultSelfDefinedTopic.name = value;
+  return self;
+}
+- (SelfDefinedTopicBuilder*) clearName {
+  resultSelfDefinedTopic.hasName = NO;
+  resultSelfDefinedTopic.name = @"";
+  return self;
+}
+- (BOOL) hasStyle {
+  return resultSelfDefinedTopic.hasStyle;
+}
+- (UInt32) style {
+  return resultSelfDefinedTopic.style;
+}
+- (SelfDefinedTopicBuilder*) setStyle:(UInt32) value {
+  resultSelfDefinedTopic.hasStyle = YES;
+  resultSelfDefinedTopic.style = value;
+  return self;
+}
+- (SelfDefinedTopicBuilder*) clearStyle {
+  resultSelfDefinedTopic.hasStyle = NO;
+  resultSelfDefinedTopic.style = 0;
+  return self;
+}
+- (NSMutableArray<Book*> *)books {
+  return resultSelfDefinedTopic.booksArray;
+}
+- (Book*)booksAtIndex:(NSUInteger)index {
+  return [resultSelfDefinedTopic booksAtIndex:index];
+}
+- (SelfDefinedTopicBuilder *)addBooks:(Book*)value {
+  if (resultSelfDefinedTopic.booksArray == nil) {
+    resultSelfDefinedTopic.booksArray = [[NSMutableArray alloc]init];
+  }
+  [resultSelfDefinedTopic.booksArray addObject:value];
+  return self;
+}
+- (SelfDefinedTopicBuilder *)setBooksArray:(NSArray<Book*> *)array {
+  resultSelfDefinedTopic.booksArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (SelfDefinedTopicBuilder *)clearBooks {
+  resultSelfDefinedTopic.booksArray = nil;
+  return self;
+}
+@end
+
+@interface SelfDefinedHomeRes ()
+@property (strong) NSMutableArray<TopicAd*> * adsArray;
+@property (strong) NSMutableArray<SelfDefinedTopic*> * selfDefinedTopicsArray;
+@end
+
+@implementation SelfDefinedHomeRes
+
+@synthesize adsArray;
+@dynamic ads;
+@synthesize selfDefinedTopicsArray;
+@dynamic selfDefinedTopics;
+- (instancetype) init {
+  if ((self = [super init])) {
+  }
+  return self;
+}
+static SelfDefinedHomeRes* defaultSelfDefinedHomeResInstance = nil;
++ (void) initialize {
+  if (self == [SelfDefinedHomeRes class]) {
+    defaultSelfDefinedHomeResInstance = [[SelfDefinedHomeRes alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSelfDefinedHomeResInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSelfDefinedHomeResInstance;
+}
+- (NSArray<TopicAd*> *)ads {
+  return adsArray;
+}
+- (TopicAd*)adsAtIndex:(NSUInteger)index {
+  return [adsArray objectAtIndex:index];
+}
+- (NSArray<SelfDefinedTopic*> *)selfDefinedTopics {
+  return selfDefinedTopicsArray;
+}
+- (SelfDefinedTopic*)selfDefinedTopicsAtIndex:(NSUInteger)index {
+  return [selfDefinedTopicsArray objectAtIndex:index];
+}
+- (BOOL) isInitialized {
+  __block BOOL isInitads = YES;
+   [self.ads enumerateObjectsUsingBlock:^(TopicAd *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitads = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitads) return isInitads;
+  __block BOOL isInitselfDefinedTopics = YES;
+   [self.selfDefinedTopics enumerateObjectsUsingBlock:^(SelfDefinedTopic *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitselfDefinedTopics = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitselfDefinedTopics) return isInitselfDefinedTopics;
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  [self.adsArray enumerateObjectsUsingBlock:^(TopicAd *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:1 value:element];
+  }];
+  [self.selfDefinedTopicsArray enumerateObjectsUsingBlock:^(SelfDefinedTopic *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:2 value:element];
+  }];
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  [self.adsArray enumerateObjectsUsingBlock:^(TopicAd *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(1, element);
+  }];
+  [self.selfDefinedTopicsArray enumerateObjectsUsingBlock:^(SelfDefinedTopic *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(2, element);
+  }];
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SelfDefinedHomeRes*) parseFromData:(NSData*) data {
+  return (SelfDefinedHomeRes*)[[[SelfDefinedHomeRes builder] mergeFromData:data] build];
+}
++ (SelfDefinedHomeRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedHomeRes*)[[[SelfDefinedHomeRes builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedHomeRes*) parseFromInputStream:(NSInputStream*) input {
+  return (SelfDefinedHomeRes*)[[[SelfDefinedHomeRes builder] mergeFromInputStream:input] build];
+}
++ (SelfDefinedHomeRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedHomeRes*)[[[SelfDefinedHomeRes builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedHomeRes*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SelfDefinedHomeRes*)[[[SelfDefinedHomeRes builder] mergeFromCodedInputStream:input] build];
+}
++ (SelfDefinedHomeRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedHomeRes*)[[[SelfDefinedHomeRes builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedHomeResBuilder*) builder {
+  return [[SelfDefinedHomeResBuilder alloc] init];
+}
++ (SelfDefinedHomeResBuilder*) builderWithPrototype:(SelfDefinedHomeRes*) prototype {
+  return [[SelfDefinedHomeRes builder] mergeFrom:prototype];
+}
+- (SelfDefinedHomeResBuilder*) builder {
+  return [SelfDefinedHomeRes builder];
+}
+- (SelfDefinedHomeResBuilder*) toBuilder {
+  return [SelfDefinedHomeRes builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  [self.adsArray enumerateObjectsUsingBlock:^(TopicAd *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"ads"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  [self.selfDefinedTopicsArray enumerateObjectsUsingBlock:^(SelfDefinedTopic *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"selfDefinedTopics"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  for (TopicAd* element in self.adsArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"ads"];
+  }
+  for (SelfDefinedTopic* element in self.selfDefinedTopicsArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"selfDefinedTopics"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SelfDefinedHomeRes class]]) {
+    return NO;
+  }
+  SelfDefinedHomeRes *otherMessage = other;
+  return
+      [self.adsArray isEqualToArray:otherMessage.adsArray] &&
+      [self.selfDefinedTopicsArray isEqualToArray:otherMessage.selfDefinedTopicsArray] &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  [self.adsArray enumerateObjectsUsingBlock:^(TopicAd *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  [self.selfDefinedTopicsArray enumerateObjectsUsingBlock:^(SelfDefinedTopic *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SelfDefinedHomeResBuilder()
+@property (strong) SelfDefinedHomeRes* resultSelfDefinedHomeRes;
+@end
+
+@implementation SelfDefinedHomeResBuilder
+@synthesize resultSelfDefinedHomeRes;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSelfDefinedHomeRes = [[SelfDefinedHomeRes alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSelfDefinedHomeRes;
+}
+- (SelfDefinedHomeResBuilder*) clear {
+  self.resultSelfDefinedHomeRes = [[SelfDefinedHomeRes alloc] init];
+  return self;
+}
+- (SelfDefinedHomeResBuilder*) clone {
+  return [SelfDefinedHomeRes builderWithPrototype:resultSelfDefinedHomeRes];
+}
+- (SelfDefinedHomeRes*) defaultInstance {
+  return [SelfDefinedHomeRes defaultInstance];
+}
+- (SelfDefinedHomeRes*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SelfDefinedHomeRes*) buildPartial {
+  SelfDefinedHomeRes* returnMe = resultSelfDefinedHomeRes;
+  self.resultSelfDefinedHomeRes = nil;
+  return returnMe;
+}
+- (SelfDefinedHomeResBuilder*) mergeFrom:(SelfDefinedHomeRes*) other {
+  if (other == [SelfDefinedHomeRes defaultInstance]) {
+    return self;
+  }
+  if (other.adsArray.count > 0) {
+    if (resultSelfDefinedHomeRes.adsArray == nil) {
+      resultSelfDefinedHomeRes.adsArray = [[NSMutableArray alloc] initWithArray:other.adsArray];
+    } else {
+      [resultSelfDefinedHomeRes.adsArray addObjectsFromArray:other.adsArray];
+    }
+  }
+  if (other.selfDefinedTopicsArray.count > 0) {
+    if (resultSelfDefinedHomeRes.selfDefinedTopicsArray == nil) {
+      resultSelfDefinedHomeRes.selfDefinedTopicsArray = [[NSMutableArray alloc] initWithArray:other.selfDefinedTopicsArray];
+    } else {
+      [resultSelfDefinedHomeRes.selfDefinedTopicsArray addObjectsFromArray:other.selfDefinedTopicsArray];
+    }
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SelfDefinedHomeResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SelfDefinedHomeResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 10: {
+        TopicAdBuilder* subBuilder = [TopicAd builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addAds:[subBuilder buildPartial]];
+        break;
+      }
+      case 18: {
+        SelfDefinedTopicBuilder* subBuilder = [SelfDefinedTopic builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addSelfDefinedTopics:[subBuilder buildPartial]];
+        break;
+      }
+    }
+  }
+}
+- (NSMutableArray<TopicAd*> *)ads {
+  return resultSelfDefinedHomeRes.adsArray;
+}
+- (TopicAd*)adsAtIndex:(NSUInteger)index {
+  return [resultSelfDefinedHomeRes adsAtIndex:index];
+}
+- (SelfDefinedHomeResBuilder *)addAds:(TopicAd*)value {
+  if (resultSelfDefinedHomeRes.adsArray == nil) {
+    resultSelfDefinedHomeRes.adsArray = [[NSMutableArray alloc]init];
+  }
+  [resultSelfDefinedHomeRes.adsArray addObject:value];
+  return self;
+}
+- (SelfDefinedHomeResBuilder *)setAdsArray:(NSArray<TopicAd*> *)array {
+  resultSelfDefinedHomeRes.adsArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (SelfDefinedHomeResBuilder *)clearAds {
+  resultSelfDefinedHomeRes.adsArray = nil;
+  return self;
+}
+- (NSMutableArray<SelfDefinedTopic*> *)selfDefinedTopics {
+  return resultSelfDefinedHomeRes.selfDefinedTopicsArray;
+}
+- (SelfDefinedTopic*)selfDefinedTopicsAtIndex:(NSUInteger)index {
+  return [resultSelfDefinedHomeRes selfDefinedTopicsAtIndex:index];
+}
+- (SelfDefinedHomeResBuilder *)addSelfDefinedTopics:(SelfDefinedTopic*)value {
+  if (resultSelfDefinedHomeRes.selfDefinedTopicsArray == nil) {
+    resultSelfDefinedHomeRes.selfDefinedTopicsArray = [[NSMutableArray alloc]init];
+  }
+  [resultSelfDefinedHomeRes.selfDefinedTopicsArray addObject:value];
+  return self;
+}
+- (SelfDefinedHomeResBuilder *)setSelfDefinedTopicsArray:(NSArray<SelfDefinedTopic*> *)array {
+  resultSelfDefinedHomeRes.selfDefinedTopicsArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (SelfDefinedHomeResBuilder *)clearSelfDefinedTopics {
+  resultSelfDefinedHomeRes.selfDefinedTopicsArray = nil;
+  return self;
+}
+@end
+
+@interface SelfDefinedMoreReq ()
+@property UInt32 selfId;
+@property UInt32 page;
+@end
+
+@implementation SelfDefinedMoreReq
+
+- (BOOL) hasSelfId {
+  return !!hasSelfId_;
+}
+- (void) setHasSelfId:(BOOL) _value_ {
+  hasSelfId_ = !!_value_;
+}
+@synthesize selfId;
+- (BOOL) hasPage {
+  return !!hasPage_;
+}
+- (void) setHasPage:(BOOL) _value_ {
+  hasPage_ = !!_value_;
+}
+@synthesize page;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.selfId = 0;
+    self.page = 1;
+  }
+  return self;
+}
+static SelfDefinedMoreReq* defaultSelfDefinedMoreReqInstance = nil;
++ (void) initialize {
+  if (self == [SelfDefinedMoreReq class]) {
+    defaultSelfDefinedMoreReqInstance = [[SelfDefinedMoreReq alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSelfDefinedMoreReqInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSelfDefinedMoreReqInstance;
+}
+- (BOOL) isInitialized {
+  if (!self.hasSelfId) {
+    return NO;
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasSelfId) {
+    [output writeUInt32:1 value:self.selfId];
+  }
+  if (self.hasPage) {
+    [output writeUInt32:2 value:self.page];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasSelfId) {
+    size_ += computeUInt32Size(1, self.selfId);
+  }
+  if (self.hasPage) {
+    size_ += computeUInt32Size(2, self.page);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SelfDefinedMoreReq*) parseFromData:(NSData*) data {
+  return (SelfDefinedMoreReq*)[[[SelfDefinedMoreReq builder] mergeFromData:data] build];
+}
++ (SelfDefinedMoreReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedMoreReq*)[[[SelfDefinedMoreReq builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedMoreReq*) parseFromInputStream:(NSInputStream*) input {
+  return (SelfDefinedMoreReq*)[[[SelfDefinedMoreReq builder] mergeFromInputStream:input] build];
+}
++ (SelfDefinedMoreReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedMoreReq*)[[[SelfDefinedMoreReq builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedMoreReq*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SelfDefinedMoreReq*)[[[SelfDefinedMoreReq builder] mergeFromCodedInputStream:input] build];
+}
++ (SelfDefinedMoreReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedMoreReq*)[[[SelfDefinedMoreReq builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedMoreReqBuilder*) builder {
+  return [[SelfDefinedMoreReqBuilder alloc] init];
+}
++ (SelfDefinedMoreReqBuilder*) builderWithPrototype:(SelfDefinedMoreReq*) prototype {
+  return [[SelfDefinedMoreReq builder] mergeFrom:prototype];
+}
+- (SelfDefinedMoreReqBuilder*) builder {
+  return [SelfDefinedMoreReq builder];
+}
+- (SelfDefinedMoreReqBuilder*) toBuilder {
+  return [SelfDefinedMoreReq builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasSelfId) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"selfId", [NSNumber numberWithInteger:self.selfId]];
+  }
+  if (self.hasPage) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"page", [NSNumber numberWithInteger:self.page]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasSelfId) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.selfId] forKey: @"selfId"];
+  }
+  if (self.hasPage) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.page] forKey: @"page"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SelfDefinedMoreReq class]]) {
+    return NO;
+  }
+  SelfDefinedMoreReq *otherMessage = other;
+  return
+      self.hasSelfId == otherMessage.hasSelfId &&
+      (!self.hasSelfId || self.selfId == otherMessage.selfId) &&
+      self.hasPage == otherMessage.hasPage &&
+      (!self.hasPage || self.page == otherMessage.page) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasSelfId) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.selfId] hash];
+  }
+  if (self.hasPage) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.page] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SelfDefinedMoreReqBuilder()
+@property (strong) SelfDefinedMoreReq* resultSelfDefinedMoreReq;
+@end
+
+@implementation SelfDefinedMoreReqBuilder
+@synthesize resultSelfDefinedMoreReq;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSelfDefinedMoreReq = [[SelfDefinedMoreReq alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSelfDefinedMoreReq;
+}
+- (SelfDefinedMoreReqBuilder*) clear {
+  self.resultSelfDefinedMoreReq = [[SelfDefinedMoreReq alloc] init];
+  return self;
+}
+- (SelfDefinedMoreReqBuilder*) clone {
+  return [SelfDefinedMoreReq builderWithPrototype:resultSelfDefinedMoreReq];
+}
+- (SelfDefinedMoreReq*) defaultInstance {
+  return [SelfDefinedMoreReq defaultInstance];
+}
+- (SelfDefinedMoreReq*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SelfDefinedMoreReq*) buildPartial {
+  SelfDefinedMoreReq* returnMe = resultSelfDefinedMoreReq;
+  self.resultSelfDefinedMoreReq = nil;
+  return returnMe;
+}
+- (SelfDefinedMoreReqBuilder*) mergeFrom:(SelfDefinedMoreReq*) other {
+  if (other == [SelfDefinedMoreReq defaultInstance]) {
+    return self;
+  }
+  if (other.hasSelfId) {
+    [self setSelfId:other.selfId];
+  }
+  if (other.hasPage) {
+    [self setPage:other.page];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SelfDefinedMoreReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SelfDefinedMoreReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setSelfId:[input readUInt32]];
+        break;
+      }
+      case 16: {
+        [self setPage:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasSelfId {
+  return resultSelfDefinedMoreReq.hasSelfId;
+}
+- (UInt32) selfId {
+  return resultSelfDefinedMoreReq.selfId;
+}
+- (SelfDefinedMoreReqBuilder*) setSelfId:(UInt32) value {
+  resultSelfDefinedMoreReq.hasSelfId = YES;
+  resultSelfDefinedMoreReq.selfId = value;
+  return self;
+}
+- (SelfDefinedMoreReqBuilder*) clearSelfId {
+  resultSelfDefinedMoreReq.hasSelfId = NO;
+  resultSelfDefinedMoreReq.selfId = 0;
+  return self;
+}
+- (BOOL) hasPage {
+  return resultSelfDefinedMoreReq.hasPage;
+}
+- (UInt32) page {
+  return resultSelfDefinedMoreReq.page;
+}
+- (SelfDefinedMoreReqBuilder*) setPage:(UInt32) value {
+  resultSelfDefinedMoreReq.hasPage = YES;
+  resultSelfDefinedMoreReq.page = value;
+  return self;
+}
+- (SelfDefinedMoreReqBuilder*) clearPage {
+  resultSelfDefinedMoreReq.hasPage = NO;
+  resultSelfDefinedMoreReq.page = 1;
+  return self;
+}
+@end
+
+@interface SelfDefinedMoreRes ()
+@property (strong) NSMutableArray<Book*> * booksArray;
+@property UInt32 psize;
+@property UInt32 page;
+@end
+
+@implementation SelfDefinedMoreRes
+
+@synthesize booksArray;
+@dynamic books;
+- (BOOL) hasPsize {
+  return !!hasPsize_;
+}
+- (void) setHasPsize:(BOOL) _value_ {
+  hasPsize_ = !!_value_;
+}
+@synthesize psize;
+- (BOOL) hasPage {
+  return !!hasPage_;
+}
+- (void) setHasPage:(BOOL) _value_ {
+  hasPage_ = !!_value_;
+}
+@synthesize page;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.psize = 0;
+    self.page = 0;
+  }
+  return self;
+}
+static SelfDefinedMoreRes* defaultSelfDefinedMoreResInstance = nil;
++ (void) initialize {
+  if (self == [SelfDefinedMoreRes class]) {
+    defaultSelfDefinedMoreResInstance = [[SelfDefinedMoreRes alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSelfDefinedMoreResInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSelfDefinedMoreResInstance;
+}
+- (NSArray<Book*> *)books {
+  return booksArray;
+}
+- (Book*)booksAtIndex:(NSUInteger)index {
+  return [booksArray objectAtIndex:index];
+}
+- (BOOL) isInitialized {
+  if (!self.hasPsize) {
+    return NO;
+  }
+  if (!self.hasPage) {
+    return NO;
+  }
+  __block BOOL isInitbooks = YES;
+   [self.books enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitbooks = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitbooks) return isInitbooks;
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  [self.booksArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:1 value:element];
+  }];
+  if (self.hasPsize) {
+    [output writeUInt32:3 value:self.psize];
+  }
+  if (self.hasPage) {
+    [output writeUInt32:5 value:self.page];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  [self.booksArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(1, element);
+  }];
+  if (self.hasPsize) {
+    size_ += computeUInt32Size(3, self.psize);
+  }
+  if (self.hasPage) {
+    size_ += computeUInt32Size(5, self.page);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SelfDefinedMoreRes*) parseFromData:(NSData*) data {
+  return (SelfDefinedMoreRes*)[[[SelfDefinedMoreRes builder] mergeFromData:data] build];
+}
++ (SelfDefinedMoreRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedMoreRes*)[[[SelfDefinedMoreRes builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedMoreRes*) parseFromInputStream:(NSInputStream*) input {
+  return (SelfDefinedMoreRes*)[[[SelfDefinedMoreRes builder] mergeFromInputStream:input] build];
+}
++ (SelfDefinedMoreRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedMoreRes*)[[[SelfDefinedMoreRes builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedMoreRes*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SelfDefinedMoreRes*)[[[SelfDefinedMoreRes builder] mergeFromCodedInputStream:input] build];
+}
++ (SelfDefinedMoreRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SelfDefinedMoreRes*)[[[SelfDefinedMoreRes builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SelfDefinedMoreResBuilder*) builder {
+  return [[SelfDefinedMoreResBuilder alloc] init];
+}
++ (SelfDefinedMoreResBuilder*) builderWithPrototype:(SelfDefinedMoreRes*) prototype {
+  return [[SelfDefinedMoreRes builder] mergeFrom:prototype];
+}
+- (SelfDefinedMoreResBuilder*) builder {
+  return [SelfDefinedMoreRes builder];
+}
+- (SelfDefinedMoreResBuilder*) toBuilder {
+  return [SelfDefinedMoreRes builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  [self.booksArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"books"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  if (self.hasPsize) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"psize", [NSNumber numberWithInteger:self.psize]];
+  }
+  if (self.hasPage) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"page", [NSNumber numberWithInteger:self.page]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  for (Book* element in self.booksArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"books"];
+  }
+  if (self.hasPsize) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.psize] forKey: @"psize"];
+  }
+  if (self.hasPage) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.page] forKey: @"page"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SelfDefinedMoreRes class]]) {
+    return NO;
+  }
+  SelfDefinedMoreRes *otherMessage = other;
+  return
+      [self.booksArray isEqualToArray:otherMessage.booksArray] &&
+      self.hasPsize == otherMessage.hasPsize &&
+      (!self.hasPsize || self.psize == otherMessage.psize) &&
+      self.hasPage == otherMessage.hasPage &&
+      (!self.hasPage || self.page == otherMessage.page) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  [self.booksArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  if (self.hasPsize) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.psize] hash];
+  }
+  if (self.hasPage) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.page] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SelfDefinedMoreResBuilder()
+@property (strong) SelfDefinedMoreRes* resultSelfDefinedMoreRes;
+@end
+
+@implementation SelfDefinedMoreResBuilder
+@synthesize resultSelfDefinedMoreRes;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSelfDefinedMoreRes = [[SelfDefinedMoreRes alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSelfDefinedMoreRes;
+}
+- (SelfDefinedMoreResBuilder*) clear {
+  self.resultSelfDefinedMoreRes = [[SelfDefinedMoreRes alloc] init];
+  return self;
+}
+- (SelfDefinedMoreResBuilder*) clone {
+  return [SelfDefinedMoreRes builderWithPrototype:resultSelfDefinedMoreRes];
+}
+- (SelfDefinedMoreRes*) defaultInstance {
+  return [SelfDefinedMoreRes defaultInstance];
+}
+- (SelfDefinedMoreRes*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SelfDefinedMoreRes*) buildPartial {
+  SelfDefinedMoreRes* returnMe = resultSelfDefinedMoreRes;
+  self.resultSelfDefinedMoreRes = nil;
+  return returnMe;
+}
+- (SelfDefinedMoreResBuilder*) mergeFrom:(SelfDefinedMoreRes*) other {
+  if (other == [SelfDefinedMoreRes defaultInstance]) {
+    return self;
+  }
+  if (other.booksArray.count > 0) {
+    if (resultSelfDefinedMoreRes.booksArray == nil) {
+      resultSelfDefinedMoreRes.booksArray = [[NSMutableArray alloc] initWithArray:other.booksArray];
+    } else {
+      [resultSelfDefinedMoreRes.booksArray addObjectsFromArray:other.booksArray];
+    }
+  }
+  if (other.hasPsize) {
+    [self setPsize:other.psize];
+  }
+  if (other.hasPage) {
+    [self setPage:other.page];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SelfDefinedMoreResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SelfDefinedMoreResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 10: {
+        BookBuilder* subBuilder = [Book builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addBooks:[subBuilder buildPartial]];
+        break;
+      }
+      case 24: {
+        [self setPsize:[input readUInt32]];
+        break;
+      }
+      case 40: {
+        [self setPage:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (NSMutableArray<Book*> *)books {
+  return resultSelfDefinedMoreRes.booksArray;
+}
+- (Book*)booksAtIndex:(NSUInteger)index {
+  return [resultSelfDefinedMoreRes booksAtIndex:index];
+}
+- (SelfDefinedMoreResBuilder *)addBooks:(Book*)value {
+  if (resultSelfDefinedMoreRes.booksArray == nil) {
+    resultSelfDefinedMoreRes.booksArray = [[NSMutableArray alloc]init];
+  }
+  [resultSelfDefinedMoreRes.booksArray addObject:value];
+  return self;
+}
+- (SelfDefinedMoreResBuilder *)setBooksArray:(NSArray<Book*> *)array {
+  resultSelfDefinedMoreRes.booksArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (SelfDefinedMoreResBuilder *)clearBooks {
+  resultSelfDefinedMoreRes.booksArray = nil;
+  return self;
+}
+- (BOOL) hasPsize {
+  return resultSelfDefinedMoreRes.hasPsize;
+}
+- (UInt32) psize {
+  return resultSelfDefinedMoreRes.psize;
+}
+- (SelfDefinedMoreResBuilder*) setPsize:(UInt32) value {
+  resultSelfDefinedMoreRes.hasPsize = YES;
+  resultSelfDefinedMoreRes.psize = value;
+  return self;
+}
+- (SelfDefinedMoreResBuilder*) clearPsize {
+  resultSelfDefinedMoreRes.hasPsize = NO;
+  resultSelfDefinedMoreRes.psize = 0;
+  return self;
+}
+- (BOOL) hasPage {
+  return resultSelfDefinedMoreRes.hasPage;
+}
+- (UInt32) page {
+  return resultSelfDefinedMoreRes.page;
+}
+- (SelfDefinedMoreResBuilder*) setPage:(UInt32) value {
+  resultSelfDefinedMoreRes.hasPage = YES;
+  resultSelfDefinedMoreRes.page = value;
+  return self;
+}
+- (SelfDefinedMoreResBuilder*) clearPage {
+  resultSelfDefinedMoreRes.hasPage = NO;
+  resultSelfDefinedMoreRes.page = 0;
   return self;
 }
 @end

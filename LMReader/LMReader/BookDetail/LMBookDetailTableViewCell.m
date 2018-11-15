@@ -23,21 +23,21 @@
 -(void)setupSubviews {
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
     
-    if (!self.contentIV) {
-        self.contentIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, 30, 30)];
-        self.contentIV.image = [UIImage imageNamed:@"bookDetail_Catalog"];
-        [self.contentView insertSubview:self.contentIV belowSubview:self.lineView];
-    }
     if (!self.nameLab) {
-        self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(self.contentIV.frame.origin.x + self.contentIV.frame.size.width + 5, 0, 40, 50)];
-        self.nameLab.font = [UIFont systemFontOfSize:16];
-        self.nameLab.text = @"目录";
+        self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(20, 0, 50, 60)];
+        self.nameLab.font = [UIFont systemFontOfSize:18];
+        self.nameLab.numberOfLines = 0;
+        self.nameLab.lineBreakMode = NSLineBreakByTruncatingTail;
+        self.nameLab.text = @"查看目录";
         [self.contentView insertSubview:self.nameLab belowSubview:self.lineView];
+        CGSize nameLabSize = [self.nameLab sizeThatFits:CGSizeMake(9999, 60)];
+        self.nameLab.frame = CGRectMake(20, 0, nameLabSize.width, 60);
     }
     if (!self.contentLab) {
-        self.contentLab = [[UILabel alloc]initWithFrame:CGRectMake(self.nameLab.frame.origin.x + self.nameLab.frame.size.width + 5, 0, screenWidth - 20 - 10 * 4 - self.nameLab.frame.size.width - self.contentIV.frame.size.width, 50)];
-        self.contentLab.font = [UIFont systemFontOfSize:16];
+        self.contentLab = [[UILabel alloc]initWithFrame:CGRectMake(self.nameLab.frame.origin.x + self.nameLab.frame.size.width + 20, 0, screenWidth - self.nameLab.frame.origin.x - self.nameLab.frame.size.width - 20 * 3, 60)];
+        self.contentLab.font = [UIFont systemFontOfSize:15];
         self.contentLab.lineBreakMode = NSLineBreakByTruncatingTail;
+        self.contentLab.textColor = [UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1];
         [self.contentView insertSubview:self.contentLab belowSubview:self.lineView];
     }
 }

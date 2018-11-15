@@ -35,14 +35,27 @@ static NSString* cellIdentifier = @"cellIdentifier";
     
     self.title = @"阅读记录";
     
+    UIView* cleanView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 45, 35)];
+    UIButton* cleanItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, cleanView.frame.size.width, cleanView.frame.size.height)];
+    cleanItemBtn.titleLabel.font = [UIFont systemFontOfSize:15];
+    [cleanItemBtn setTitle:@"清空" forState:UIControlStateNormal];
+    [cleanItemBtn setTitleColor:UIColorFromRGB(0x656565) forState:UIControlStateNormal];
+    [cleanItemBtn setTitleEdgeInsets:UIEdgeInsetsMake(0, 0, 0, 10)];
+    [cleanItemBtn addTarget:self action:@selector(clickedCleanButton:) forControlEvents:UIControlEventTouchUpInside];
+    [cleanView addSubview:cleanItemBtn];
+    UIBarButtonItem* cleanItem = [[UIBarButtonItem alloc]initWithCustomView:cleanView];
+    
+    self.navigationItem.rightBarButtonItem = cleanItem;
+    
     CGFloat naviHeight = 20 + 44;
     if ([LMTool isBangsScreen]) {
         naviHeight = 44 + 44;
     }
-    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) style:UITableViewStylePlain];
+    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) style:UITableViewStyleGrouped];
     if (@available(iOS 11.0, *)) {
         self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
+    self.tableView.backgroundColor = [UIColor whiteColor];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.refreshDelegate = self;
@@ -62,6 +75,15 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [self loadReadRecordDataWithPage:self.page size:self.size loadMoreData:NO];
 }
 
+//清空
+-(void)clickedCleanButton:(UIButton* )sender {
+    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+    [tool deleteAllReadRecord];
+    
+    [self.dataArray removeAllObjects];
+    [self.tableView reloadData];
+}
+
 -(void)loadReadRecordDataWithPage:(NSInteger )page size:(NSInteger )size loadMoreData:(BOOL )loadMoreData {
     
     [self showNetworkLoadingView];
@@ -73,7 +95,19 @@ static NSString* cellIdentifier = @"cellIdentifier";
         if (self.page == 0) {
             [self.dataArray removeAllObjects];
         }
-        for (NSDictionary* dic in arr) {
+        
+        NSDate *currentDate = [NSDate date];
+        NSCalendar *calendar = [NSCalendar currentCalendar];
+        NSUInteger unitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+        NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:currentDate];
+        NSInteger currentHour = [dateComponent hour];
+        
+        NSTimeInterval nowTimeinterval = [[NSDate date] timeIntervalSince1970];
+        NSMutableArray* todayArray = [NSMutableArray array];
+        NSMutableArray* yesterdayArray = [NSMutableArray array];
+        NSMutableArray* earlyArray = [NSMutableArray array];
+        for (NSInteger i = 0; i < arr.count; i ++) {
+            NSDictionary* dic = [arr objectAtIndex:i];
             LMReadRecordModel* model = [[LMReadRecordModel alloc]init];
             model.bookId = [[dic objectForKey:@"bookId"] intValue];
             model.name = [dic objectForKey:@"name"];
@@ -86,7 +120,28 @@ static NSString* cellIdentifier = @"cellIdentifier";
             model.dateStr = [LMTool convertDateToTime:date];
             model.isCollected = [[LMDatabaseTool sharedDatabaseTool] checkUserBooksIsExistWithBookId:model.bookId];
             
-            [self.dataArray addObject:model];
+            NSTimeInterval timeStamp = [date timeIntervalSince1970];
+            int timeInt = nowTimeinterval - timeStamp; //时间差
+            int hour = timeInt / 3600;//小时
+            int day = timeInt / (3600 * 24);
+            
+            model.dayInteger = day;
+            if (hour <= currentHour) {
+                [todayArray addObject:model];
+            }else if (hour > 24 && day == 1) {
+                [yesterdayArray addObject:model];
+            }else {
+                [earlyArray addObject:model];
+            }
+        }
+        if (todayArray.count > 0) {
+            [self.dataArray addObject:todayArray];
+        }
+        if (yesterdayArray.count > 0) {
+            [self.dataArray addObject:yesterdayArray];
+        }
+        if (earlyArray.count > 0) {
+            [self.dataArray addObject:earlyArray];
         }
         
         [self.tableView reloadData];
@@ -113,33 +168,60 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.01)];
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
+    vi.backgroundColor = [UIColor whiteColor];
+    UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(20, 20, 100, 20)];
+    lab.font = [UIFont systemFontOfSize:12];
+    lab.textColor = [UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1];
+    [vi addSubview:lab];
+    NSString* labText = @"";
+    NSArray* arr = [self.dataArray objectAtIndex:section];
+    if (arr.count > 0) {
+        LMReadRecordModel* model = [arr firstObject];
+        if (model.dayInteger == 0) {
+            labText = @"今天";
+        }else if (model.dayInteger == 1) {
+            labText = @"昨天";
+        }else {
+            labText = @"更早";
+        }
+    }
+    lab.text = labText;
     return vi;
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
-    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.01)];
+    CGFloat tempHeight = 10;
+    if (self.dataArray.count - 1 == section) {
+        tempHeight = 0.01;
+    }
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, tempHeight)];
+    vi.backgroundColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
     return vi;
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
-}
-
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return self.dataArray.count;
 }
 
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    NSArray* arr = [self.dataArray objectAtIndex:section];
+    return arr.count;
+}
+
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 0.01;
+    return 40;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
-    return 0.01;
+    if (self.dataArray.count - 1 == section) {
+        return 0.01;
+    }
+    return 10;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 50;
+    return 60;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -147,8 +229,12 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (!cell) {
         cell = [[LMReadRecordTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
+    [cell showLineView:NO];
+    
+    NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
-    LMReadRecordModel* model = [self.dataArray objectAtIndex:row];
+    NSArray* arr = [self.dataArray objectAtIndex:section];
+    LMReadRecordModel* model = [arr objectAtIndex:row];
     [cell setupReadRecordWithModel:model];
     cell.delegate = self;
     return cell;
@@ -156,8 +242,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:NO];
+    
+    NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
-    LMReadRecordModel* model = [self.dataArray objectAtIndex:row];
+    NSArray* arr = [self.dataArray objectAtIndex:section];
+    LMReadRecordModel* model = [arr objectAtIndex:row];
     NSString* nameStr = model.name;
     UInt32 bookId = model.bookId;
     
@@ -196,21 +285,24 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 #pragma mark -LMReadRecordTableViewCellDelegate
 -(void)didStartScrollCell:(LMReadRecordTableViewCell* )selectedCell {
-    NSInteger section = 0;
-    NSInteger rows = [self.tableView numberOfRowsInSection:section];
-    for (NSInteger i = 0; i < rows; i ++) {
-        NSIndexPath* indexPath = [NSIndexPath indexPathForRow:i inSection:section];
-        LMReadRecordTableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-        if (cell == selectedCell) {
-            continue;
+    NSInteger section = [self.tableView numberOfSections];
+    for (NSInteger j = 0; j < section; j ++) {
+        NSInteger rows = [self.tableView numberOfRowsInSection:j];
+        for (NSInteger i = 0; i < rows; i ++) {
+            NSIndexPath* indexPath = [NSIndexPath indexPathForRow:i inSection:section];
+            LMReadRecordTableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+            if (cell == selectedCell) {
+                continue;
+            }
+            [cell showCollectAndDelete:NO animation:YES];
         }
-        [cell showCollectAndDelete:NO animation:YES];
     }
 }
 
 -(void)didClickCell:(LMReadRecordTableViewCell* )cell deleteButton:(UIButton* )btn {
     NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
-    LMReadRecordModel* model = [self.dataArray objectAtIndex:indexPath.row];
+    NSArray* arr = [self.dataArray objectAtIndex:indexPath.section];
+    LMReadRecordModel* model = [arr objectAtIndex:indexPath.row];
     [[LMDatabaseTool sharedDatabaseTool]deleteBookReadRecordWithBookId:model.bookId];
     
     [self.dataArray removeObjectAtIndex:indexPath.row];
@@ -219,7 +311,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 -(void)didClickCell:(LMReadRecordTableViewCell* )cell collectButton:(UIButton* )btn {
     NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
-    LMReadRecordModel* model = [self.dataArray objectAtIndex:indexPath.row];
+    NSArray* arr = [self.dataArray objectAtIndex:indexPath.section];
+    LMReadRecordModel* model = [arr objectAtIndex:indexPath.row];
     
     [self showNetworkLoadingView];
     

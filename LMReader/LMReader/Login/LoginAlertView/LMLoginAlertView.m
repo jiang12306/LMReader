@@ -14,6 +14,7 @@
 #import "MBProgressHUD.h"
 #import "LMLoginAgreementView.h"
 #import <SafariServices/SafariServices.h>
+#import "AppDelegate.h"
 
 @interface LMLoginAlertView () <TencentSessionDelegate>
 
@@ -62,96 +63,86 @@
         self.contentView.backgroundColor = [UIColor whiteColor];
         [self addSubview:self.contentView];
         
-        self.closeBtn = [[UIButton alloc]initWithFrame:CGRectMake(5, 10, 30, 30)];
-        [self.closeBtn setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
-        self.closeBtn.titleLabel.font = [UIFont systemFontOfSize:30];
-        [self.closeBtn setTitle:@"X" forState:UIControlStateNormal];
+        self.closeBtn = [[UIButton alloc]initWithFrame:CGRectMake(20, 20, 20, 20)];
+        [self.closeBtn setImage:[UIImage imageNamed:@"ad_Close"] forState:UIControlStateNormal];
         [self.closeBtn addTarget:self action:@selector(clickedCloseButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:self.closeBtn];
         
-        self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake(60, 10, screenRect.size.width - 120, 30)];
-        self.titleLab.font = [UIFont systemFontOfSize:16];
+        self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake(60, 20, screenRect.size.width - 120, 20)];
+        self.titleLab.font = [UIFont systemFontOfSize:15];
         self.titleLab.textAlignment = NSTextAlignmentCenter;
-        self.titleLab.textColor = [UIColor grayColor];
         self.titleLab.text = @"需登录才能操作";
         [self.contentView addSubview:self.titleLab];
         
-        CGFloat spaceX = 10;
         CGFloat spaceY = 20;
-        CGFloat labHeight = 40;
         
-        UIImageView* phoneIV = [[UIImageView alloc]initWithFrame:CGRectMake(5, 5, 30, 30)];
+        UIView* phoneView = [[UIView alloc]initWithFrame:CGRectMake(0, self.titleLab.frame.origin.y + self.titleLab.frame.size.height + 20, self.contentView.frame.size.width, 50)];
+        [self.contentView addSubview:phoneView];
+        
+        UIImageView* phoneIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 15, 20, 20)];
         phoneIV.image = [UIImage imageNamed:@"register_Avator"];
-        
-        UIView* phoneView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, labHeight, labHeight)];
         [phoneView addSubview:phoneIV];
         
-        self.phoneTF = [[UITextField alloc]initWithFrame:CGRectMake(spaceX, self.titleLab.frame.origin.y + self.titleLab.frame.size.height + spaceY, screenRect.size.width - spaceX * 2, labHeight)];
-        self.phoneTF.placeholder = @"手机号";
-        self.phoneTF.backgroundColor = [UIColor whiteColor];
-        self.phoneTF.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
-        self.phoneTF.layer.borderWidth = 1;
-        self.phoneTF.layer.cornerRadius = 5;
-        self.phoneTF.layer.masksToBounds = YES;
+        self.phoneTF = [[UITextField alloc]initWithFrame:CGRectMake(phoneIV.frame.origin.x + phoneIV.frame.size.width + 20, 10, phoneView.frame.size.width - phoneIV.frame.origin.x - phoneIV.frame.size.width - 20 * 2, 30)];
+        self.phoneTF.font = [UIFont systemFontOfSize:15];
+        self.phoneTF.placeholder = @"请输入手机号码";
         self.phoneTF.keyboardType = UIKeyboardTypeNumberPad;
         self.phoneTF.clearButtonMode = UITextFieldViewModeWhileEditing;
-        self.phoneTF.leftViewMode = UITextFieldViewModeAlways;
-        self.phoneTF.leftView = phoneView;
-        [self.contentView addSubview:self.phoneTF];
+        [phoneView addSubview:self.phoneTF];
         
-        self.codeView = [[UIView alloc]initWithFrame:CGRectMake(0, self.phoneTF.frame.origin.y + self.phoneTF.frame.size.height + spaceY, screenRect.size.width, labHeight)];
+        UIView* phoneLineView = [[UIView alloc]initWithFrame:CGRectMake(20, phoneView.frame.size.height - 1, phoneView.frame.size.width - 20 * 2, 1)];
+        phoneLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+        [phoneView addSubview:phoneLineView];
+        
+        self.codeView = [[UIView alloc]initWithFrame:CGRectMake(0, phoneView.frame.origin.y + phoneView.frame.size.height, self.contentView.frame.size.width, 50)];
         [self.contentView addSubview:self.codeView];
         
-        self.codeBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.codeView.frame.size.width - spaceX - 80, 0, 80, labHeight)];
-        self.codeBtn.layer.cornerRadius = 5;
-        self.codeBtn.layer.masksToBounds = YES;
-        self.codeBtn.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
-        self.codeBtn.layer.borderWidth = 1;
-        self.codeBtn.titleLabel.font = [UIFont systemFontOfSize:14];
+        self.codeBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.codeView.frame.size.width - 20 - 80, 10, 80, 30)];
+        self.codeBtn.titleLabel.font = [UIFont systemFontOfSize:15];
         [self.codeBtn setTitle:@"获取验证码" forState:UIControlStateNormal];
-        [self.codeBtn setTitleColor:[UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.codeBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateNormal];
         [self.codeBtn addTarget:self action:@selector(clickedCodeButton:) forControlEvents:UIControlEventTouchUpInside];
         self.codeBtn.selected = NO;
         [self.codeView addSubview:self.codeBtn];
         
-        self.codeTF = [[UITextField alloc]initWithFrame:CGRectMake(spaceX, self.codeBtn.frame.origin.y, self.codeView.frame.size.width - self.codeBtn.frame.size.width - spaceX * 3, self.phoneTF.frame.size.height)];
-        self.codeTF.backgroundColor = [UIColor whiteColor];
-        self.codeTF.layer.borderWidth = 1;
-        self.codeTF.layer.cornerRadius = 5;
-        self.codeTF.layer.masksToBounds = YES;
-        self.codeTF.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
+        UIView* verticalLineView = [[UIView alloc]initWithFrame:CGRectMake(self.codeBtn.frame.origin.x - 1 - 20, self.codeBtn.frame.origin.y, 1, self.codeBtn.frame.size.height)];
+        verticalLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+        [self.codeView addSubview:verticalLineView];
+        
+        self.codeTF = [[UITextField alloc]initWithFrame:CGRectMake(20, self.codeBtn.frame.origin.y, verticalLineView.frame.origin.x - 20 * 2, self.phoneTF.frame.size.height)];
+        self.codeTF.font = [UIFont systemFontOfSize:15];
         self.codeTF.keyboardType = UIKeyboardTypeNumberPad;
         self.codeTF.clearButtonMode = UITextFieldViewModeWhileEditing;
-        self.codeTF.placeholder = @" 验证码";
+        self.codeTF.placeholder = @"请输入验证码";
         [self.codeView addSubview:self.codeTF];
         
-        self.passwordView = [[UIView alloc]initWithFrame:CGRectMake(screenRect.size.width, self.codeView.frame.origin.y, screenRect.size.width, labHeight)];
+        UIView* codeLineView = [[UIView alloc]initWithFrame:CGRectMake(20, self.codeView.frame.size.height - 1, self.codeView.frame.size.width - 20 * 2, 1)];
+        codeLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+        [self.codeView addSubview:codeLineView];
+        
+        self.passwordView = [[UIView alloc]initWithFrame:CGRectMake(screenRect.size.width, self.codeView.frame.origin.y, screenRect.size.width, 50)];
         [self.contentView addSubview:self.passwordView];
         
-        UIImageView* pwdIV = [[UIImageView alloc]initWithFrame:CGRectMake(5, 5, 30, 30)];
+        UIImageView* pwdIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 15, 20, 20)];
         pwdIV.image = [UIImage imageNamed:@"register_Password"];
+        [self.passwordView addSubview:pwdIV];
         
-        UIView* pwdView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, labHeight, labHeight)];
-        [pwdView addSubview:pwdIV];
-        
-        self.pwdTF = [[UITextField alloc]initWithFrame:CGRectMake(spaceX, 0, self.phoneTF.frame.size.width, self.phoneTF.frame.size.height)];
-        self.pwdTF.backgroundColor = [UIColor whiteColor];
-        self.pwdTF.layer.borderWidth = 1;
-        self.pwdTF.layer.cornerRadius = 5;
-        self.pwdTF.layer.masksToBounds = YES;
-        self.pwdTF.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
+        self.pwdTF = [[UITextField alloc]initWithFrame:CGRectMake(pwdIV.frame.origin.x + pwdIV.frame.size.width + 20, 10, self.phoneTF.frame.size.width, self.phoneTF.frame.size.height)];
+        self.pwdTF.font = [UIFont systemFontOfSize:15];
         self.pwdTF.keyboardType = UIKeyboardTypeEmailAddress;
         self.pwdTF.clearButtonMode = UITextFieldViewModeWhileEditing;
-        self.pwdTF.leftViewMode = UITextFieldViewModeAlways;
-        self.pwdTF.leftView = pwdView;
         self.pwdTF.secureTextEntry = YES;
         self.pwdTF.placeholder = @"请输入密码";
         [self.passwordView addSubview:self.pwdTF];
         
+        UIView* pwdLineView = [[UIView alloc]initWithFrame:CGRectMake(20, self.passwordView.frame.size.height - 1, self.passwordView.frame.size.width - 20 * 2, 1)];
+        pwdLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+        [self.passwordView addSubview:pwdLineView];
+        
         self.agreeResult = YES;
         __weak LMLoginAlertView* weakSelf = self;
         
-        self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake(10, self.codeView.frame.origin.y + self.codeView.frame.size.height + spaceY, 190, 15)];
+        self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake(10, self.codeView.frame.origin.y + self.codeView.frame.size.height + spaceY, 170, 15)];
         self.agreementView.agreeBlock = ^(BOOL didAgree) {
             weakSelf.agreeResult = didAgree;
         };
@@ -163,9 +154,9 @@
         };
         [self.contentView addSubview:self.agreementView];
         
-        self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(spaceX, self.agreementView.frame.origin.y + self.agreementView.frame.size.height + spaceY, screenRect.size.width - spaceX * 2, labHeight)];
+        self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.agreementView.frame.origin.y + self.agreementView.frame.size.height + 20, screenRect.size.width - 60 * 2, 50)];
         self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-        self.sendBtn.layer.cornerRadius = 5;
+        self.sendBtn.layer.cornerRadius = 25;
         self.sendBtn.layer.masksToBounds = YES;
         [self.sendBtn setTitle:@"登 录" forState:UIControlStateNormal];
         [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -180,20 +171,14 @@
         [self.switchBtn addTarget:self action:@selector(clickedSwitchButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:self.switchBtn];
         
-        self.qqBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 80, 100)];
+        self.qqBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 50, 50)];
         [self.qqBtn addTarget:self action:@selector(clickedQQButton:) forControlEvents:UIControlEventTouchUpInside];
         self.qqBtn.center = CGPointMake(screenRect.size.width * 2 / 3, self.switchBtn.frame.origin.y + self.switchBtn.frame.size.height + spaceY + 50);
         [self.contentView addSubview:self.qqBtn];
         
-        UIImageView* qqIV = [[UIImageView alloc]initWithFrame:CGRectMake(13, 0, 53, 60)];
-        qqIV.image = [UIImage imageNamed:@"fastLoginAlert_QQ_Color"];
+        UIImageView* qqIV = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 50, 50)];
+        qqIV.image = [UIImage imageNamed:@"qq_Gray"];
         [self.qqBtn addSubview:qqIV];
-        UILabel* qqLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 60, 80, 20)];
-        qqLab.font = [UIFont systemFontOfSize:16];
-        qqLab.textColor = [UIColor grayColor];
-        qqLab.text = @"QQ登录";
-        qqLab.textAlignment = NSTextAlignmentCenter;
-        [self.qqBtn addSubview:qqLab];
         
         BOOL installedWeChat = NO;//本地支持微信
         if ([WXApi isWXAppInstalled] && [WXApi isWXAppSupportApi]) {
@@ -244,20 +229,14 @@
 }
 
 -(void)createWeChatButton {
-    self.weChatBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 80, 100)];
+    self.weChatBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 50, 50)];
     [self.weChatBtn addTarget:self action:@selector(clickedWeChatButton:) forControlEvents:UIControlEventTouchUpInside];
     self.weChatBtn.center = CGPointMake(self.qqBtn.center.x / 2, self.qqBtn.center.y);
     [self.contentView addSubview:self.weChatBtn];
     
-    UIImageView* weChatIV = [[UIImageView alloc]initWithFrame:CGRectMake(7, 0, 65, 60)];
-    weChatIV.image = [UIImage imageNamed:@"fastLoginAlert_WeChat_Color"];
+    UIImageView* weChatIV = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 50, 50)];
+    weChatIV.image = [UIImage imageNamed:@"weChat_Gray"];
     [self.weChatBtn addSubview:weChatIV];
-    UILabel* weChatLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 60, 80, 20)];
-    weChatLab.font = [UIFont systemFontOfSize:16];
-    weChatLab.textColor = [UIColor grayColor];
-    weChatLab.text = @"微信登录";
-    weChatLab.textAlignment = NSTextAlignmentCenter;
-    [self.weChatBtn addSubview:weChatLab];
 }
 
 -(void)tapped:(UITapGestureRecognizer* )tapGR {
@@ -271,7 +250,7 @@
     CGFloat btnPositionY = self.sendBtn.frame.origin.y + self.sendBtn.frame.size.height + 20;
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
     [UIView animateWithDuration:duration animations:^{
-        self.contentView.frame = CGRectMake(0, screenSize.height - keyboardHeight - btnPositionY, screenSize.width, screenSize.height);//170
+        self.contentView.frame = CGRectMake(0, screenSize.height - keyboardHeight - btnPositionY, screenSize.width, screenSize.height);
     }];
 }
 
@@ -280,6 +259,9 @@
     CGFloat duration = [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey]floatValue];
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
     CGFloat contentHeight = self.qqBtn.frame.origin.y + self.qqBtn.frame.size.height + 20;
+    if ([LMTool isBangsScreen]) {
+        contentHeight += 20;
+    }
     [UIView animateWithDuration:duration animations:^{
         self.contentView.frame = CGRectMake(0, screenSize.height - contentHeight, screenSize.width, screenSize.height);
     }];
@@ -624,12 +606,18 @@
 -(void)startShow {
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
     CGFloat contentHeight = self.qqBtn.frame.origin.y + self.qqBtn.frame.size.height + 20;
+    if ([LMTool isBangsScreen]) {
+        contentHeight += 20;
+    }
     CGRect finalFrame = CGRectMake(0, screenSize.height - contentHeight, screenSize.width, screenSize.height);
     UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
     [keyWindow addSubview:self];
     [UIView animateWithDuration:0.2 animations:^{
         self.contentView.frame = finalFrame;
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate bringSystemNightShiftToFront];
 }
 
 -(void)startHide {
@@ -642,6 +630,9 @@
     } completion:^(BOOL finished) {
         [self removeFromSuperview];
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate sendSystemNightShiftToback];
 }
 
 //微信 登录成功

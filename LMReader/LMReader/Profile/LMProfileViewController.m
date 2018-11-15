@@ -14,7 +14,6 @@
 #import "LMSystemSettingViewController.h"
 #import "LMFeedBackViewController.h"
 #import "LMAboutUsViewController.h"
-#import "LMCopyrightViewController.h"
 #import "LMProfileCenterViewController.h"
 #import "LMLoginViewController.h"
 #import <MobileCoreServices/UTCoreTypes.h>
@@ -31,9 +30,12 @@
 @property (nonatomic, strong) UITableView* tableView;
 @property (nonatomic, strong) NSMutableArray* dataArray;
 @property (nonatomic, strong) UIImageView* avatorIV;
+@property (nonatomic, strong) UIImageView* arrowIV;
+@property (nonatomic, strong) UILabel* editLab;
 @property (nonatomic, strong) UILabel* nameLab;
 @property (nonatomic, strong) UILabel* timeLab;
 @property (nonatomic, strong) LoginedRegUser* loginedRegUser;
+@property (nonatomic, assign) BOOL isNight;
 
 @end
 
@@ -44,23 +46,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    LMLeftItemView* leftView = [[LMLeftItemView alloc]initWithFrame:CGRectMake(0, 0, 80, 25)];
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:leftView];
+    self.fd_prefersNavigationBarHidden = YES;
     
-    __weak LMProfileViewController* weakSelf = self;
-    
-    LMRightItemView* rightView = [[LMRightItemView alloc]initWithFrame:CGRectMake(0, 0, 44, 44)];
-    rightView.callBlock = ^(BOOL clicked) {
-        if (clicked) {
-            LMSearchViewController* searchVC = [[LMSearchViewController alloc]init];
-            [weakSelf.navigationController pushViewController:searchVC animated:YES];
-        }
-    };
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:rightView];
-    
-    CGFloat naviHeight = 20 + 44;
+    CGFloat naviHeight = 0;
     if ([LMTool isBangsScreen]) {
-        naviHeight = 44 + 44;
+        naviHeight = 44;
     }
     self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) style:UITableViewStyleGrouped];
     if (@available(ios 11.0, *)) {
@@ -73,8 +63,10 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [self.tableView registerClass:[LMProfileTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.view addSubview:self.tableView];
     
-    CGFloat spaceX = 10;
-    UIView* headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 80)];
+    CGFloat spaceX = 20;
+    CGFloat spaceY = 50;
+    CGFloat avatorWidth = 70;
+    UIView* headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, spaceY * 2 + avatorWidth)];
     headerView.backgroundColor = [UIColor whiteColor];
     
     UIButton* profileCenterBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, headerView.frame.size.width, headerView.frame.size.height)];
@@ -82,36 +74,50 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [profileCenterBtn addTarget:self action:@selector(clickedProfileCenterButton:) forControlEvents:UIControlEventTouchUpInside];
     [headerView addSubview:profileCenterBtn];
     
-    self.avatorIV = [[UIImageView alloc]initWithFrame:CGRectMake(spaceX, spaceX, 60, 60)];
+    self.arrowIV = [[UIImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width - 20 - 10, (headerView.frame.size.height - 10) / 2, 10, 10)];
+    UIImage* image = [UIImage imageNamed:@"cell_Arrow"];
+    UIImage* tintImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [self.arrowIV setTintColor:[UIColor grayColor]];
+    self.arrowIV.image = tintImage;
+    [headerView addSubview:self.arrowIV];
+    
+    self.avatorIV = [[UIImageView alloc]initWithFrame:CGRectMake(spaceX, spaceY, avatorWidth, avatorWidth)];
     self.avatorIV.image = [UIImage imageNamed:@"avator_LoginOut"];
     self.avatorIV.contentMode = UIViewContentModeScaleAspectFill;
+    self.avatorIV.layer.cornerRadius = avatorWidth / 2.f;
+    self.avatorIV.layer.masksToBounds = YES;
     self.avatorIV.clipsToBounds = YES;
     [headerView addSubview:self.avatorIV];
     self.avatorIV.userInteractionEnabled = YES;
     UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedAvatorIV:)];
     [self.avatorIV addGestureRecognizer:tap];
     
-    self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(self.avatorIV.frame.origin.x + self.avatorIV.frame.size.width + spaceX, self.avatorIV.frame.origin.y, self.view.frame.size.width - self.avatorIV.frame.size.width - spaceX*4 - 20, 30)];
-    self.nameLab.font = [UIFont systemFontOfSize:18];
-    self.nameLab.text = @"昵称";
-    self.nameLab.textColor = THEMEORANGECOLOR;
+    self.editLab = [[UILabel alloc]initWithFrame:CGRectMake(self.arrowIV.frame.origin.x - 50, self.avatorIV.frame.origin.y + (self.avatorIV.frame.size.height - 30) / 2, 50, 30)];
+    self.editLab.font = [UIFont systemFontOfSize:18];
+    self.editLab.textColor = [UIColor colorWithRed:120.f/255 green:120.f/255 blue:120.f/255 alpha:1];
+    self.editLab.textAlignment = NSTextAlignmentCenter;
+    self.editLab.text = @"编辑";
+    [headerView addSubview:self.editLab];
+    
+    self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(self.avatorIV.frame.origin.x + self.avatorIV.frame.size.width + spaceX, self.avatorIV.frame.origin.y + (self.avatorIV.frame.size.height - 60) / 2, self.editLab.frame.origin.x - self.avatorIV.frame.origin.x - self.avatorIV.frame.size.width - spaceX, 30)];
+    self.nameLab.font = [UIFont systemFontOfSize:20];
+    self.nameLab.text = @"点击登录";
     [headerView addSubview:self.nameLab];
     
-    self.timeLab = [[UILabel alloc]initWithFrame:CGRectMake(self.nameLab.frame.origin.x, self.nameLab.frame.origin.y + self.nameLab.frame.size.height, self.nameLab.frame.size.width, self.nameLab.frame.size.height)];
+    self.timeLab = [[UILabel alloc]initWithFrame:CGRectMake(self.nameLab.frame.origin.x, self.nameLab.frame.origin.y + self.nameLab.frame.size.height + 5, self.nameLab.frame.size.width, 25)];
+    self.timeLab.backgroundColor = THEMEORANGECOLOR;
+    self.timeLab.layer.cornerRadius = self.timeLab.frame.size.height / 2.f;
+    self.timeLab.layer.masksToBounds = YES;
     self.timeLab.font = [UIFont systemFontOfSize:15];
-    self.timeLab.textColor = [UIColor grayColor];
+    self.timeLab.textColor = [UIColor whiteColor];
+    self.timeLab.textAlignment = NSTextAlignmentCenter;
+    self.timeLab.numberOfLines = 0;
     self.timeLab.lineBreakMode = NSLineBreakByTruncatingTail;
     [headerView addSubview:self.timeLab];
     
-    UIImageView* arrowIV = [[UIImageView alloc]initWithFrame:CGRectMake(self.view.frame.size.width - 10 - 10.5, 30, 10.5, 20)];
-    UIImage* image = [UIImage imageNamed:@"cell_Arrow"];
-    UIImage* tintImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    [arrowIV setTintColor:[UIColor grayColor]];
-    arrowIV.image = tintImage;
-    [headerView addSubview:arrowIV];
     self.tableView.tableHeaderView = headerView;
     
-    self.dataArray = [NSMutableArray arrayWithObjects:@[@{@"name" : @"阅读记录", @"cover" : @"profile_ReadRecord"}, @{@"name" : @"阅读偏好", @"cover" : @"profile_ReadPreferences"}, @{@"name" : @"我的评论", @"cover" : @"profile_MyComment"}, @{@"name" : @"系统设置", @"cover" : @"profile_SystemSetting"}], @[@{@"name" : @"意见反馈", @"cover" : @"profile_FeedBack"}, @{@"name" : @"关于我们", @"cover" : @"profile_AboutUs"}, @{@"name" : @"版权声明", @"cover" : @"profile_Copyright"}], nil];
+    self.dataArray = [NSMutableArray arrayWithObjects:@[@{@"name" : @"阅读记录", @"cover" : @"profile_ReadRecord"}, @{@"name" : @"阅读偏好", @"cover" : @"profile_ReadPreferences"}, @{@"name" : @"我的评论", @"cover" : @"profile_MyComment"}], @[@{@"name" : @"系统设置", @"cover" : @"profile_SystemSetting"}, @{@"name" : @"意见反馈", @"cover" : @"profile_FeedBack"}, @{@"name" : @"关于我们", @"cover" : @"profile_AboutUs"}], nil];
     [self.tableView reloadData];
     
     //添加通知
@@ -144,11 +150,21 @@ static NSString* cellIdentifier = @"cellIdentifier";
         tabBarController.tabBar.frame = CGRectMake(0, screenRect.size.height - tabBarHeight, screenRect.size.width, tabBarHeight);
     }
     
+    self.isNight = [LMTool getSystemNightShift];
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:1];
+    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+    
     //更新头像、昵称信息
     self.loginedRegUser = [LMTool getLoginedRegUser];
-    NSString* nickStr = @"未登录";
-    NSString* timeStr = @"请先登录，让您享受更好服务";
+    NSString* nickStr = @"点击登录";
+    NSString* timeStr = @"";
     if (self.loginedRegUser != nil) {
+        self.arrowIV.hidden = NO;
+        self.timeLab.hidden = NO;
+        self.editLab.hidden = NO;
+        CGRect nameRect = self.nameLab.frame;
+        self.nameLab.frame =  CGRectMake(self.avatorIV.frame.origin.x + self.avatorIV.frame.size.width + 20, self.avatorIV.frame.origin.y + (self.avatorIV.frame.size.height - 60) / 2, nameRect.size.width, nameRect.size.height);
+        
         timeStr = @"相伴0天";
         RegUser* user = self.loginedRegUser.user;
         NSString* userNickStr = user.nickname;
@@ -183,10 +199,23 @@ static NSString* cellIdentifier = @"cellIdentifier";
             }
         }
     }else {
+        self.arrowIV.hidden = YES;
+        self.timeLab.hidden = YES;
+        self.editLab.hidden = YES;
+        CGRect nameRect = self.nameLab.frame;
+        self.nameLab.frame =  CGRectMake(self.avatorIV.frame.origin.x + self.avatorIV.frame.size.width + 20, self.avatorIV.frame.origin.y + (self.avatorIV.frame.size.height - nameRect.size.height) / 2, nameRect.size.width, nameRect.size.height);
         self.avatorIV.image = [UIImage imageNamed:@"avator_LoginOut"];
     }
     self.nameLab.text = nickStr;
     self.timeLab.text = timeStr;
+    
+    CGRect timeLabRect = self.timeLab.frame;
+    CGSize timeLabSize = [self.timeLab sizeThatFits:CGSizeMake(9999, 25)];
+    if (timeLabSize.width > self.nameLab.frame.size.width - 10) {
+        timeLabSize.width = self.nameLab.frame.size.width - 10;
+    }
+    timeLabRect.size.width = timeLabSize.width + 10;
+    self.timeLab.frame = timeLabRect;
 }
 
 //个人中心
@@ -296,14 +325,18 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 #pragma mark -UITableViewDataSource
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
+    CGFloat viHeight = 0.01;
+    if (section == 1) {
+        viHeight = 10;
+    }
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, viHeight)];
     vi.backgroundColor = [UIColor colorWithRed:233.f/255 green:233.f/255 blue:233.f/255 alpha:1];
     return vi;
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
     UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.01)];
-    vi.backgroundColor = [UIColor colorWithRed:233.f/255 green:233.f/255 blue:233.f/255 alpha:1];
+    vi.backgroundColor = [UIColor colorWithRed:236.f/255 green:236.f/255 blue:236.f/255 alpha:1];
     return vi;
 }
 
@@ -317,7 +350,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 10;
+    CGFloat viHeight = 0.01;
+    if (section == 1) {
+        viHeight = 10;
+    }
+    return viHeight;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
@@ -325,7 +362,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 50;
+    return 60;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -335,6 +372,16 @@ static NSString* cellIdentifier = @"cellIdentifier";
     }
     NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
+    BOOL showArrow = YES;
+    BOOL showMarkLab = NO;
+    BOOL showMarkIV = NO;
+    if (section == 1 && row == 0 && self.isNight) {
+        showArrow = NO;
+        showMarkLab = YES;
+        showMarkIV = YES;
+    }
+    [cell showLineView:NO];
+    [cell setupShowArrowIV:showArrow showMarkLabel:showMarkLab showMarkIV:showMarkIV];
     
     NSArray* subArr = [self.dataArray objectAtIndex:section];
     NSDictionary* detailDic = [subArr objectAtIndex:row];
@@ -344,11 +391,6 @@ static NSString* cellIdentifier = @"cellIdentifier";
     cell.nameLab.text = nameStr;
     cell.coverIV.image = [UIImage imageNamed:imgStr];
     
-    if (row == subArr.count - 1 && section != self.dataArray.count - 1) {
-        [cell showLineView:NO];
-    }else {
-        [cell showLineView:YES];
-    }
     return cell;
 }
 
@@ -376,12 +418,6 @@ static NSString* cellIdentifier = @"cellIdentifier";
                 [self.navigationController pushViewController:bookCommentVC animated:YES];
             }
                 break;
-            case 3:
-            {
-                LMSystemSettingViewController* settingVC = [[LMSystemSettingViewController alloc]init];
-                [self.navigationController pushViewController:settingVC animated:YES];
-            }
-                break;
             default:
                 break;
         }
@@ -389,20 +425,20 @@ static NSString* cellIdentifier = @"cellIdentifier";
         switch (row) {
             case 0:
             {
-                LMFeedBackViewController* feedBackVC = [[LMFeedBackViewController alloc]init];
-                [self.navigationController pushViewController:feedBackVC animated:YES];
+                LMSystemSettingViewController* settingVC = [[LMSystemSettingViewController alloc]init];
+                [self.navigationController pushViewController:settingVC animated:YES];
             }
                 break;
             case 1:
             {
-                LMAboutUsViewController* aboutUsVC = [[LMAboutUsViewController alloc]init];
-                [self.navigationController pushViewController:aboutUsVC animated:YES];
+                LMFeedBackViewController* feedBackVC = [[LMFeedBackViewController alloc]init];
+                [self.navigationController pushViewController:feedBackVC animated:YES];
             }
                 break;
             case 2:
             {
-                LMCopyrightViewController* copyrightVC = [[LMCopyrightViewController alloc]init];
-                [self.navigationController pushViewController:copyrightVC animated:YES];
+                LMAboutUsViewController* aboutUsVC = [[LMAboutUsViewController alloc]init];
+                [self.navigationController pushViewController:aboutUsVC animated:YES];
             }
                 break;
             default:

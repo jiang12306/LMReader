@@ -14,5 +14,14 @@
 
 @property (nonatomic, copy) NSString* userId;
 
+//更新 夜间、日间模式
+-(void)updateSystemNightShift;
+
+//夜间模式时，将layer置顶
+-(void)bringSystemNightShiftToFront;
+
+//夜间模式时，将layer放底下 否则会覆盖广告
+-(void)sendSystemNightShiftToback;
+
 @end
 

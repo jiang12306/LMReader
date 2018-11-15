@@ -8,8 +8,7 @@
 
 #import "LMSearchViewController.h"
 #import "LMBaseRefreshTableView.h"
-#import "LMBaseBookTableViewCell.h"
-//#import "LMAdvertisementTableViewCell.h"
+#import "LMTypeBookStoreTableViewCell.h"
 #import "LMBookDetailViewController.h"
 #import "LMSearchBarView.h"
 #import "LMSearchRelatedTableViewCell.h"
@@ -39,6 +38,12 @@
 
 @property (nonatomic, strong) LMSearchBarView* titleView;
 
+@property (nonatomic, assign) CGFloat bookCoverWidth;//
+@property (nonatomic, assign) CGFloat bookCoverHeight;//
+@property (nonatomic, assign) CGFloat bookFontScale;//
+@property (nonatomic, assign) CGFloat bookNameFontSize;//
+@property (nonatomic, assign) CGFloat bookBriefFontSize;//
+
 @end
 
 @implementation LMSearchViewController
@@ -59,9 +64,24 @@ static NSString* searchDataKey = @"searchHistoryData";
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.titleView = [[LMSearchBarView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width - 80 - 50, 28)];
+    self.bookCoverWidth = 105.f;
+    self.bookCoverHeight = 145.f;
+    self.bookNameFontSize = 15.f;
+    self.bookBriefFontSize = 12.f;
+    
+    CGFloat maxBookWidth = (self.view.frame.size.width - 20 * 4 - 10 * 3) / 3.f;
+    self.bookFontScale = (self.view.frame.size.width / 414.f);
+    if (self.bookFontScale > 1) {
+        self.bookFontScale = 1;
+    }
+    if (self.bookCoverWidth * self.bookFontScale > maxBookWidth) {
+        self.bookFontScale = maxBookWidth / self.bookCoverWidth;
+    }
+    self.bookCoverWidth *= self.bookFontScale;
+    self.bookCoverHeight *= self.bookFontScale;
+    
+    self.titleView = [[LMSearchBarView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width - 60 - 20, 30)];
     self.titleView.delegate = self;
-//    [self.titleView becomeFirstResponse];
     self.navigationItem.titleView = self.titleView;
     
     CGFloat naviHeight = 20 + 44;
@@ -73,9 +93,8 @@ static NSString* searchDataKey = @"searchHistoryData";
     self.tableView.dataSource = self;
     self.tableView.refreshDelegate = self;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-//    [self.tableView registerClass:[LMAdvertisementTableViewCell class] forCellReuseIdentifier:adCellIdentifier];
     [self.tableView registerClass:[LMSearchAuthorTableViewCell class] forCellReuseIdentifier:authorCellIdentifier];
-    [self.tableView registerClass:[LMBaseBookTableViewCell class] forCellReuseIdentifier:cellIdentifier];
+    [self.tableView registerClass:[LMTypeBookStoreTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.view addSubview:self.tableView];
     
     __weak LMSearchViewController* weakSelf = self;
@@ -161,19 +180,19 @@ static NSString* searchDataKey = @"searchHistoryData";
             vi.backgroundColor = [UIColor whiteColor];
             return vi;
         }
-        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 30)];
+        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
         vi.backgroundColor = [UIColor whiteColor];
-        UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, vi.frame.size.width, vi.frame.size.height)];
-        lab.font = [UIFont systemFontOfSize:16];
+        UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(20, 0, vi.frame.size.width, vi.frame.size.height)];
+        lab.font = [UIFont systemFontOfSize:18];
         NSString* str = @"搜索结果";
         if (section == 0) {
             if (self.resultArray.count == 0) {
-                str = @"无相关搜索结果";
+                str = @"搜索结果";//@"无相关搜索结果";
             }
         }
         if (section == 2) {
             if (self.relatedArray.count == 0) {
-                str = @"暂无相关推荐";
+                str = @"相关推荐";//@"暂无相关推荐";
             }else {
                 str = @"相关推荐";
             }
@@ -229,11 +248,11 @@ static NSString* searchDataKey = @"searchHistoryData";
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     if (tableView == self.tableView) {
         if (section == 0) {
-            return 30;
+            return 60;
         }else if (section == 1) {
             return 0.01;
         }else if (section == 2) {
-            return 30;
+            return 60;
         }
         return 0;
     }else {
@@ -248,39 +267,33 @@ static NSString* searchDataKey = @"searchHistoryData";
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (tableView == self.tableView) {
         if (indexPath.section == 0) {
-            return 50;
+            return 60;
         }
-        return baseBookCellHeight;
+        return self.bookCoverHeight + 20 * 2;
     }else {
-        return 50;
+        return 60;
     }
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (tableView == self.tableView) {
-//    if (indexPath.section == 1) {
-//        LMAdvertisementTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:adCellIdentifier forIndexPath:indexPath];
-//        if (!cell) {
-//            cell = [[LMAdvertisementTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
-//        }
-//
-//
-//        return cell;
-//    }else {
         if (indexPath.section == 0) {
             LMSearchAuthorTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:authorCellIdentifier forIndexPath:indexPath];
             if (!cell) {
                 cell = [[LMSearchAuthorTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:authorCellIdentifier];
             }
+            [cell showLineView:NO];
+            
             NSString* authorString = [self.authorsArray objectAtIndex:indexPath.row];
             [cell setupWithAuthorString:authorString];
             
             return cell;
         }
-        LMBaseBookTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
+        LMTypeBookStoreTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
         if (!cell) {
-            cell = [[LMBaseBookTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+            cell = [[LMTypeBookStoreTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
         }
+        
         Book* book;
         if (indexPath.section == 1) {
             book = [self.resultArray objectAtIndex:indexPath.row];
@@ -288,15 +301,16 @@ static NSString* searchDataKey = @"searchHistoryData";
             book = [self.relatedArray objectAtIndex:indexPath.row];
         }
         
-        [cell setupContentBook:book];
+        [cell setupContentBook:book cellHeight:self.bookCoverHeight + 20 * 2 ivWidth:self.bookCoverWidth nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
         
         return cell;
-//    }
     }else {
         LMSearchRelatedTableViewCell* cell = [self.matchTableView dequeueReusableCellWithIdentifier:historyCellIdentifier forIndexPath:indexPath];
         if (!cell) {
             cell = [[LMSearchRelatedTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:historyCellIdentifier];
         }
+        [cell showLineView:NO];
+        
         NSInteger row = indexPath.row;
         
         LMSearchRelatedModel* model = [self.matchArray objectAtIndex:row];

@@ -23,24 +23,26 @@
 -(instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor colorWithWhite:1 alpha:0.2];
-        self.layer.cornerRadius = 5;
+        self.backgroundColor = [UIColor colorWithRed:237.f/255 green:237.f/255 blue:237.f/255 alpha:1];
+        self.layer.cornerRadius = frame.size.height / 2.f;
         self.layer.masksToBounds = YES;
-        self.layer.borderColor = [UIColor colorWithRed:160/255.f green:160/255.f blue:160/255.f alpha:0.5].CGColor;
-        self.layer.borderWidth = 1;
+        
         self.searchTF = [[UITextField alloc]initWithFrame:CGRectMake(5, 0, frame.size.width - 5, frame.size.height)];
         self.searchTF.font = [UIFont systemFontOfSize:15];
         self.searchTF.placeholder = @"搜索小说和作者";
         self.searchTF.keyboardType = UIKeyboardTypeWebSearch;
         self.searchTF.clearButtonMode = UITextFieldViewModeWhileEditing;
         self.searchTF.delegate = self;
-        UIImageView* imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, (frame.size.height - 16)/2, 16, 16)];
-        [imageView setTintColor:[UIColor colorWithRed:170.f/255.f green:170.f/255.f blue:170.f/255.f alpha:1]];
-        UIImage* image = [UIImage imageNamed:@"searchBarView_Magnifier"];
-        UIImage* tintImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        imageView.image = tintImage;
+        
+        UIView* leftView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, frame.size.height + 15, frame.size.height)];
+        UIImageView* searchIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 3, leftView.frame.size.height - 3 * 2, leftView.frame.size.height - 3 * 2)];
+        searchIV.tintColor = [UIColor colorWithRed:170.f/255 green:170.f/255 blue:170.f/255 alpha:1];
+        UIImage* image = [UIImage imageNamed:@"rightItem_Search"];
+        searchIV.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        [leftView addSubview:searchIV];
+        
         self.searchTF.leftViewMode = UITextFieldViewModeAlways;
-        self.searchTF.leftView = imageView;
+        self.searchTF.leftView = leftView;
         [self addSubview:self.searchTF];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textFieldDidChange:) name:UITextFieldTextDidChangeNotification object:nil];

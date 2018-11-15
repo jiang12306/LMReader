@@ -11,6 +11,7 @@
 @interface LMBookStoreTitleCollectionViewCell : UICollectionViewCell
 
 @property (nonatomic, strong) UILabel* nameLab;
+@property (nonatomic, strong) UILabel* lineLab;
 @property (nonatomic, assign) BOOL isClicked;
 
 @end

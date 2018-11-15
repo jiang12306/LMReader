@@ -7,6 +7,7 @@
 //
 
 #import "LMBookStoreFilterListView.h"
+#import "AppDelegate.h"
 
 static CGFloat const kPopoverViewMargin = 8.f;        ///< 边距
 static CGFloat const kPopoverViewArrowHeight = 13.f;  ///< 箭头高度
@@ -18,9 +19,8 @@ float LMPopoverViewDegreesToRadians(float angle) {
 @interface LMBookStoreFilterListView ()
 
 @property (nonatomic, weak) UIWindow *keyWindow;                ///< 当前窗口
-@property (nonatomic, strong) LMBaseAlertView *shadeView;                ///< 遮罩层
+@property (nonatomic, strong) LMBaseAlertView *contentView;       /**<内容层*/
 @property (nonatomic, weak) CAShapeLayer *borderLayer;          ///< 边框Layer
-@property (nonatomic, weak) UITapGestureRecognizer *tapGesture; ///< 点击背景阴影的手势
 
 #pragma mark - Data
 @property (nonatomic, assign) CGFloat windowWidth;   ///< 窗口宽度
@@ -33,7 +33,18 @@ float LMPopoverViewDegreesToRadians(float angle) {
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
-    if (!(self = [super initWithFrame:frame])) return nil;
+    // keyWindow
+    _keyWindow = [UIApplication sharedApplication].keyWindow;
+    _windowWidth = CGRectGetWidth(_keyWindow.bounds);
+    _windowHeight = CGRectGetHeight(_keyWindow.bounds);
+    
+    self = [super initWithFrame:_keyWindow.frame];
+    if (!self) {
+        return nil;
+    }
+    
+    _contentView = [[LMBaseAlertView alloc] initWithFrame:frame];
+    
     [self initialize];
     return self;
 }
@@ -45,58 +56,90 @@ float LMPopoverViewDegreesToRadians(float angle) {
     // data
     _isUpward = YES;
     
-    // current view
-    self.backgroundColor = [UIColor whiteColor];
+    // contentView
+    _contentView.backgroundColor = [UIColor whiteColor];
+    [self setShowShade:YES];
     
-    // keyWindow
-    _keyWindow = [UIApplication sharedApplication].keyWindow;
-    _windowWidth = CGRectGetWidth(_keyWindow.bounds);
-    _windowHeight = CGRectGetHeight(_keyWindow.bounds);
+    self.maleBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 112.5, 15 + 40)];
+    self.maleBtn.backgroundColor = [UIColor colorWithRed:236.f/255 green:236.f/255 blue:236.f/255 alpha:1];
+    self.maleBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+    [self.maleBtn setImage:[UIImage imageNamed:@"bookStore_Male_Normal"] forState:UIControlStateNormal];
+    [self.maleBtn setImage:[UIImage imageNamed:@"bookStore_Male_Selected"] forState:UIControlStateSelected];
+    [self.maleBtn setImageEdgeInsets:UIEdgeInsetsMake(25, 27.5, 10, 65)];
+    [self.maleBtn setTitle:@"男生" forState:UIControlStateNormal];
+    [self.maleBtn setTitleColor:[UIColor colorWithRed:136.f/255 green:136.f/255 blue:136.f/255 alpha:1] forState:UIControlStateNormal];
+    [self.maleBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateSelected];
+    [self.maleBtn setTitleEdgeInsets:UIEdgeInsetsMake(22, 0, 8, 15)];
+    self.maleBtn.selected = NO;
+    [self.maleBtn addTarget:self action:@selector(clickedGenderTypeButton:) forControlEvents:UIControlEventTouchUpInside];
+    [_contentView addSubview:self.maleBtn];
     
-    // shadeView
-    _shadeView = [[LMBaseAlertView alloc] initWithFrame:_keyWindow.bounds];
-    [self setShowShade:NO];
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hide)];
-    [_shadeView addGestureRecognizer:tapGesture];
-    _tapGesture = tapGesture;
+    self.femaleBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.maleBtn.frame.size.width, 0, self.maleBtn.frame.size.width, self.maleBtn.frame.size.height)];
+    self.femaleBtn.backgroundColor = [UIColor colorWithRed:236.f/255 green:236.f/255 blue:236.f/255 alpha:1];
+    self.femaleBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+    [self.femaleBtn setImage:[UIImage imageNamed:@"bookStore_Female_Normal"] forState:UIControlStateNormal];
+    [self.femaleBtn setImage:[UIImage imageNamed:@"bookStore_Female_Selected"] forState:UIControlStateSelected];
+    [self.femaleBtn setImageEdgeInsets:UIEdgeInsetsMake(25, 27.5, 10, 65)];
+    [self.femaleBtn setTitle:@"女生" forState:UIControlStateNormal];
+    [self.femaleBtn setTitleColor:[UIColor colorWithRed:136.f/255 green:136.f/255 blue:136.f/255 alpha:1] forState:UIControlStateNormal];
+    [self.femaleBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateSelected];
+    [self.femaleBtn setTitleEdgeInsets:UIEdgeInsetsMake(22, 0, 8, 15)];
+    self.femaleBtn.selected = NO;
+    [self.femaleBtn addTarget:self action:@selector(clickedGenderTypeButton:) forControlEvents:UIControlEventTouchUpInside];
+    [_contentView addSubview:self.femaleBtn];
     
-    //button  10, 10, 160, 160
+    UILabel* centerLineLab = [[UILabel alloc]initWithFrame:CGRectMake(self.maleBtn.frame.size.width, kPopoverViewArrowHeight + (self.maleBtn.frame.size.height - kPopoverViewArrowHeight - 10) / 2, 1, 10)];
+    centerLineLab.backgroundColor = [UIColor colorWithRed:136.f/255 green:136.f/255 blue:136.f/255 alpha:1];
+    [_contentView addSubview:centerLineLab];
+    
+    
     for (NSInteger i = 0; i < 2; i ++) {
-        CGFloat startY = 10 + kPopoverViewArrowHeight;
+        CGFloat startY = 10 + kPopoverViewArrowHeight + 50;
         NSString* text = @"排序";
         if (i == 1) {
-            startY += 80;
+            startY += 70;
             text = @"状态";
         }
-        UILabel* lineLab = [[UILabel alloc]initWithFrame:CGRectMake(10, startY, 5, 20)];
-        lineLab.layer.cornerRadius = 2.5;
+        UILabel* lineLab = [[UILabel alloc]initWithFrame:CGRectMake(15, startY, 3, 20)];
+        lineLab.layer.cornerRadius = 1.5;
         lineLab.layer.masksToBounds = YES;
         lineLab.backgroundColor = THEMEORANGECOLOR;
-        [self addSubview:lineLab];
+        [_contentView addSubview:lineLab];
         
         UILabel* textLab = [[UILabel alloc]initWithFrame:CGRectMake(lineLab.frame.origin.x + lineLab.frame.size.width + 5, startY, 60, 20)];
-        textLab.font = [UIFont boldSystemFontOfSize:18];
+        textLab.font = [UIFont systemFontOfSize:18];
         textLab.text = text;
-        [self addSubview:textLab];
+        [_contentView addSubview:textLab];
     }
     
-    self.upBtn = [self createItemButtonWithFrame:CGRectMake(10, 40 + kPopoverViewArrowHeight, 60, 30) title:@"周点击" selected:NO selector:@selector(clickedRangeButton:)];
-    [self addSubview:self.upBtn];
+    self.upBtn = [self createItemButtonWithFrame:CGRectMake(10, 90 + kPopoverViewArrowHeight, 60, 30) title:@"周点击" selected:NO selector:@selector(clickedRangeButton:)];
+    [_contentView addSubview:self.upBtn];
     
     self.hotBtn = [self createItemButtonWithFrame:CGRectMake(self.upBtn.frame.origin.x + self.upBtn.frame.size.width + 10, self.upBtn.frame.origin.y, 60, 30) title:@"按人气" selected:NO selector:@selector(clickedRangeButton:)];
-    [self addSubview:self.hotBtn];
+    [_contentView addSubview:self.hotBtn];
     
-    self.timeBtn = [self createItemButtonWithFrame:CGRectMake(self.hotBtn.frame.origin.x + self.hotBtn.frame.size.width + 10, self.upBtn.frame.origin.y, 90, 30) title:@"按更新时间" selected:NO selector:@selector(clickedRangeButton:)];
-    [self addSubview:self.timeBtn];
+    self.timeBtn = [self createItemButtonWithFrame:CGRectMake(self.hotBtn.frame.origin.x + self.hotBtn.frame.size.width + 10, self.upBtn.frame.origin.y, 60, 30) title:@"按更新" selected:NO selector:@selector(clickedRangeButton:)];
+    [_contentView addSubview:self.timeBtn];
     
-    self.allBtn = [self createItemButtonWithFrame:CGRectMake(10, 120 + kPopoverViewArrowHeight, 40, 30) title:@"全部" selected:NO selector:@selector(clickedStateButton:)];
-    [self addSubview:self.allBtn];
+    self.allBtn = [self createItemButtonWithFrame:CGRectMake(10, 160 + kPopoverViewArrowHeight, 40, 30) title:@"全部" selected:NO selector:@selector(clickedStateButton:)];
+    [_contentView addSubview:self.allBtn];
     
-    self.finishBtn = [self createItemButtonWithFrame:CGRectMake(self.allBtn.frame.origin.x + self.allBtn.frame.size.width + 10, self.allBtn.frame.origin.y, 40, 30) title:@"完结" selected:NO selector:@selector(clickedStateButton:)];
-    [self addSubview:self.finishBtn];
+    self.finishBtn = [self createItemButtonWithFrame:CGRectMake(self.hotBtn.frame.origin.x, self.allBtn.frame.origin.y, 40, 30) title:@"完结" selected:NO selector:@selector(clickedStateButton:)];
+    [_contentView addSubview:self.finishBtn];
     
-    self.loadBtn = [self createItemButtonWithFrame:CGRectMake(self.finishBtn.frame.origin.x + self.finishBtn.frame.size.width + 10, self.allBtn.frame.origin.y, 60, 30) title:@"连载中" selected:NO selector:@selector(clickedStateButton:)];
-    [self addSubview:self.loadBtn];
+    self.loadBtn = [self createItemButtonWithFrame:CGRectMake(self.timeBtn.frame.origin.x, self.allBtn.frame.origin.y, 60, 30) title:@"连载中" selected:NO selector:@selector(clickedStateButton:)];
+    [_contentView addSubview:self.loadBtn];
+}
+
+-(void)setGendType:(GenderType)gendType {
+    if (gendType == GenderTypeGenderFemale) {
+        self.femaleBtn.selected = YES;
+        self.maleBtn.selected = NO;
+    }else {
+        self.maleBtn.selected = YES;
+        self.femaleBtn.selected = NO;
+    }
+    _gendType = gendType;
 }
 
 -(void)setBookRange:(LMBookStoreRange)bookRange {
@@ -105,13 +148,10 @@ float LMPopoverViewDegreesToRadians(float angle) {
     self.upBtn.selected = NO;
     if (bookRange == LMBookStoreRangeHot) {
         self.hotBtn.selected = YES;
-        self.hotBtn.layer.borderColor = THEMEORANGECOLOR.CGColor;
     }else if (bookRange == LMBookStoreRangeNew) {
         self.timeBtn.selected = YES;
-        self.timeBtn.layer.borderColor = THEMEORANGECOLOR.CGColor;
     }else if (bookRange == LMBookStoreRangeUp) {
         self.upBtn.selected = YES;
-        self.upBtn.layer.borderColor = THEMEORANGECOLOR.CGColor;
     }
     _bookRange = bookRange;
 }
@@ -122,13 +162,10 @@ float LMPopoverViewDegreesToRadians(float angle) {
     self.loadBtn.selected = NO;
     if (bookState == LMBookStoreStateAll) {
         self.allBtn.selected = YES;
-        self.allBtn.layer.borderColor = THEMEORANGECOLOR.CGColor;
     }else if (bookState == LMBookStoreStateFinished) {
         self.finishBtn.selected = YES;
-        self.finishBtn.layer.borderColor = THEMEORANGECOLOR.CGColor;
     }else if (bookState == LMBookStoreStateLoad) {
         self.loadBtn.selected = YES;
-        self.loadBtn.layer.borderColor = THEMEORANGECOLOR.CGColor;
     }
     _bookState = bookState;
 }
@@ -138,10 +175,6 @@ float LMPopoverViewDegreesToRadians(float angle) {
         [self hide];
         return;
     }
-    self.timeBtn.layer.borderColor = [UIColor grayColor].CGColor;
-    self.hotBtn.layer.borderColor = [UIColor grayColor].CGColor;
-    self.upBtn.layer.borderColor = [UIColor grayColor].CGColor;
-    sender.layer.borderColor = THEMEORANGECOLOR.CGColor;
     
     LMBookStoreRange resultRange = LMBookStoreRangeHot;
     if (sender == self.hotBtn) {
@@ -170,10 +203,6 @@ float LMPopoverViewDegreesToRadians(float angle) {
         [self hide];
         return;
     }
-    self.allBtn.layer.borderColor = [UIColor grayColor].CGColor;
-    self.finishBtn.layer.borderColor = [UIColor grayColor].CGColor;
-    self.loadBtn.layer.borderColor = [UIColor grayColor].CGColor;
-    sender.layer.borderColor = THEMEORANGECOLOR.CGColor;
     
     LMBookStoreState resultState = LMBookStoreStateAll;
     if (sender == self.allBtn) {
@@ -197,29 +226,40 @@ float LMPopoverViewDegreesToRadians(float angle) {
     [self hide];
 }
 
+-(void)clickedGenderTypeButton:(UIButton* )sender {
+    GenderType resultGender = GenderTypeGenderMale;
+    if (sender == self.maleBtn) {
+        self.maleBtn.selected = YES;
+        self.femaleBtn.selected = NO;
+    }else if (sender == self.femaleBtn) {
+        self.femaleBtn.selected = YES;
+        self.maleBtn.selected = NO;
+        resultGender = GenderTypeGenderFemale;
+    }
+    if (self.genderBlock) {
+        self.genderBlock(resultGender);
+    }
+    [self hide];
+}
+
 -(UIButton* )createItemButtonWithFrame:(CGRect )frame title:(NSString* )title selected:(BOOL )selected selector:(SEL )selector {
     UIButton* btn = [[UIButton alloc]initWithFrame:frame];
-    btn.layer.cornerRadius = 3;
-    btn.layer.masksToBounds = YES;
-    btn.layer.borderWidth = .5;
-    btn.titleLabel.font = [UIFont systemFontOfSize:16];
+    btn.titleLabel.font = [UIFont systemFontOfSize:18];
     [btn setTitle:title forState:UIControlStateNormal];
-    [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [btn setTitleColor:[UIColor colorWithRed:80.f/255 green:80.f/255 blue:80.f/255 alpha:1] forState:UIControlStateNormal];
     [btn setTitleColor:THEMEORANGECOLOR forState:UIControlStateSelected];
     [btn addTarget:self action:selector forControlEvents:UIControlEventTouchUpInside];
     btn.selected = selected;
-    if (selected) {
-        btn.layer.borderColor = THEMEORANGECOLOR.CGColor;
-    }else {
-        btn.layer.borderColor = [UIColor grayColor].CGColor;
-    }
     return btn;
 }
 
 - (void)setShowShade:(BOOL)showShade
 {
-    _shadeView.backgroundColor = showShade ? [UIColor colorWithWhite:0.f alpha:0.18f] : [UIColor clearColor];
-    
+    if (showShade) {
+        self.backgroundColor = [[UIColor colorWithWhite:0 alpha:1]colorWithAlphaComponent:0.18];
+    }else {
+        self.backgroundColor = [UIColor clearColor];
+    }
     if (_borderLayer) {
         _borderLayer.strokeColor = showShade ? [UIColor clearColor].CGColor : [UIColor grayColor].CGColor;
     }
@@ -268,12 +308,12 @@ float LMPopoverViewDegreesToRadians(float angle) {
     }
     
     // 遮罩层
-    _shadeView.alpha = 0.f;
-    [_keyWindow addSubview:_shadeView];
+    self.alpha = 0.f;
+    [_keyWindow addSubview:self];
     
     // 根据刷新后的ContentSize和箭头指向方向来设置当前视图的frame
-    CGFloat currentW = self.frame.size.width; // 宽度通过计算获取最大值
-    CGFloat currentH = self.frame.size.height;
+    CGFloat currentW = self.contentView.frame.size.width; // 宽度通过计算获取最大值
+    CGFloat currentH = self.contentView.frame.size.height;
     
     // 箭头高度
     currentH += kPopoverViewArrowHeight;
@@ -292,10 +332,10 @@ float LMPopoverViewDegreesToRadians(float angle) {
         currentY = toPoint.y - currentH;
     }
     
-    self.frame = CGRectMake(currentX, currentY, currentW, currentH);
+    self.contentView.frame = CGRectMake(currentX, currentY, currentW, currentH);
     
     // 截取箭头
-    CGPoint arrowPoint = CGPointMake(toPoint.x - CGRectGetMinX(self.frame), _isUpward ? 0 : currentH); // 箭头顶点在当前视图的坐标
+    CGPoint arrowPoint = CGPointMake(toPoint.x - CGRectGetMinX(self.contentView.frame), _isUpward ? 0 : currentH); // 箭头顶点在当前视图的坐标
     CGFloat maskTop = _isUpward ? kPopoverViewArrowHeight : 0; // 顶部Y值
     CGFloat maskBottom = _isUpward ? currentH : currentH - kPopoverViewArrowHeight; // 底部Y值
     UIBezierPath *maskPath = [UIBezierPath bezierPath];
@@ -345,31 +385,29 @@ float LMPopoverViewDegreesToRadians(float angle) {
     [maskPath closePath];
     // 截取圆角和箭头
     CAShapeLayer *maskLayer = [CAShapeLayer layer];
-    maskLayer.frame = self.bounds;
+    maskLayer.frame = self.contentView.bounds;
     maskLayer.path = maskPath.CGPath;
-    self.layer.mask = maskLayer;
+    self.contentView.layer.mask = maskLayer;
     // 边框 (只有在不显示半透明阴影层时才设置边框线条)
     
     CAShapeLayer *borderLayer = [CAShapeLayer layer];
-    borderLayer.frame = self.bounds;
+    borderLayer.frame = self.contentView.bounds;
     borderLayer.path = maskPath.CGPath;
     borderLayer.lineWidth = 1;
     borderLayer.fillColor = [UIColor clearColor].CGColor;
     borderLayer.strokeColor = [UIColor grayColor].CGColor;
-    [self.layer addSublayer:borderLayer];
+    [self.contentView.layer addSublayer:borderLayer];
     _borderLayer = borderLayer;
     
-    [_keyWindow addSubview:self];
+    [self addSubview:self.contentView];
     
     // 弹出动画
-    CGRect oldFrame = self.frame;
-    self.layer.anchorPoint = CGPointMake(arrowPoint.x/currentW, _isUpward ? 0.f : 1.f);
-    self.frame = oldFrame;
-    self.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
-    [UIView animateWithDuration:0.25f animations:^{
-        self.transform = CGAffineTransformIdentity;
-        self->_shadeView.alpha = 1.f;
+    [UIView animateWithDuration:0.2f animations:^{
+        self.alpha = 1.f;
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate bringSystemNightShiftToFront];
 }
 
 /**
@@ -377,14 +415,24 @@ float LMPopoverViewDegreesToRadians(float angle) {
  */
 - (void)hide
 {
-    [UIView animateWithDuration:0.25f animations:^{
+    [UIView animateWithDuration:0.2f animations:^{
         self.alpha = 0.f;
-        self->_shadeView.alpha = 0.f;
-        self.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
     } completion:^(BOOL finished) {
-        [self->_shadeView removeFromSuperview];
+        [self.contentView removeFromSuperview];
         [self removeFromSuperview];
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate sendSystemNightShiftToback];
+}
+
+-(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    UITouch* touch = [touches anyObject];
+    CGPoint point = [touch locationInView:self];
+    bool isContain = CGRectContainsPoint(self.contentView.frame, point);
+    if (!isContain) {
+        [self hide];
+    }
 }
 
 /*

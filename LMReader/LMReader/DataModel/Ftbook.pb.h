@@ -100,6 +100,10 @@
 @class GpsBuilder;
 @class InitSwitchRes;
 @class InitSwitchResBuilder;
+@class JsonParse;
+@class JsonParseBuilder;
+@class KanapiJiaston;
+@class KanapiJiastonBuilder;
 @class LoginedRegUser;
 @class LoginedRegUserBuilder;
 @class NewestChapter;
@@ -130,6 +134,16 @@
 @class ResetPwdReqBuilder;
 @class SearchInitRes;
 @class SearchInitResBuilder;
+@class SelfDefinedHomeReq;
+@class SelfDefinedHomeReqBuilder;
+@class SelfDefinedHomeRes;
+@class SelfDefinedHomeResBuilder;
+@class SelfDefinedMoreReq;
+@class SelfDefinedMoreReqBuilder;
+@class SelfDefinedMoreRes;
+@class SelfDefinedMoreResBuilder;
+@class SelfDefinedTopic;
+@class SelfDefinedTopicBuilder;
 @class SetUserLikeReq;
 @class SetUserLikeReqBuilder;
 @class Source;
@@ -321,12 +335,183 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 + (void) registerAllExtensions:(PBMutableExtensionRegistry*) registry;
 @end
 
+#define JsonParse_json_key @"jsonKey"
+#define JsonParse_json_type @"jsonType"
+@interface JsonParse : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasJsonKey_:1;
+  BOOL hasJsonType_:1;
+  NSString* jsonKey;
+  UInt32 jsonType;
+}
+- (BOOL) hasJsonKey;
+- (BOOL) hasJsonType;
+@property (readonly, strong) NSString* jsonKey;
+@property (readonly) UInt32 jsonType;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (JsonParseBuilder*) builder;
++ (JsonParseBuilder*) builder;
++ (JsonParseBuilder*) builderWithPrototype:(JsonParse*) prototype;
+- (JsonParseBuilder*) toBuilder;
+
++ (JsonParse*) parseFromData:(NSData*) data;
++ (JsonParse*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (JsonParse*) parseFromInputStream:(NSInputStream*) input;
++ (JsonParse*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (JsonParse*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (JsonParse*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface JsonParseBuilder : PBGeneratedMessageBuilder {
+@private
+  JsonParse* resultJsonParse;
+}
+
+- (JsonParse*) defaultInstance;
+
+- (JsonParseBuilder*) clear;
+- (JsonParseBuilder*) clone;
+
+- (JsonParse*) build;
+- (JsonParse*) buildPartial;
+
+- (JsonParseBuilder*) mergeFrom:(JsonParse*) other;
+- (JsonParseBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (JsonParseBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasJsonKey;
+- (NSString*) jsonKey;
+- (JsonParseBuilder*) setJsonKey:(NSString*) value;
+- (JsonParseBuilder*) clearJsonKey;
+
+- (BOOL) hasJsonType;
+- (UInt32) jsonType;
+- (JsonParseBuilder*) setJsonType:(UInt32) value;
+- (JsonParseBuilder*) clearJsonType;
+@end
+
+#define KanapiJiaston_bid @"bid"
+#define KanapiJiaston_list_parse @"listParse"
+#define KanapiJiaston_cid_key @"cidKey"
+#define KanapiJiaston_ctitle_key @"ctitleKey"
+#define KanapiJiaston_curl_str @"curlStr"
+#define KanapiJiaston_content_parse @"contentParse"
+#define KanapiJiaston_content_key @"contentKey"
+@interface KanapiJiaston : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasCidKey_:1;
+  BOOL hasCtitleKey_:1;
+  BOOL hasCurlStr_:1;
+  BOOL hasContentKey_:1;
+  BOOL hasBid_:1;
+  NSString* cidKey;
+  NSString* ctitleKey;
+  NSString* curlStr;
+  NSString* contentKey;
+  UInt32 bid;
+  NSMutableArray * listParseArray;
+  NSMutableArray * contentParseArray;
+}
+- (BOOL) hasBid;
+- (BOOL) hasCidKey;
+- (BOOL) hasCtitleKey;
+- (BOOL) hasCurlStr;
+- (BOOL) hasContentKey;
+@property (readonly) UInt32 bid;
+@property (readonly, strong) NSArray<JsonParse*> * listParse;
+@property (readonly, strong) NSString* cidKey;
+@property (readonly, strong) NSString* ctitleKey;
+@property (readonly, strong) NSString* curlStr;
+@property (readonly, strong) NSArray<JsonParse*> * contentParse;
+@property (readonly, strong) NSString* contentKey;
+- (JsonParse*)listParseAtIndex:(NSUInteger)index;
+- (JsonParse*)contentParseAtIndex:(NSUInteger)index;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (KanapiJiastonBuilder*) builder;
++ (KanapiJiastonBuilder*) builder;
++ (KanapiJiastonBuilder*) builderWithPrototype:(KanapiJiaston*) prototype;
+- (KanapiJiastonBuilder*) toBuilder;
+
++ (KanapiJiaston*) parseFromData:(NSData*) data;
++ (KanapiJiaston*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (KanapiJiaston*) parseFromInputStream:(NSInputStream*) input;
++ (KanapiJiaston*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (KanapiJiaston*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (KanapiJiaston*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface KanapiJiastonBuilder : PBGeneratedMessageBuilder {
+@private
+  KanapiJiaston* resultKanapiJiaston;
+}
+
+- (KanapiJiaston*) defaultInstance;
+
+- (KanapiJiastonBuilder*) clear;
+- (KanapiJiastonBuilder*) clone;
+
+- (KanapiJiaston*) build;
+- (KanapiJiaston*) buildPartial;
+
+- (KanapiJiastonBuilder*) mergeFrom:(KanapiJiaston*) other;
+- (KanapiJiastonBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (KanapiJiastonBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasBid;
+- (UInt32) bid;
+- (KanapiJiastonBuilder*) setBid:(UInt32) value;
+- (KanapiJiastonBuilder*) clearBid;
+
+- (NSMutableArray<JsonParse*> *)listParse;
+- (JsonParse*)listParseAtIndex:(NSUInteger)index;
+- (KanapiJiastonBuilder *)addListParse:(JsonParse*)value;
+- (KanapiJiastonBuilder *)setListParseArray:(NSArray<JsonParse*> *)array;
+- (KanapiJiastonBuilder *)clearListParse;
+
+- (BOOL) hasCidKey;
+- (NSString*) cidKey;
+- (KanapiJiastonBuilder*) setCidKey:(NSString*) value;
+- (KanapiJiastonBuilder*) clearCidKey;
+
+- (BOOL) hasCtitleKey;
+- (NSString*) ctitleKey;
+- (KanapiJiastonBuilder*) setCtitleKey:(NSString*) value;
+- (KanapiJiastonBuilder*) clearCtitleKey;
+
+- (BOOL) hasCurlStr;
+- (NSString*) curlStr;
+- (KanapiJiastonBuilder*) setCurlStr:(NSString*) value;
+- (KanapiJiastonBuilder*) clearCurlStr;
+
+- (NSMutableArray<JsonParse*> *)contentParse;
+- (JsonParse*)contentParseAtIndex:(NSUInteger)index;
+- (KanapiJiastonBuilder *)addContentParse:(JsonParse*)value;
+- (KanapiJiastonBuilder *)setContentParseArray:(NSArray<JsonParse*> *)array;
+- (KanapiJiastonBuilder *)clearContentParse;
+
+- (BOOL) hasContentKey;
+- (NSString*) contentKey;
+- (KanapiJiastonBuilder*) setContentKey:(NSString*) value;
+- (KanapiJiastonBuilder*) clearContentKey;
+@end
+
 #define UrlReadParse_list_url @"listUrl"
 #define UrlReadParse_list_parse @"listParse"
 #define UrlReadParse_content_url @"contentUrl"
 #define UrlReadParse_content_parse @"contentParse"
 #define UrlReadParse_source @"source"
 #define UrlReadParse_ioffset @"ioffset"
+#define UrlReadParse_api @"api"
 @interface UrlReadParse : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
   BOOL hasListUrl_:1;
@@ -334,12 +519,14 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
   BOOL hasContentUrl_:1;
   BOOL hasContentParse_:1;
   BOOL hasSource_:1;
+  BOOL hasApi_:1;
   BOOL hasIoffset_:1;
   NSString* listUrl;
   NSString* listParse;
   NSString* contentUrl;
   NSString* contentParse;
   Source* source;
+  KanapiJiaston* api;
   UInt32 ioffset;
 }
 - (BOOL) hasListUrl;
@@ -348,12 +535,14 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (BOOL) hasContentParse;
 - (BOOL) hasSource;
 - (BOOL) hasIoffset;
+- (BOOL) hasApi;
 @property (readonly, strong) NSString* listUrl;
 @property (readonly, strong) NSString* listParse;
 @property (readonly, strong) NSString* contentUrl;
 @property (readonly, strong) NSString* contentParse;
 @property (readonly, strong) Source* source;
 @property (readonly) UInt32 ioffset;
+@property (readonly, strong) KanapiJiaston* api;
 
 + (instancetype) defaultInstance;
 - (instancetype) defaultInstance;
@@ -421,6 +610,13 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (UInt32) ioffset;
 - (UrlReadParseBuilder*) setIoffset:(UInt32) value;
 - (UrlReadParseBuilder*) clearIoffset;
+
+- (BOOL) hasApi;
+- (KanapiJiaston*) api;
+- (UrlReadParseBuilder*) setApi:(KanapiJiaston*) value;
+- (UrlReadParseBuilder*) setApiBuilder:(KanapiJiastonBuilder*) builderForValue;
+- (UrlReadParseBuilder*) mergeApi:(KanapiJiaston*) value;
+- (UrlReadParseBuilder*) clearApi;
 @end
 
 #define Book_book_id @"bookId"
@@ -437,22 +633,28 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 #define Book_parses @"parses"
 #define Book_comments @"comments"
 #define Book_comments_count @"commentsCount"
+#define Book_mark_url @"markUrl"
+#define Book_avg_score @"avgScore"
 @interface Book : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
+  BOOL hasAvgScore_:1;
   BOOL hasName_:1;
   BOOL hasAuthor_:1;
   BOOL hasAbstract_:1;
   BOOL hasPic_:1;
+  BOOL hasMarkUrl_:1;
   BOOL hasLastChapter_:1;
   BOOL hasBookId_:1;
   BOOL hasBookLength_:1;
   BOOL hasClicked_:1;
   BOOL hasCommentsCount_:1;
   BOOL hasBookState_:1;
+  Float32 avgScore;
   NSString* name;
   NSString* author;
   NSString* abstract;
   NSString* pic;
+  NSString* markUrl;
   Chapter* lastChapter;
   UInt32 bookId;
   UInt32 bookLength;
@@ -474,6 +676,8 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (BOOL) hasBookState;
 - (BOOL) hasLastChapter;
 - (BOOL) hasCommentsCount;
+- (BOOL) hasMarkUrl;
+- (BOOL) hasAvgScore;
 @property (readonly) UInt32 bookId;
 @property (readonly, strong) NSString* name;
 @property (readonly, strong) NSArray * bookType;
@@ -488,6 +692,8 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 @property (readonly, strong) NSArray<UrlReadParse*> * parses;
 @property (readonly, strong) NSArray<Comment*> * comments;
 @property (readonly) UInt32 commentsCount;
+@property (readonly, strong) NSString* markUrl;
+@property (readonly) Float32 avgScore;
 - (NSString*)bookTypeAtIndex:(NSUInteger)index;
 - (NSString*)keyWordAtIndex:(NSUInteger)index;
 - (UrlReadParse*)parsesAtIndex:(NSUInteger)index;
@@ -603,6 +809,16 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (UInt32) commentsCount;
 - (BookBuilder*) setCommentsCount:(UInt32) value;
 - (BookBuilder*) clearCommentsCount;
+
+- (BOOL) hasMarkUrl;
+- (NSString*) markUrl;
+- (BookBuilder*) setMarkUrl:(NSString*) value;
+- (BookBuilder*) clearMarkUrl;
+
+- (BOOL) hasAvgScore;
+- (Float32) avgScore;
+- (BookBuilder*) setAvgScore:(Float32) value;
+- (BookBuilder*) clearAvgScore;
 @end
 
 #define BookNo_no @"no"
@@ -2161,17 +2377,21 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 
 #define UserBookStoreOperateReq_type @"type"
 #define UserBookStoreOperateReq_book_id @"bookId"
+#define UserBookStoreOperateReq_book_ids @"bookIds"
 @interface UserBookStoreOperateReq : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
   BOOL hasBookId_:1;
   BOOL hasType_:1;
   UInt32 bookId;
   UserBookStoreOperateType type;
+  PBAppendableArray * bookIdsArray;
 }
 - (BOOL) hasType;
 - (BOOL) hasBookId;
 @property (readonly) UserBookStoreOperateType type;
 @property (readonly) UInt32 bookId;
+@property (readonly, strong) PBArray * bookIds;
+- (UInt32)bookIdsAtIndex:(NSUInteger)index;
 
 + (instancetype) defaultInstance;
 - (instancetype) defaultInstance;
@@ -2217,6 +2437,13 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (UInt32) bookId;
 - (UserBookStoreOperateReqBuilder*) setBookId:(UInt32) value;
 - (UserBookStoreOperateReqBuilder*) clearBookId;
+
+- (PBAppendableArray *)bookIds;
+- (UInt32)bookIdsAtIndex:(NSUInteger)index;
+- (UserBookStoreOperateReqBuilder *)addBookIds:(UInt32)value;
+- (UserBookStoreOperateReqBuilder *)setBookIdsArray:(NSArray *)array;
+- (UserBookStoreOperateReqBuilder *)setBookIdsValues:(const UInt32 *)values count:(NSUInteger)count;
+- (UserBookStoreOperateReqBuilder *)clearBookIds;
 @end
 
 #define BookStoreReq_book_type @"bookType"
@@ -6777,6 +7004,326 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (UInt32) adId;
 - (AdShowedLogReqBuilder*) setAdId:(UInt32) value;
 - (AdShowedLogReqBuilder*) clearAdId;
+@end
+
+#define SelfDefinedHomeReq_page @"page"
+@interface SelfDefinedHomeReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasPage_:1;
+  UInt32 page;
+}
+- (BOOL) hasPage;
+@property (readonly) UInt32 page;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SelfDefinedHomeReqBuilder*) builder;
++ (SelfDefinedHomeReqBuilder*) builder;
++ (SelfDefinedHomeReqBuilder*) builderWithPrototype:(SelfDefinedHomeReq*) prototype;
+- (SelfDefinedHomeReqBuilder*) toBuilder;
+
++ (SelfDefinedHomeReq*) parseFromData:(NSData*) data;
++ (SelfDefinedHomeReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedHomeReq*) parseFromInputStream:(NSInputStream*) input;
++ (SelfDefinedHomeReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedHomeReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SelfDefinedHomeReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SelfDefinedHomeReqBuilder : PBGeneratedMessageBuilder {
+@private
+  SelfDefinedHomeReq* resultSelfDefinedHomeReq;
+}
+
+- (SelfDefinedHomeReq*) defaultInstance;
+
+- (SelfDefinedHomeReqBuilder*) clear;
+- (SelfDefinedHomeReqBuilder*) clone;
+
+- (SelfDefinedHomeReq*) build;
+- (SelfDefinedHomeReq*) buildPartial;
+
+- (SelfDefinedHomeReqBuilder*) mergeFrom:(SelfDefinedHomeReq*) other;
+- (SelfDefinedHomeReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SelfDefinedHomeReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasPage;
+- (UInt32) page;
+- (SelfDefinedHomeReqBuilder*) setPage:(UInt32) value;
+- (SelfDefinedHomeReqBuilder*) clearPage;
+@end
+
+#define SelfDefinedTopic_id @"id"
+#define SelfDefinedTopic_name @"name"
+#define SelfDefinedTopic_style @"style"
+#define SelfDefinedTopic_books @"books"
+@interface SelfDefinedTopic : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasName_:1;
+  BOOL hasId_:1;
+  BOOL hasStyle_:1;
+  NSString* name;
+  UInt32 id;
+  UInt32 style;
+  NSMutableArray * booksArray;
+}
+- (BOOL) hasId;
+- (BOOL) hasName;
+- (BOOL) hasStyle;
+@property (readonly) UInt32 id;
+@property (readonly, strong) NSString* name;
+@property (readonly) UInt32 style;
+@property (readonly, strong) NSArray<Book*> * books;
+- (Book*)booksAtIndex:(NSUInteger)index;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SelfDefinedTopicBuilder*) builder;
++ (SelfDefinedTopicBuilder*) builder;
++ (SelfDefinedTopicBuilder*) builderWithPrototype:(SelfDefinedTopic*) prototype;
+- (SelfDefinedTopicBuilder*) toBuilder;
+
++ (SelfDefinedTopic*) parseFromData:(NSData*) data;
++ (SelfDefinedTopic*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedTopic*) parseFromInputStream:(NSInputStream*) input;
++ (SelfDefinedTopic*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedTopic*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SelfDefinedTopic*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SelfDefinedTopicBuilder : PBGeneratedMessageBuilder {
+@private
+  SelfDefinedTopic* resultSelfDefinedTopic;
+}
+
+- (SelfDefinedTopic*) defaultInstance;
+
+- (SelfDefinedTopicBuilder*) clear;
+- (SelfDefinedTopicBuilder*) clone;
+
+- (SelfDefinedTopic*) build;
+- (SelfDefinedTopic*) buildPartial;
+
+- (SelfDefinedTopicBuilder*) mergeFrom:(SelfDefinedTopic*) other;
+- (SelfDefinedTopicBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SelfDefinedTopicBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasId;
+- (UInt32) id;
+- (SelfDefinedTopicBuilder*) setId:(UInt32) value;
+- (SelfDefinedTopicBuilder*) clearId;
+
+- (BOOL) hasName;
+- (NSString*) name;
+- (SelfDefinedTopicBuilder*) setName:(NSString*) value;
+- (SelfDefinedTopicBuilder*) clearName;
+
+- (BOOL) hasStyle;
+- (UInt32) style;
+- (SelfDefinedTopicBuilder*) setStyle:(UInt32) value;
+- (SelfDefinedTopicBuilder*) clearStyle;
+
+- (NSMutableArray<Book*> *)books;
+- (Book*)booksAtIndex:(NSUInteger)index;
+- (SelfDefinedTopicBuilder *)addBooks:(Book*)value;
+- (SelfDefinedTopicBuilder *)setBooksArray:(NSArray<Book*> *)array;
+- (SelfDefinedTopicBuilder *)clearBooks;
+@end
+
+#define SelfDefinedHomeRes_ads @"ads"
+#define SelfDefinedHomeRes_self_defined_topics @"selfDefinedTopics"
+@interface SelfDefinedHomeRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  NSMutableArray * adsArray;
+  NSMutableArray * selfDefinedTopicsArray;
+}
+@property (readonly, strong) NSArray<TopicAd*> * ads;
+@property (readonly, strong) NSArray<SelfDefinedTopic*> * selfDefinedTopics;
+- (TopicAd*)adsAtIndex:(NSUInteger)index;
+- (SelfDefinedTopic*)selfDefinedTopicsAtIndex:(NSUInteger)index;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SelfDefinedHomeResBuilder*) builder;
++ (SelfDefinedHomeResBuilder*) builder;
++ (SelfDefinedHomeResBuilder*) builderWithPrototype:(SelfDefinedHomeRes*) prototype;
+- (SelfDefinedHomeResBuilder*) toBuilder;
+
++ (SelfDefinedHomeRes*) parseFromData:(NSData*) data;
++ (SelfDefinedHomeRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedHomeRes*) parseFromInputStream:(NSInputStream*) input;
++ (SelfDefinedHomeRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedHomeRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SelfDefinedHomeRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SelfDefinedHomeResBuilder : PBGeneratedMessageBuilder {
+@private
+  SelfDefinedHomeRes* resultSelfDefinedHomeRes;
+}
+
+- (SelfDefinedHomeRes*) defaultInstance;
+
+- (SelfDefinedHomeResBuilder*) clear;
+- (SelfDefinedHomeResBuilder*) clone;
+
+- (SelfDefinedHomeRes*) build;
+- (SelfDefinedHomeRes*) buildPartial;
+
+- (SelfDefinedHomeResBuilder*) mergeFrom:(SelfDefinedHomeRes*) other;
+- (SelfDefinedHomeResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SelfDefinedHomeResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (NSMutableArray<TopicAd*> *)ads;
+- (TopicAd*)adsAtIndex:(NSUInteger)index;
+- (SelfDefinedHomeResBuilder *)addAds:(TopicAd*)value;
+- (SelfDefinedHomeResBuilder *)setAdsArray:(NSArray<TopicAd*> *)array;
+- (SelfDefinedHomeResBuilder *)clearAds;
+
+- (NSMutableArray<SelfDefinedTopic*> *)selfDefinedTopics;
+- (SelfDefinedTopic*)selfDefinedTopicsAtIndex:(NSUInteger)index;
+- (SelfDefinedHomeResBuilder *)addSelfDefinedTopics:(SelfDefinedTopic*)value;
+- (SelfDefinedHomeResBuilder *)setSelfDefinedTopicsArray:(NSArray<SelfDefinedTopic*> *)array;
+- (SelfDefinedHomeResBuilder *)clearSelfDefinedTopics;
+@end
+
+#define SelfDefinedMoreReq_self_id @"selfId"
+#define SelfDefinedMoreReq_page @"page"
+@interface SelfDefinedMoreReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasSelfId_:1;
+  BOOL hasPage_:1;
+  UInt32 selfId;
+  UInt32 page;
+}
+- (BOOL) hasSelfId;
+- (BOOL) hasPage;
+@property (readonly) UInt32 selfId;
+@property (readonly) UInt32 page;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SelfDefinedMoreReqBuilder*) builder;
++ (SelfDefinedMoreReqBuilder*) builder;
++ (SelfDefinedMoreReqBuilder*) builderWithPrototype:(SelfDefinedMoreReq*) prototype;
+- (SelfDefinedMoreReqBuilder*) toBuilder;
+
++ (SelfDefinedMoreReq*) parseFromData:(NSData*) data;
++ (SelfDefinedMoreReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedMoreReq*) parseFromInputStream:(NSInputStream*) input;
++ (SelfDefinedMoreReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedMoreReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SelfDefinedMoreReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SelfDefinedMoreReqBuilder : PBGeneratedMessageBuilder {
+@private
+  SelfDefinedMoreReq* resultSelfDefinedMoreReq;
+}
+
+- (SelfDefinedMoreReq*) defaultInstance;
+
+- (SelfDefinedMoreReqBuilder*) clear;
+- (SelfDefinedMoreReqBuilder*) clone;
+
+- (SelfDefinedMoreReq*) build;
+- (SelfDefinedMoreReq*) buildPartial;
+
+- (SelfDefinedMoreReqBuilder*) mergeFrom:(SelfDefinedMoreReq*) other;
+- (SelfDefinedMoreReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SelfDefinedMoreReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasSelfId;
+- (UInt32) selfId;
+- (SelfDefinedMoreReqBuilder*) setSelfId:(UInt32) value;
+- (SelfDefinedMoreReqBuilder*) clearSelfId;
+
+- (BOOL) hasPage;
+- (UInt32) page;
+- (SelfDefinedMoreReqBuilder*) setPage:(UInt32) value;
+- (SelfDefinedMoreReqBuilder*) clearPage;
+@end
+
+#define SelfDefinedMoreRes_books @"books"
+#define SelfDefinedMoreRes_psize @"psize"
+#define SelfDefinedMoreRes_page @"page"
+@interface SelfDefinedMoreRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasPsize_:1;
+  BOOL hasPage_:1;
+  UInt32 psize;
+  UInt32 page;
+  NSMutableArray * booksArray;
+}
+- (BOOL) hasPsize;
+- (BOOL) hasPage;
+@property (readonly, strong) NSArray<Book*> * books;
+@property (readonly) UInt32 psize;
+@property (readonly) UInt32 page;
+- (Book*)booksAtIndex:(NSUInteger)index;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SelfDefinedMoreResBuilder*) builder;
++ (SelfDefinedMoreResBuilder*) builder;
++ (SelfDefinedMoreResBuilder*) builderWithPrototype:(SelfDefinedMoreRes*) prototype;
+- (SelfDefinedMoreResBuilder*) toBuilder;
+
++ (SelfDefinedMoreRes*) parseFromData:(NSData*) data;
++ (SelfDefinedMoreRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedMoreRes*) parseFromInputStream:(NSInputStream*) input;
++ (SelfDefinedMoreRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SelfDefinedMoreRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SelfDefinedMoreRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SelfDefinedMoreResBuilder : PBGeneratedMessageBuilder {
+@private
+  SelfDefinedMoreRes* resultSelfDefinedMoreRes;
+}
+
+- (SelfDefinedMoreRes*) defaultInstance;
+
+- (SelfDefinedMoreResBuilder*) clear;
+- (SelfDefinedMoreResBuilder*) clone;
+
+- (SelfDefinedMoreRes*) build;
+- (SelfDefinedMoreRes*) buildPartial;
+
+- (SelfDefinedMoreResBuilder*) mergeFrom:(SelfDefinedMoreRes*) other;
+- (SelfDefinedMoreResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SelfDefinedMoreResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (NSMutableArray<Book*> *)books;
+- (Book*)booksAtIndex:(NSUInteger)index;
+- (SelfDefinedMoreResBuilder *)addBooks:(Book*)value;
+- (SelfDefinedMoreResBuilder *)setBooksArray:(NSArray<Book*> *)array;
+- (SelfDefinedMoreResBuilder *)clearBooks;
+
+- (BOOL) hasPsize;
+- (UInt32) psize;
+- (SelfDefinedMoreResBuilder*) setPsize:(UInt32) value;
+- (SelfDefinedMoreResBuilder*) clearPsize;
+
+- (BOOL) hasPage;
+- (UInt32) page;
+- (SelfDefinedMoreResBuilder*) setPage:(UInt32) value;
+- (SelfDefinedMoreResBuilder*) clearPage;
 @end
 
 

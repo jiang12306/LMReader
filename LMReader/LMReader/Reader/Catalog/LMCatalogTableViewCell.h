@@ -10,10 +10,8 @@
 
 @interface LMCatalogTableViewCell : LMBaseArrowTableViewCell
 
-@property (nonatomic, strong) UILabel* numberLab;//章节 第1章 label
 @property (nonatomic, strong) UILabel* nameLab;//更新章节 label
-@property (nonatomic, strong) UILabel* timeLab;//更新时间 label
 
--(void)setContentWithNumberStr:(NSString* )numberStr nameStr:(NSString* )nameStr timeStr:(NSString* )timeStr isClicked:(BOOL )isClicked;
+-(void)setContentWithNameStr:(NSString* )nameStr isClicked:(BOOL )isClicked;
 
 @end

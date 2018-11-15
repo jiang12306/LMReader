@@ -7,14 +7,12 @@
 //
 
 #import "LMBookStoreViewController.h"
-#import "LMBaseBookTableViewCell.h"
 #import "LMBaseRefreshTableView.h"
 #import "LMTool.h"
 #import "LMSearchViewController.h"
 #import "LMBookDetailViewController.h"
-#import "LMLeftItemView.h"
 #import "LMBookStoreTitleCollectionViewCell.h"
-#import "PopoverView.h"
+#import "LMSearchTitleView.h"
 #import "LMBookStoreFilterListView.h"
 #import "LMTypeBookStoreViewController.h"
 #import "LMRightItemView.h"
@@ -22,8 +20,6 @@
 @interface LMBookStoreViewController () <UICollectionViewDelegate, UICollectionViewDataSource, LMTypeBookStoreViewControllerDelegate, UIScrollViewDelegate>
 
 @property (nonatomic, strong) UICollectionView* collectionView;
-@property (nonatomic, strong) UIButton* genderItemBtn;
-@property (nonatomic, strong) UIImageView* genderItemIV;
 @property (nonatomic, strong) NSMutableArray* maleTypeArray;//男生 小说类型
 @property (nonatomic, strong) NSMutableArray* femaleTypeArray;//女生 小说类型
 @property (nonatomic, strong) UIScrollView* scrollView;
@@ -56,46 +52,38 @@ static NSString* cellIdentifier = @"cellIdentifier";
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    LMLeftItemView* leftView = [[LMLeftItemView alloc]initWithFrame:CGRectMake(0, 0, 80, 25)];
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:leftView];
-    
-    UIView* genderView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 90, 25)];
-    self.genderItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, genderView.frame.size.width, genderView.frame.size.height)];
-    self.genderItemBtn.titleLabel.font = [UIFont systemFontOfSize:16];
-    self.genderItemBtn.layer.cornerRadius = 5;
-    self.genderItemBtn.layer.masksToBounds = YES;
-    self.genderItemBtn.layer.borderColor = THEMEORANGECOLOR.CGColor;
-    self.genderItemBtn.layer.borderWidth = 1;
-    [self.genderItemBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateNormal];
-    [self.genderItemBtn addTarget:self action:@selector(clickedGenderButton:) forControlEvents:UIControlEventTouchUpInside];
-    [genderView addSubview:self.genderItemBtn];
-    UIImageView* bottomIV = [[UIImageView alloc]initWithFrame:CGRectMake(self.genderItemBtn.frame.size.width - 25, 2.5, 20, 20)];
-    bottomIV.image = [UIImage imageNamed:@"rightBarButtonItem_Bottom"];
-    [self.genderItemBtn addSubview:bottomIV];
-    self.genderItemIV = [[UIImageView alloc]initWithFrame:CGRectMake(5, 2.5, 20, 20)];
-    self.genderItemIV.image = [UIImage imageNamed:@"rightBarButtonItem_Male"];
-    [self.genderItemBtn addSubview:self.genderItemIV];
-    UIBarButtonItem* genderItem = [[UIBarButtonItem alloc]initWithCustomView:genderView];
-    
-    UIView* filtView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 40, 25)];
+    UIView* filtView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 35, 30)];
     UIButton* filtItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, filtView.frame.size.width, filtView.frame.size.height)];
-    [filtItemBtn setImage:[UIImage imageNamed:@"rightBarButtonItem_Filter"] forState:UIControlStateNormal];
+    [filtItemBtn setImage:[[UIImage imageNamed:@"bookStore_RightItem_Filter"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    filtItemBtn.tintColor = UIColorFromRGB(0x656565);
+    [filtItemBtn setImageEdgeInsets:UIEdgeInsetsMake(0, 0, 0, 5)];
     [filtItemBtn addTarget:self action:@selector(clickedFilterButton:) forControlEvents:UIControlEventTouchUpInside];
     [filtView addSubview:filtItemBtn];
     UIBarButtonItem* filtItem = [[UIBarButtonItem alloc]initWithCustomView:filtView];
     
+    UIView* emptyView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 5, 30)];
+    UILabel* emptyLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, emptyView.frame.size.width, emptyView.frame.size.height)];
+    [emptyView addSubview:emptyLab];
+    UIBarButtonItem* emptyItem = [[UIBarButtonItem alloc]initWithCustomView:emptyView];
+
+    self.navigationItem.rightBarButtonItems = @[filtItem, emptyItem];
+    
+    UIView* leftEmptyView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 5, 30)];
+    UILabel* leftEmptyLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, leftEmptyView.frame.size.width, leftEmptyView.frame.size.height)];
+    [leftEmptyView addSubview:leftEmptyLab];
+    UIBarButtonItem* leftEmptyItem = [[UIBarButtonItem alloc]initWithCustomView:leftEmptyView];
+    self.navigationItem.leftBarButtonItem = leftEmptyItem;
+    
     __weak LMBookStoreViewController* weakSelf = self;
     
-    LMRightItemView* rightView = [[LMRightItemView alloc]initWithFrame:CGRectMake(0, 0, 44, 44)];
-    rightView.callBlock = ^(BOOL clicked) {
-        if (clicked) {
+    LMSearchTitleView* searchView = [[LMSearchTitleView alloc]initWithFrame:CGRectMake(0, 7, self.view.frame.size.width - leftEmptyView.frame.size.width - emptyView.frame.size.width - filtView.frame.size.width, 30)];
+    searchView.clickBlock = ^(BOOL didClick) {
+        if (didClick) {
             LMSearchViewController* searchVC = [[LMSearchViewController alloc]init];
             [weakSelf.navigationController pushViewController:searchVC animated:YES];
         }
     };
-    UIBarButtonItem* searchItem = [[UIBarButtonItem alloc]initWithCustomView:rightView];
-    
-    self.navigationItem.rightBarButtonItems = @[filtItem, genderItem, searchItem];
+    self.navigationItem.titleView = searchView;
     
     CGFloat naviHeight = 20 + 44;
     if ([LMTool isBangsScreen]) {
@@ -140,14 +128,6 @@ static NSString* cellIdentifier = @"cellIdentifier";
     }else {
         tempType = [LMTool getFirstLaunchGenderType];
     }
-    NSString* genderTitleStr = @"男生";
-    NSString* genderImageStr = @"rightBarButtonItem_Male";
-    if (tempType == GenderTypeGenderFemale) {
-        genderTitleStr = @"女生";
-        genderImageStr = @"rightBarButtonItem_Female";
-    }
-    [self.genderItemBtn setTitle:genderTitleStr forState:UIControlStateNormal];
-    self.genderItemIV.image = [UIImage imageNamed:genderImageStr];
     
     self.genderType = tempType;
     self.bookState = LMBookStoreStateAll;
@@ -163,58 +143,17 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [self loadFemaleTypeList];
 }
 
-//筛选 性别
--(void)clickedGenderButton:(UIButton* )sender {
-    NSMutableArray* actionArray = [NSMutableArray array];
-    PopoverAction* maleAction = [PopoverAction actionWithImage:[UIImage imageNamed:@"rightBarButtonItem_Male"] title:@"男生" handler:^(PopoverAction *action) {
-        if (self.genderType == GenderTypeGenderMale) {
-            return;
-        }
-        if (self.maleTypeArray.count == 0) {
-            return;
-        }
-        [self.genderItemBtn setTitle:@"男生" forState:UIControlStateNormal];
-        self.genderItemIV.image = [UIImage imageNamed:@"rightBarButtonItem_Male"];
-        self.genderType = GenderTypeGenderMale;
-        self.currentIndex = 0;
-        
-        [self deleteAllTypeBookStoreViewController];
-        self.scrollView.contentSize = CGSizeMake(self.maleTypeArray.count * self.view.frame.size.width, 0);
-        [self createTypeBookStoreViewController];
-    }];
-    PopoverAction* femaleAction = [PopoverAction actionWithImage:[UIImage imageNamed:@"rightBarButtonItem_Female"] title:@"女生" handler:^(PopoverAction *action) {
-        if (self.genderType == GenderTypeGenderFemale) {
-            return;
-        }
-        self.genderType = GenderTypeGenderFemale;
-        
-        if (self.femaleTypeArray.count == 0) {
-            return;
-        }
-        [self.genderItemBtn setTitle:@"女生" forState:UIControlStateNormal];
-        self.genderItemIV.image = [UIImage imageNamed:@"rightBarButtonItem_Female"];
-        self.genderType = GenderTypeGenderFemale;
-        self.currentIndex = 0;
-        
-        [self deleteAllTypeBookStoreViewController];
-        self.scrollView.contentSize = CGSizeMake(self.femaleTypeArray.count * self.view.frame.size.width, 0);
-        [self createTypeBookStoreViewController];
-    }];
-    [actionArray addObject:maleAction];
-    [actionArray addObject:femaleAction];
-    
-    PopoverView *popoverView = [PopoverView popoverView];
-    popoverView.style = PopoverViewStyleDefault;
-    popoverView.hideAfterTouchOutside = YES;
-    [popoverView showToView:sender withActions:actionArray];
-}
-
 //筛选 状态、排序类型
 -(void)clickedFilterButton:(UIButton* )sender {
-    LMBookStoreFilterListView* listView = [[LMBookStoreFilterListView alloc]initWithFrame:CGRectMake(0, 0, 250, 160)];
+    LMBookStoreFilterListView* listView = [[LMBookStoreFilterListView alloc]initWithFrame:CGRectMake(0, 0, 225, 200)];
     listView.bookRange = self.bookRange;
     listView.bookState = self.bookState;
+    listView.gendType = self.genderType;
     listView.rangeBlock = ^(LMBookStoreRange range) {
+        if (self.maleTypeArray.count == 0 || self.femaleTypeArray.count == 0) {
+            [self initData];
+            return;
+        }
         self.bookRange = range;
         
         [self deleteAllTypeBookStoreViewController];
@@ -222,10 +161,33 @@ static NSString* cellIdentifier = @"cellIdentifier";
         [self createTypeBookStoreViewController];
     };
     listView.stateBlock = ^(LMBookStoreState state) {
+        if (self.maleTypeArray.count == 0 || self.femaleTypeArray.count == 0) {
+            [self initData];
+            return;
+        }
         self.bookState = state;
         
         [self deleteAllTypeBookStoreViewController];
         self.scrollView.contentOffset = CGPointMake(self.currentIndex * self.view.frame.size.width, 0);
+        [self createTypeBookStoreViewController];
+    };
+    listView.genderBlock = ^(GenderType gender) {
+        if (self.maleTypeArray.count == 0 || self.femaleTypeArray.count == 0) {
+            [self initData];
+            return;
+        }
+        if (self.genderType == gender) {
+            return;
+        }
+        self.genderType = gender;
+        self.currentIndex = 0;
+        
+        [self deleteAllTypeBookStoreViewController];
+        if (gender == GenderTypeGenderFemale) {
+            self.scrollView.contentSize = CGSizeMake(self.femaleTypeArray.count * self.view.frame.size.width, 0);
+        }else {
+            self.scrollView.contentSize = CGSizeMake(self.maleTypeArray.count * self.view.frame.size.width, 0);
+        }
         [self createTypeBookStoreViewController];
     };
     [listView showToView:sender];
@@ -502,11 +464,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
     }
     
     UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 0, cellHeight)];
-    lab.font = [UIFont systemFontOfSize:16];
+    lab.font = [UIFont systemFontOfSize:18];
     lab.text = text;
     CGSize labSize = [lab sizeThatFits:CGSizeMake(CGFLOAT_MAX, cellHeight)];
     
-    CGFloat cellWidth = labSize.width + 10;
+    CGFloat cellWidth = labSize.width + 18;
     return CGSizeMake(cellWidth, cellHeight);
 }
 

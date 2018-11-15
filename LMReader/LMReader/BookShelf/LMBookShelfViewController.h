@@ -8,6 +8,11 @@
 
 #import "LMBaseViewController.h"
 
+typedef enum NSInteger {
+    LMBookShelfTypeBatch = 1,
+    LMBookShelfTypeList = 2,
+}LMBookShelfType;
+
 @interface LMBookShelfViewController : LMBaseViewController
 
 @end

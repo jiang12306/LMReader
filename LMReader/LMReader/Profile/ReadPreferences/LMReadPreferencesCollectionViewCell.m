@@ -20,15 +20,13 @@
 
 -(void)setupSubviews {
     CGRect screenRect = [UIScreen mainScreen].bounds;
-    self.backgroundColor = THEMEORANGECOLOR;
-    self.layer.cornerRadius = 10;
+    self.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    self.layer.cornerRadius = 3;
     self.layer.masksToBounds = YES;
-    self.layer.borderWidth = 1;
-    self.layer.borderColor = [UIColor whiteColor].CGColor;
     
     if (!self.nameLab) {
         self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(10, 10, self.frame.size.width - 20, 20)];
-        self.nameLab.textColor = [UIColor whiteColor];
+        self.nameLab.textColor = [UIColor colorWithRed:150.f/255 green:150.f/255 blue:150.f/255 alpha:1];
         self.nameLab.textAlignment = NSTextAlignmentCenter;
         CGFloat fontSize = 18;
         if (screenRect.size.width == 320) {
@@ -40,33 +38,14 @@
 }
 
 -(void)setClicked:(BOOL)isClicked genderType:(GenderType)genderType {
-    UIColor* maleColor =  [UIColor colorWithRed:74.f/255 green:178.f/255 blue:252.f/255 alpha:1];
-    UIColor* femaleColor = [UIColor colorWithRed:251.f/255 green:126.f/255 blue:164.f/255 alpha:1];
-    UIColor* textColor = [UIColor whiteColor];
-    UIColor* bgColor = maleColor;
-    UIColor* layerColor = maleColor;
+    UIColor* textColor = [UIColor colorWithRed:150.f/255 green:150.f/255 blue:150.f/255 alpha:1];
+    UIColor* bgColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
     if (isClicked) {
         textColor = [UIColor whiteColor];
-        if (genderType == GenderTypeGenderFemale) {
-            bgColor = femaleColor;
-            layerColor = femaleColor;
-        }else {
-            bgColor = maleColor;
-            layerColor = maleColor;
-        }
-    }else {
-        bgColor = [UIColor whiteColor];
-        if (genderType == GenderTypeGenderFemale) {
-            textColor = femaleColor;
-            layerColor = femaleColor;
-        }else {
-            textColor = maleColor;
-            layerColor = maleColor;
-        }
+        bgColor = THEMEORANGECOLOR;
     }
     self.nameLab.textColor = textColor;
     self.backgroundColor = bgColor;
-    self.layer.borderColor = layerColor.CGColor;
 }
 
 @end

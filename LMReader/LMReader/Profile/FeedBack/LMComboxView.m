@@ -30,11 +30,10 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (self) {
         self.cellHeight = cellHeight;
         self.titleArr = [titleArr copy];
-        self.backgroundColor = [UIColor clearColor];
         
         self.selectedBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, cellHeight)];
         self.selectedBtn.backgroundColor = [UIColor whiteColor];
-        self.selectedBtn.titleLabel.font = [UIFont systemFontOfSize:16];
+        self.selectedBtn.titleLabel.font = [UIFont systemFontOfSize:15];
         self.selectedBtn.selected = NO;
         [self.selectedBtn setTitle:titleArr[0] forState:UIControlStateNormal];
         [self.selectedBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
@@ -43,8 +42,6 @@ static NSString* cellIdentifier = @"cellIdentifier";
         [self.selectedBtn addTarget:self action:@selector(clickedSelectButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.selectedBtn setTitleEdgeInsets:UIEdgeInsetsMake(0, 0, 0, frame.size.width - 115)];
         [self.selectedBtn setImageEdgeInsets:UIEdgeInsetsMake(8, frame.size.width - 20, 7, 5)];
-        self.selectedBtn.layer.borderWidth = 1;
-        self.selectedBtn.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
         [self addSubview:self.selectedBtn];
         
         self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, cellHeight, frame.size.width, 0) style:UITableViewStylePlain];

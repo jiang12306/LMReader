@@ -2,6 +2,7 @@
 
 #import "PopoverView.h"
 #import "PopoverViewCell.h"
+#import "AppDelegate.h"
 
 static CGFloat const kPopoverViewMargin = 8.f;        ///< 边距
 static CGFloat const kPopoverViewCellHeight = 40.f;   ///< cell指定高度
@@ -19,9 +20,8 @@ float PopoverViewDegreesToRadians(float angle)
 #pragma mark - UI
 @property (nonatomic, weak) UIWindow *keyWindow;                ///< 当前窗口
 @property (nonatomic, strong) UITableView *tableView;
-@property (nonatomic, strong) LMBaseAlertView *shadeView;                ///< 遮罩层
+@property (nonatomic, strong) LMBaseAlertView *contentView;
 @property (nonatomic, weak) CAShapeLayer *borderLayer;          ///< 边框Layer
-@property (nonatomic, weak) UITapGestureRecognizer *tapGesture; ///< 点击背景阴影的手势
 
 #pragma mark - Data
 @property (nonatomic, copy) NSArray<PopoverAction *> *actions;
@@ -36,7 +36,18 @@ float PopoverViewDegreesToRadians(float angle)
 #pragma mark - Lift Cycle
 - (instancetype)initWithFrame:(CGRect)frame
 {
-    if (!(self = [super initWithFrame:frame])) return nil;
+    // keyWindow
+    _keyWindow = [UIApplication sharedApplication].keyWindow;
+    _windowWidth = CGRectGetWidth(_keyWindow.bounds);
+    _windowHeight = CGRectGetHeight(_keyWindow.bounds);
+    
+    self = [super initWithFrame:_keyWindow.frame];
+    if (!self) {
+        return nil;
+    }
+    
+    _contentView = [[LMBaseAlertView alloc] initWithFrame:frame];
+    
     [self initialize];
     return self;
 }
@@ -46,21 +57,24 @@ float PopoverViewDegreesToRadians(float angle)
     [super layoutSubviews];
     
     _tableView.frame = CGRectMake(0, _isUpward ? kPopoverViewArrowHeight : 0,
-                                  CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) - kPopoverViewArrowHeight);
+                                  CGRectGetWidth(self.contentView.bounds), CGRectGetHeight(self.contentView.bounds) - kPopoverViewArrowHeight);
 }
 
 #pragma mark - Setter
 - (void)setHideAfterTouchOutside:(BOOL)hideAfterTouchOutside
 {
     _hideAfterTouchOutside = hideAfterTouchOutside;
-    _tapGesture.enabled = _hideAfterTouchOutside;
 }
 
 - (void)setShowShade:(BOOL)showShade
 {
     _showShade = showShade;
     
-    _shadeView.backgroundColor = _showShade ? [UIColor colorWithWhite:0.f alpha:0.18f] : [UIColor clearColor];
+    if (showShade) {
+        self.backgroundColor = [[UIColor colorWithWhite:0 alpha:1]colorWithAlphaComponent:0.18];
+    }else {
+        self.backgroundColor = [UIColor clearColor];
+    }
     
     if (_borderLayer) {
         
@@ -76,11 +90,11 @@ float PopoverViewDegreesToRadians(float angle)
     
     if (_style == PopoverViewStyleDefault) {
         
-        self.backgroundColor = [UIColor whiteColor];
+        self.contentView.backgroundColor = [UIColor whiteColor];
     }
     else {
         
-        self.backgroundColor = [UIColor colorWithRed:0.29 green:0.29 blue:0.29 alpha:1.00];
+        self.contentView.backgroundColor = [UIColor colorWithRed:0.29 green:0.29 blue:0.29 alpha:1.00];
     }
 }
 
@@ -94,20 +108,9 @@ float PopoverViewDegreesToRadians(float angle)
     _style = PopoverViewStyleDefault;
     _arrowStyle = PopoverViewArrowStyleRound;
     
-    // current view
-    self.backgroundColor = [UIColor whiteColor];
-    
-    // keyWindow
-    _keyWindow = [UIApplication sharedApplication].keyWindow;
-    _windowWidth = CGRectGetWidth(_keyWindow.bounds);
-    _windowHeight = CGRectGetHeight(_keyWindow.bounds);
-    
     // shadeView
-    _shadeView = [[LMBaseAlertView alloc] initWithFrame:_keyWindow.bounds];
+    _contentView = [[LMBaseAlertView alloc] initWithFrame:_keyWindow.bounds];
     [self setShowShade:NO];
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hide)];
-    [_shadeView addGestureRecognizer:tapGesture];
-    _tapGesture = tapGesture;
     
     // tableView
     _tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
@@ -120,7 +123,7 @@ float PopoverViewDegreesToRadians(float angle)
     _tableView.estimatedRowHeight = 0.0;
     _tableView.showsVerticalScrollIndicator = NO;
     [_tableView registerClass:[PopoverViewCell class] forCellReuseIdentifier:kPopoverCellReuseId];
-    [self addSubview:_tableView];
+    [self.contentView addSubview:_tableView];
 }
 
 /**
@@ -149,8 +152,8 @@ float PopoverViewDegreesToRadians(float angle)
     }
     
     // 遮罩层
-    _shadeView.alpha = 0.f;
-    [_keyWindow addSubview:_shadeView];
+    self.alpha = 0.f;
+    [_keyWindow addSubview:self];
     
     // 刷新数据以获取具体的ContentSize
     [_tableView reloadData];
@@ -191,10 +194,10 @@ float PopoverViewDegreesToRadians(float angle)
         currentY = toPoint.y - currentH;
     }
     
-    self.frame = CGRectMake(currentX, currentY, currentW, currentH);
+    self.contentView.frame = CGRectMake(currentX, currentY, currentW, currentH);
     
     // 截取箭头
-    CGPoint arrowPoint = CGPointMake(toPoint.x - CGRectGetMinX(self.frame), _isUpward ? 0 : currentH); // 箭头顶点在当前视图的坐标
+    CGPoint arrowPoint = CGPointMake(toPoint.x - CGRectGetMinX(self.contentView.frame), _isUpward ? 0 : currentH); // 箭头顶点在当前视图的坐标
     CGFloat maskTop = _isUpward ? kPopoverViewArrowHeight : 0; // 顶部Y值
     CGFloat maskBottom = _isUpward ? currentH : currentH - kPopoverViewArrowHeight; // 底部Y值
     UIBezierPath *maskPath = [UIBezierPath bezierPath];
@@ -269,32 +272,30 @@ float PopoverViewDegreesToRadians(float angle)
     [maskPath closePath];
     // 截取圆角和箭头
     CAShapeLayer *maskLayer = [CAShapeLayer layer];
-    maskLayer.frame = self.bounds;
+    maskLayer.frame = self.contentView.bounds;
     maskLayer.path = maskPath.CGPath;
-    self.layer.mask = maskLayer;
+    self.contentView.layer.mask = maskLayer;
     // 边框 (只有在不显示半透明阴影层时才设置边框线条)
     if (!_showShade) {
         CAShapeLayer *borderLayer = [CAShapeLayer layer];
-        borderLayer.frame = self.bounds;
+        borderLayer.frame = self.contentView.bounds;
         borderLayer.path = maskPath.CGPath;
         borderLayer.lineWidth = 1;
         borderLayer.fillColor = [UIColor clearColor].CGColor;
         borderLayer.strokeColor = _tableView.separatorColor.CGColor;
-        [self.layer addSublayer:borderLayer];
+        [self.contentView.layer addSublayer:borderLayer];
         _borderLayer = borderLayer;
     }
     
-    [_keyWindow addSubview:self];
+    [self addSubview:self.contentView];
     
     // 弹出动画
-    CGRect oldFrame = self.frame;
-    self.layer.anchorPoint = CGPointMake(arrowPoint.x/currentW, _isUpward ? 0.f : 1.f);
-    self.frame = oldFrame;
-    self.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
-    [UIView animateWithDuration:0.25f animations:^{
-        self.transform = CGAffineTransformIdentity;
-        self->_shadeView.alpha = 1.f;
+    [UIView animateWithDuration:0.2f animations:^{
+        self.alpha = 1.f;
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate bringSystemNightShiftToFront];
 }
 
 /*! @brief 计算最大宽度 */
@@ -351,16 +352,16 @@ float PopoverViewDegreesToRadians(float angle)
 /**
  点击外部隐藏弹窗
  */
-- (void)hide
-{
+- (void)hide {
     [UIView animateWithDuration:0.25f animations:^{
         self.alpha = 0.f;
-        self->_shadeView.alpha = 0.f;
-        self.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
     } completion:^(BOOL finished) {
-        [self->_shadeView removeFromSuperview];
+        [self.contentView removeFromSuperview];
         [self removeFromSuperview];
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate sendSystemNightShiftToback];
 }
 
 #pragma mark - Public
@@ -437,14 +438,22 @@ float PopoverViewDegreesToRadians(float angle)
 {
     [UIView animateWithDuration:0.25f animations:^{
         self.alpha = 0.f;
-        self->_shadeView.alpha = 0.f;
     } completion:^(BOOL finished) {
         PopoverAction *action = self->_actions[indexPath.row];
         action.handler ? action.handler(action) : NULL;
         self->_actions = nil;
-        [self->_shadeView removeFromSuperview];
-        [self removeFromSuperview];
+        
+        [self hide];
     }];
+}
+
+-(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    UITouch* touch = [touches anyObject];
+    CGPoint point = [touch locationInView:self];
+    bool isContain = CGRectContainsPoint(self.contentView.frame, point);
+    if (!isContain) {
+        [self hide];
+    }
 }
 
 @end

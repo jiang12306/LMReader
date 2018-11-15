@@ -7,7 +7,7 @@
 //
 
 #import "LMInterestOrEndViewController.h"
-#import "LMBaseBookTableViewCell.h"
+#import "LMTypeBookStoreTableViewCell.h"
 #import "LMBookDetailViewController.h"
 #import "LMBaseRefreshTableView.h"
 #import "LMTool.h"
@@ -20,6 +20,12 @@
 @property (nonatomic, assign) BOOL isEnd;//是否最后一页
 @property (nonatomic, assign) BOOL isRefreshing;//是否正在刷新中
 
+@property (nonatomic, assign) CGFloat bookCoverWidth;//
+@property (nonatomic, assign) CGFloat bookCoverHeight;//
+@property (nonatomic, assign) CGFloat bookFontScale;//
+@property (nonatomic, assign) CGFloat bookNameFontSize;//
+@property (nonatomic, assign) CGFloat bookBriefFontSize;//
+
 @end
 
 @implementation LMInterestOrEndViewController
@@ -28,6 +34,22 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.bookCoverWidth = 105.f;
+    self.bookCoverHeight = 145.f;
+    self.bookNameFontSize = 15.f;
+    self.bookBriefFontSize = 12.f;
+    
+    CGFloat maxBookWidth = (self.view.frame.size.width - 20 * 4 - 10 * 3) / 3.f;
+    self.bookFontScale = (self.view.frame.size.width / 414.f);
+    if (self.bookFontScale > 1) {
+        self.bookFontScale = 1;
+    }
+    if (self.bookCoverWidth * self.bookFontScale > maxBookWidth) {
+        self.bookFontScale = maxBookWidth / self.bookCoverWidth;
+    }
+    self.bookCoverWidth *= self.bookFontScale;
+    self.bookCoverHeight *= self.bookFontScale;
     
     self.title = @"兴趣推荐";
     if (self.type == LMEndType) {
@@ -52,7 +74,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     self.tableView.dataSource = self;
     self.tableView.refreshDelegate = self;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    [self.tableView registerClass:[LMBaseBookTableViewCell class] forCellReuseIdentifier:cellIdentifier];
+    [self.tableView registerClass:[LMTypeBookStoreTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.view addSubview:self.tableView];
     
     self.page = 0;
@@ -90,18 +112,17 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return baseBookCellHeight;
+    return self.bookCoverHeight + 20 * 2;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    LMBaseBookTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
+    LMTypeBookStoreTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     if (!cell) {
-        cell = [[LMBaseBookTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        cell = [[LMTypeBookStoreTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
     
     Book* book = [self.dataArray objectAtIndex:indexPath.row];
-    
-    [cell setupContentBook:book];
+    [cell setupContentBook:book cellHeight:self.bookCoverHeight + 20 * 2 ivWidth:self.bookCoverWidth nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
     
     return cell;
 }

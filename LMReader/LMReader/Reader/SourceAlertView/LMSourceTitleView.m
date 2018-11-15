@@ -20,16 +20,11 @@
 -(instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor colorWithWhite:1 alpha:0.9];
+        self.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
         self.btn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
-        CGFloat fontSize = 14;//16;
-//        if ([LMTool isBangsScreen]) {
-//            fontSize = 14;
-//        }
-        self.btn.backgroundColor = [UIColor blackColor];
-        self.btn.titleLabel.font = [UIFont systemFontOfSize:fontSize];
+        self.btn.titleLabel.font = [UIFont systemFontOfSize:15];
         [self.btn addTarget:self action:@selector(clickedButton:) forControlEvents:UIControlEventTouchUpInside];
-        [self.btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [self.btn setTitleColor:[UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1] forState:UIControlStateNormal];
         [self addSubview:self.btn];
     }
     return self;
@@ -63,6 +58,14 @@
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
         self.frame = CGRectMake(0, 0 - originFrame.size.height, originFrame.size.width, originFrame.size.height);
     }];
+}
+
+-(void)reloadSourceTitleViewWithModel:(LMReadModel )currentModel {
+    if (currentModel == LMReaderBackgroundType4) {
+        self.backgroundColor = [UIColor colorWithRed:15.f/255 green:15.f/255 blue:15.f/255 alpha:1];
+    }else {
+        self.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    }
 }
 
 /*

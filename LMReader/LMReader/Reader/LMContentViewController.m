@@ -14,7 +14,7 @@
 
 @property (nonatomic, strong) GDTNativeExpressAd *nativeExpressAd;//
 
-@property (nonatomic, strong) UILabel *contentLabel;
+@property (nonatomic, strong) UITextView *contentLabel;
 @property (nonatomic, strong) UILabel* titleLab;//章节名label
 @property (nonatomic, strong) UILabel* pageCountLab;//页数label
 @property (nonatomic, strong) UILabel* chapterCountLab;//进度label
@@ -51,6 +51,10 @@
         self.sharedAdView.delegate = nil;
         self.sharedAdView = nil;
     }
+    if (self.adView) {
+        self.nativeExpressAd.delegate = nil;
+        self.adView = nil;
+    }
 }
 
 - (void)viewDidLoad {
@@ -64,23 +68,32 @@
     
     self.navigationController.interactivePopGestureRecognizer.delegate = nil;
     
-    self.contentLabel = [[UILabel alloc]initWithFrame:contentLabRect];
-    self.contentLabel.backgroundColor = [UIColor clearColor];
-    self.contentLabel.numberOfLines = 0;
-    UIColor* textColor = [UIColor blackColor];
+    UIColor* titleColor = [UIColor colorWithRed:130/255.f green:130/255.f blue:130/255.f alpha:1];
+    UIColor* contentColor = [UIColor blackColor];
     if (self.readModel == LMReaderBackgroundType1) {
-        self.view.backgroundColor = [UIColor colorWithRed:226/255.f green:210/255.f blue:178/255.f alpha:1];
-        textColor = [UIColor colorWithRed:35.f/255 green:35.f/255 blue:35.f/255 alpha:1];
+        self.view.backgroundColor = [UIColor colorWithRed:245.f/255 green:245.f/255 blue:245.f/255 alpha:1];
     }else if (self.readModel == LMReaderBackgroundType2) {
-        self.view.backgroundColor = [UIColor colorWithRed:177/255.f green:198/255.f blue:200/255.f alpha:1];
-        textColor = [UIColor colorWithRed:12/255.f green:30/255.f blue:12/255.f alpha:1];
+        self.view.backgroundColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:230.f/255 alpha:1];
     }else if (self.readModel == LMReaderBackgroundType3) {
-        self.view.backgroundColor = [UIColor colorWithRed:199/255.f green:167/255.f blue:166/255.f alpha:1];
-        textColor = [UIColor colorWithRed:47/255.f green:26/255.f blue:19/255.f alpha:1];
+        self.view.backgroundColor = [UIColor colorWithRed:183.f/255 green:230.f/255 blue:192.f/255 alpha:1];
     }else if (self.readModel == LMReaderBackgroundType4) {
-        self.view.backgroundColor = [UIColor colorWithRed:24/255.f green:24/255.f blue:24/255.f alpha:1];
-        textColor = [UIColor colorWithRed:150/255.f green:150/255.f blue:150/255.f alpha:1];
+        self.view.backgroundColor = [UIColor colorWithRed:15.f/255 green:15.f/255 blue:15.f/255 alpha:1];
+        contentColor = [UIColor colorWithRed:130/255.f green:130/255.f blue:130/255.f alpha:1];
     }
+    
+    if (self.titleStr != nil) {
+        self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake(10, contentStatusBarHeight, contentScreenWidth - 10 * 2, 20)];
+        self.titleLab.font = [UIFont systemFontOfSize:14];
+        self.titleLab.text = self.titleStr;
+        self.titleLab.textColor = titleColor;
+        [self.view addSubview:self.titleLab];
+    }
+    
+    self.contentLabel = [[UITextView alloc]initWithFrame:contentLabRect];
+    self.contentLabel.backgroundColor = [UIColor clearColor];
+    self.contentLabel.scrollEnabled = NO;
+    self.contentLabel.editable = NO;
+    self.contentLabel.selectable = NO;
     [self.view addSubview:self.contentLabel];
     
     NSMutableParagraphStyle* paraStyle = [[NSMutableParagraphStyle alloc]init];
@@ -89,21 +102,11 @@
     paraStyle.lineSpacing = self.lineSpace;
     if (self.content != nil && ![self.content isKindOfClass:[NSNull class]] && self.content.length > 0) {
         self.content = [self.content stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];//去掉尾部换行
-        NSAttributedString* attributeStr = [[NSAttributedString alloc]initWithString:self.content attributes:@{NSFontAttributeName : [UIFont fontWithName:@"PingFang SC" size:self.fontSize], NSForegroundColorAttributeName : textColor, NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];//[UIFont systemFontOfSize:self.fontSize]
+        NSAttributedString* attributeStr = [[NSAttributedString alloc]initWithString:self.content attributes:@{NSFontAttributeName : [UIFont fontWithName:@"PingFang SC" size:self.fontSize], NSForegroundColorAttributeName : contentColor, NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];//[UIFont systemFontOfSize:self.fontSize]
         
         self.contentLabel.attributedText = attributeStr;
         
         [self.contentLabel sizeToFit];
-//        CGSize labSize = [self.contentLabel sizeThatFits:CGSizeMake(contentLabRect.size.width, CGFLOAT_MAX)];
-//        self.contentLabel.frame = CGRectMake(contentLabRect.origin.x, contentLabRect.origin.y, contentLabRect.size.width, labSize.height);
-    }
-    
-    if (self.titleStr != nil) {
-        self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake(10, contentNaviHeight - 44, contentScreenWidth - 10 * 2, 44)];
-        self.titleLab.font = [UIFont systemFontOfSize:14];
-        self.titleLab.text = self.titleStr;
-        self.titleLab.textColor = textColor;
-        [self.view addSubview:self.titleLab];
     }
     
     //如果文本内容覆盖进度文字，将进度文字下移
@@ -202,7 +205,7 @@
         self.pageCountLab.lineBreakMode = NSLineBreakByCharWrapping;
         self.pageCountLab.text = self.pageProgress;
         self.pageCountLab.textAlignment = NSTextAlignmentLeft;
-        self.pageCountLab.textColor = textColor;
+        self.pageCountLab.textColor = titleColor;
         CGSize countSize = [self.pageCountLab sizeThatFits:CGSizeMake(9999, 20)];
         if (countSize.width > contentScreenWidth / 2) {
             countSize.width = contentScreenWidth / 2;
@@ -214,7 +217,7 @@
         self.chapterCountLab = [[UILabel alloc]initWithFrame:CGRectMake(self.pageCountLab.frame.origin.x + self.pageCountLab.frame.size.width + 10, self.pageCountLab.frame.origin.y, 80, 20)];//+20 往下移20，否则底部间距太大
         self.chapterCountLab.font = [UIFont systemFontOfSize:14];
         self.chapterCountLab.text = self.chapterProgress;
-        self.chapterCountLab.textColor = textColor;
+        self.chapterCountLab.textColor = titleColor;
         CGSize countSize = [self.chapterCountLab sizeThatFits:CGSizeMake(9999, 20)];
         if (countSize.width > contentScreenWidth / 2) {
             countSize.width = contentScreenWidth / 2;
@@ -232,21 +235,13 @@
     //电量
     CGFloat battaryLevel = device.batteryLevel;
     self.battaryLab = [[UILabel alloc]initWithFrame:CGRectMake(contentScreenWidth - 20 - countStartX, self.pageCountLab.frame.origin.y + 6.5, (battaryWidth - 5) * battaryLevel, 7)];
-    UIColor* battaryColor = [UIColor colorWithRed:40 / 255.f green:200 / 255.f blue:60 / 255.f alpha:1];
-    if (battaryLevel >= 0 && battaryLevel <= 0.2) {
-        battaryColor = [UIColor redColor];
-    }else if (battaryLevel > 0.2 && battaryLevel <= 0.3) {
-        battaryColor = [UIColor colorWithRed:1 green:190 / 255.f blue:10 / 255.f alpha:1];
-    }
+    UIColor* battaryColor = titleColor;
     self.battaryLab.backgroundColor = battaryColor;
     [self.view addSubview:self.battaryLab];
     //电池
     self.battaryIV = [[UIImageView alloc]initWithFrame:CGRectMake(self.battaryLab.frame.origin.x - 1.5, self.pageCountLab.frame.origin.y + 5, battaryWidth, battaryHeight)];
     NSString* battaryImageStr = @"battary_Normal";
-    if (device.batteryState == UIDeviceBatteryStateCharging) {
-        battaryImageStr = @"battary_Charge";
-    }
-    self.battaryIV.tintColor = textColor;
+    self.battaryIV.tintColor = titleColor;
     self.battaryIV.image = [[UIImage imageNamed:battaryImageStr] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [self.view addSubview:self.battaryIV];
     
@@ -259,7 +254,7 @@
     self.timeLab = [[UILabel alloc]initWithFrame:CGRectMake(self.battaryIV.frame.origin.x - 60 - 5, self.pageCountLab.frame.origin.y, 60, 20)];
     self.timeLab.font = [UIFont systemFontOfSize:14];
     self.timeLab.textAlignment = NSTextAlignmentRight;
-    self.timeLab.textColor = textColor;
+    self.timeLab.textColor = titleColor;
     self.timeLab.text = nowDateStr;
     [self.view addSubview:self.timeLab];
 }
@@ -280,12 +275,7 @@
     CGRect battaryRect = self.battaryLab.frame;
     self.battaryLab = [[UILabel alloc]initWithFrame:CGRectMake(battaryRect.origin.x, battaryRect.origin.y, (self.battaryIV.frame.size.width - 5) * battaryLevel, battaryRect.size.height)];
     self.battaryIV.layer.borderColor = [UIColor clearColor].CGColor;
-    UIColor* battaryColor = [UIColor colorWithRed:40 / 255.f green:200 / 255.f blue:60 / 255.f alpha:1];
-    if (battaryLevel >= 0 && battaryLevel <= 0.2) {
-        battaryColor = [UIColor redColor];
-    }else if (battaryLevel > 0.2 && battaryLevel <= 0.3) {
-        battaryColor = [UIColor colorWithRed:1 green:190 / 255.f blue:10 / 255.f alpha:1];
-    }
+    UIColor* battaryColor = self.titleLab.textColor;
     self.battaryLab.backgroundColor = battaryColor;
     
     [self resetupTime];
@@ -293,11 +283,7 @@
 
 //电池状态
 -(void)batteryStateChanged:(NSNotification* )notify {
-    UIDevice* device = [UIDevice currentDevice];
     NSString* battaryImageStr = @"battary_Normal";
-    if (device.batteryState == UIDeviceBatteryStateCharging) {
-        battaryImageStr = @"battary_Charge";
-    }
     self.battaryIV.image = [[UIImage imageNamed:battaryImageStr] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     
     [self resetupTime];

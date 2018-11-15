@@ -149,7 +149,6 @@ static BOOL sx_tempDisableFixSpace = NO;
         [self swizzleInstanceMethodWithOriginSel:@selector(setRightBarButtonItems:)
                                      swizzledSel:@selector(sx_setRightBarButtonItems:)];
     });
-    
 }
 
 -(void)sx_setLeftBarButtonItem:(UIBarButtonItem *)leftBarButtonItem {

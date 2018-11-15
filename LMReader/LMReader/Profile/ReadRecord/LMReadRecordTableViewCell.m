@@ -13,7 +13,6 @@
 @property (nonatomic, strong) UIView* cellView;//内容视图
 @property (nonatomic, strong) UIButton* deleteBtn;//删除 按钮
 @property (nonatomic, strong) UIButton* collectBtn;//置顶 按钮
-@property (nonatomic, strong) UIImageView* arrowIV;
 
 @property (nonatomic, strong) UIPanGestureRecognizer* panGestureRecognizer;
 @property (nonatomic, assign) CGFloat startPanX;
@@ -65,24 +64,16 @@ static CGFloat slideSpace = 70;//滑动距离 显示/隐藏 置顶 删除 按钮
         [self.deleteBtn setTitle:@"删除" forState:UIControlStateNormal];
         [self.contentView insertSubview:self.deleteBtn belowSubview:self.collectBtn];
     }
-    if (!self.arrowIV) {
-        self.arrowIV = [[UIImageView alloc]initWithFrame:CGRectMake(screenRect.size.width - 10 - 10, 15, 10, 20)];
-        UIImage* image = [UIImage imageNamed:@"cell_Arrow"];
-        UIImage* tintImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        [self.arrowIV setTintColor:[UIColor grayColor]];
-        self.arrowIV.image = tintImage;
-        [self.cellView addSubview:self.arrowIV];
-    }
     if (!self.timeLab) {
-        self.timeLab = [[UILabel alloc]initWithFrame:CGRectMake(screenRect.size.width - 30 - 80, 0, 80, 50)];
-        self.timeLab.font = [UIFont systemFontOfSize:14];
+        self.timeLab = [[UILabel alloc]initWithFrame:CGRectMake(screenRect.size.width - 20 - 60, 0, 60, 60)];
+        self.timeLab.font = [UIFont systemFontOfSize:12];
         self.timeLab.textAlignment = NSTextAlignmentRight;
         self.timeLab.textColor = [UIColor colorWithRed:190/255.f green:190/255.f blue:190/255.f alpha:1];
         [self.cellView addSubview:self.timeLab];
     }
     if (!self.nameLab) {
-        self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, self.timeLab.frame.origin.x - 10 * 2, 50)];
-        self.nameLab.font = [UIFont systemFontOfSize:16];
+        self.nameLab = [[UILabel alloc]initWithFrame:CGRectMake(20, 0, self.timeLab.frame.origin.x - 20 * 2, 60)];
+        self.nameLab.font = [UIFont systemFontOfSize:15];
         [self.cellView addSubview:self.nameLab];
     }
 }

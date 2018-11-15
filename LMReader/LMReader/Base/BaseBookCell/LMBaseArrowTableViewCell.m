@@ -21,11 +21,11 @@
 -(void)setupArrowView {
     CGRect screenRect = [UIScreen mainScreen].bounds;
     if (!self.arrowIV) {
-        self.arrowIV = [[UIImageView alloc]initWithFrame:CGRectMake(screenRect.size.width - 10 - 10, (self.frame.size.height - 20)/2, 10, 20)];
+        self.arrowIV = [[UIImageView alloc]initWithFrame:CGRectMake(screenRect.size.width - 20 - 10, (self.frame.size.height - 10)/2, 10, 10)];//10, 20
         UIImage* image = [UIImage imageNamed:@"cell_Arrow"];
-        UIImage* tintImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        [self.arrowIV setTintColor:[UIColor grayColor]];
-        self.arrowIV.image = tintImage;
+//        UIImage* tintImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+//        [self.arrowIV setTintColor:[UIColor grayColor]];
+        self.arrowIV.image = image;//tintImage;
         [self.contentView addSubview:self.arrowIV];
     }
 }
@@ -41,7 +41,7 @@
 -(void)layoutSubviews {
     [super layoutSubviews];
     CGRect screenRect = [UIScreen mainScreen].bounds;
-    self.arrowIV.frame = CGRectMake(screenRect.size.width - 10 - 10, (self.frame.size.height - 20)/2, 10, 20);
+    self.arrowIV.frame = CGRectMake(screenRect.size.width - 20 - 10, (self.frame.size.height - 10)/2, 10, 10);
     [self bringSubviewToFront:self.arrowIV];
 }
 

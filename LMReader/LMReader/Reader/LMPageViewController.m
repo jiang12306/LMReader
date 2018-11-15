@@ -67,7 +67,7 @@
                         return NO;
                     }
                 }
-                CGRect tapRect = CGRectMake(self.view.frame.size.width / 3, 88, self.view.frame.size.width / 3, self.view.frame.size.height - 88 - 83);
+                CGRect tapRect = CGRectMake(self.view.frame.size.width / 3, self.view.frame.size.height / 4, self.view.frame.size.width / 3, self.view.frame.size.height / 2);
                 if (CGRectContainsPoint(tapRect, touchPoint)) {
                     if (self.gestureDelegate != nil && [self.gestureDelegate respondsToSelector:@selector(LMPageViewControllerDidTapScreenCenterToShowOrHideNavigationBar)]) {
                         [self.gestureDelegate LMPageViewControllerDidTapScreenCenterToShowOrHideNavigationBar];

@@ -25,10 +25,6 @@
     
     self.title = @"设置密码";
     
-    CGFloat spaceX = 10;
-    CGFloat spaceY = 20;
-    CGFloat labHeight = 40;
-    
     self.scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
     if (@available(ios 11.0, *)) {
         self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
@@ -38,31 +34,37 @@
     self.scrollView.showsHorizontalScrollIndicator = NO;
     [self.view addSubview:self.scrollView];
     
-    self.pwdTF = [[UITextField alloc]initWithFrame:CGRectMake(spaceX, spaceY, self.view.frame.size.width - spaceX * 2, labHeight)];
-    self.pwdTF.backgroundColor = [UIColor whiteColor];
-    self.pwdTF.layer.borderWidth = 1;
-    self.pwdTF.layer.cornerRadius = 5;
-    self.pwdTF.layer.masksToBounds = YES;
-    self.pwdTF.layer.borderColor = [UIColor colorWithRed:200.f/255 green:200.f/255 blue:200.f/255 alpha:1].CGColor;
+    UIView* pwdView = [[UIView alloc]initWithFrame:CGRectMake(0, 20, self.scrollView.frame.size.width, 50)];
+    [self.scrollView addSubview:pwdView];
+    
+    self.pwdTF = [[UITextField alloc]initWithFrame:CGRectMake(20, 10, self.view.frame.size.width - 20 * 2, 30)];
+    self.pwdTF.font = [UIFont systemFontOfSize:15];
     self.pwdTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     self.pwdTF.secureTextEntry = YES;
-    self.pwdTF.placeholder = @" 输入新密码";
-    [self.scrollView addSubview:self.pwdTF];
+    self.pwdTF.placeholder = @"输入新密码";
+    [pwdView addSubview:self.pwdTF];
     
-    self.conformTF = [[UITextField alloc]initWithFrame:CGRectMake(self.pwdTF.frame.origin.x, self.pwdTF.frame.origin.y + self.pwdTF.frame.size.height + spaceY, self.pwdTF.frame.size.width, self.pwdTF.frame.size.height)];
-    self.conformTF.backgroundColor = [UIColor whiteColor];
-    self.conformTF.layer.borderWidth = 1;
-    self.conformTF.layer.cornerRadius = 5;
-    self.conformTF.layer.masksToBounds = YES;
-    self.conformTF.layer.borderColor = [UIColor colorWithRed:200.f/255 green:200.f/255 blue:200.f/255 alpha:1].CGColor;
+    UIView* pwdLineView = [[UIView alloc]initWithFrame:CGRectMake(20, pwdView.frame.size.height - 1, pwdView.frame.size.width - 20 * 2, 1)];
+    pwdLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    [pwdView addSubview:pwdLineView];
+    
+    UIView* conformView = [[UIView alloc]initWithFrame:CGRectMake(0, pwdView.frame.origin.y + pwdView.frame.size.height, self.scrollView.frame.size.width, 50)];
+    [self.scrollView addSubview:conformView];
+    
+    self.conformTF = [[UITextField alloc]initWithFrame:CGRectMake(self.pwdTF.frame.origin.x, self.pwdTF.frame.origin.y, self.pwdTF.frame.size.width, self.pwdTF.frame.size.height)];
+    self.conformTF.font = [UIFont systemFontOfSize:15];
     self.conformTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     self.conformTF.secureTextEntry = YES;
-    self.conformTF.placeholder = @" 确认新密码";
-    [self.scrollView addSubview:self.conformTF];
+    self.conformTF.placeholder = @"确认新密码";
+    [conformView addSubview:self.conformTF];
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(spaceX, self.conformTF.frame.origin.y + self.conformTF.frame.size.height + spaceY, self.view.frame.size.width - spaceX * 2, labHeight)];
+    UIView* conformLineView = [[UIView alloc]initWithFrame:CGRectMake(20, conformView.frame.size.height - 1, conformView.frame.size.width - 20 * 2, 1)];
+    conformLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    [conformView addSubview:conformLineView];
+    
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, conformView.frame.origin.y + conformView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 50)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 5;
+    self.sendBtn.layer.cornerRadius = 25;
     self.sendBtn.layer.masksToBounds = YES;
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];

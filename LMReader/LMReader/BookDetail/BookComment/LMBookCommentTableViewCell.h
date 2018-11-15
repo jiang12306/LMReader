@@ -12,10 +12,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat CommentAvatorIVWidth = 50;
-static CGFloat CommentNameFontSize = 18;
-static CGFloat CommentContentFontSize = 16;
+static CGFloat CommentNameFontSize = 15;
+static CGFloat CommentContentFontSize = 12;
 static CGFloat CommentNameLabHeight = 25;
-static CGFloat CommentStarViewHeight = 20;
+static CGFloat CommentStarViewHeight = 15;
 static CGFloat CommentLikeBtnHeight = 15;
 
 @class LMBookCommentTableViewCell;

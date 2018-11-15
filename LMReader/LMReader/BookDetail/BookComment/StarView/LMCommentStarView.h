@@ -21,6 +21,9 @@ typedef void (^LMCommentStarViewBlock) (NSInteger starCount);
 //从1开始
 -(void)setupStarWithCount:(NSInteger )starCount;
 
+//从1开始
+-(void)setupStarWithFloatCount:(float )starCount;
+
 @end
 
 NS_ASSUME_NONNULL_END

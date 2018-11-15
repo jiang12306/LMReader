@@ -65,22 +65,24 @@ static NSString* cellIdentifier = @"cellIdentifier";
                     TopicChartRes* res = [TopicChartRes parseFromData:apiRes.body];
                     NSArray* arr = res.tcs;
                     
+                    CGFloat ivHeight = self.view.frame.size.width * 27 / 64;
                     for (TopicChart* chart in arr) {
                         LMSpecialChoiceModel* model = [[LMSpecialChoiceModel alloc]init];
                         model.topicChart = chart;
-                        model.cellHeight = (self.view.frame.size.width - 20) * 0.618;
-                        NSInteger spaceCount = 2;
+                        model.ivHeight = ivHeight;
+                        model.cellHeight = ivHeight;
+                        NSInteger spaceCount = 0;
                         NSString* titleStr = chart.name;
                         if (titleStr != nil && titleStr.length > 0) {
-                             model.titleHeight = [LMSpecialChoiceModel caculateSpecialChoiceModelTextHeightWithText:titleStr width:self.view.frame.size.width - 20 font:[UIFont boldSystemFontOfSize:18]];
+                             model.titleHeight = [LMSpecialChoiceModel caculateSpecialChoiceModelTextHeightWithText:titleStr width:self.view.frame.size.width - 20 * 2 font:[UIFont systemFontOfSize:18] maxLines:0];
                             spaceCount ++;
                         }
                         NSString* briefStr = chart.abstract;
                         if (briefStr != nil && briefStr.length > 0) {
-                            model.briefHeight = [LMSpecialChoiceModel caculateSpecialChoiceModelTextHeightWithText:briefStr width:self.view.frame.size.width - 20 font:[UIFont systemFontOfSize:16]];
+                            model.briefHeight = [LMSpecialChoiceModel caculateSpecialChoiceModelTextHeightWithText:briefStr width:self.view.frame.size.width - 20 * 2 font:[UIFont systemFontOfSize:15] maxLines:3];
                             spaceCount ++;
                         }
-                        model.cellHeight += 10 * spaceCount + model.titleHeight + model.briefHeight;
+                        model.cellHeight += 20 * 2 + 10 * spaceCount + model.titleHeight + model.briefHeight;
                         
                         [weakSelf.dataArray addObject:model];
                     }
@@ -138,6 +140,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (!cell) {
         cell = [[LMSpecialChoiceTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
+    [cell showLineView:NO];
     
     LMSpecialChoiceModel* model = [self.dataArray objectAtIndex:indexPath.row];
     [cell setupSpecialChoiceModel:model];

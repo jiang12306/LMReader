@@ -7,59 +7,75 @@
 //
 
 #import "LMChoiceViewController.h"
-#import "LMBaseBookTableViewCell.h"
 #import "LMBaseRefreshTableView.h"
 #import "LMRangeViewController.h"
 #import "LMSpecialChoiceViewController.h"
 #import "LMInterestOrEndViewController.h"
 #import "LMBookDetailViewController.h"
 #import "LMSearchViewController.h"
-#import "LMLeftItemView.h"
-#import "LMRightItemView.h"
+#import "LMSearchTitleView.h"
 #import "LMTool.h"
 #import "UIImageView+WebCache.h"
 #import "LMLaunchDetailViewController.h"
+#import "SCAdView.h"
+#import "LMChoiceListTableViewCell.h"
+#import "LMChoiceCollectionTableViewCell.h"
+#import "LMChoiceMoreViewController.h"
 
-@interface LMChoiceViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate, UIScrollViewDelegate>
+@interface LMChoiceViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate, SCAdViewDelegate, LMChoiceCollectionTableViewCellDelegate>
 
+@property (nonatomic, strong) SCAdView* scAdView;
 @property (nonatomic, strong) NSMutableArray* topArr;//顶部广告、书籍部分
-@property (nonatomic, strong) UIScrollView* adScrollView;
-@property (nonatomic, strong) UIPageControl* pageControl;//
-@property (nonatomic, assign) NSInteger currentAdIndex;//当前显示的广告、书籍角标
-@property (nonatomic, strong) NSTimer* timer;//
-@property (nonatomic, assign) NSInteger adTimeCount;//当前广告、书籍展示时间
 
 @property (nonatomic, strong) LMBaseRefreshTableView* tableView;
-@property (nonatomic, strong) NSMutableArray* editorArr;//编辑推荐
-@property (nonatomic, strong) NSMutableArray* interestArr;//兴趣推荐
-@property (nonatomic, strong) NSMutableArray* hotArr;//热门新书
-@property (nonatomic, strong) NSMutableArray* publishArr;//出版图书
+@property (nonatomic, strong) NSMutableArray* dataArray;//编辑推荐
 @property (nonatomic, strong) UIView* headerView;
 @property (nonatomic, assign) BOOL isRefreshing;
 @property (nonatomic, assign) BOOL firstLoad;//首次加载
+
+@property (nonatomic, assign) CGFloat bookCoverWidth;//
+@property (nonatomic, assign) CGFloat bookCoverHeight;//
+@property (nonatomic, assign) CGFloat bookFontScale;//
+@property (nonatomic, assign) CGFloat sectionHeaderFontSize;//
+@property (nonatomic, assign) CGFloat bookNameFontSize;//
+@property (nonatomic, assign) CGFloat bookBriefFontSize;//
 
 @end
 
 @implementation LMChoiceViewController
 
-static NSString* cellIdentifier = @"cellIdentifier";
+static NSString* listCellIdentifier = @"listCellIdentifier";
+static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    LMLeftItemView* leftView = [[LMLeftItemView alloc]initWithFrame:CGRectMake(0, 0, 80, 25)];
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:leftView];
+    self.bookCoverWidth = 105.f;
+    self.bookCoverHeight = 145.f;
+    self.sectionHeaderFontSize = 18.f;
+    self.bookNameFontSize = 15.f;
+    self.bookBriefFontSize = 12.f;
+    
+    CGFloat maxBookWidth = (self.view.frame.size.width - 20 * 4 - 10 * 3) / 3.f;
+    self.bookFontScale = (self.view.frame.size.width / 414.f);
+    if (self.bookFontScale > 1) {
+        self.bookFontScale = 1;
+    }
+    if (self.bookCoverWidth * self.bookFontScale > maxBookWidth) {
+        self.bookFontScale = maxBookWidth / self.bookCoverWidth;
+    }
+    self.bookCoverWidth *= self.bookFontScale;
+    self.bookCoverHeight *= self.bookFontScale;
     
     __weak LMChoiceViewController* weakSelf = self;
-    
-    LMRightItemView* rightView = [[LMRightItemView alloc]initWithFrame:CGRectMake(0, 0, 44, 44)];
-    rightView.callBlock = ^(BOOL clicked) {
-        if (clicked) {
+    LMSearchTitleView* searchView = [[LMSearchTitleView alloc]initWithFrame:CGRectMake(20, 7, self.view.frame.size.width - 20 * 2, 30)];
+    searchView.clickBlock = ^(BOOL didClick) {
+        if (didClick) {
             LMSearchViewController* searchVC = [[LMSearchViewController alloc]init];
             [weakSelf.navigationController pushViewController:searchVC animated:YES];
         }
     };
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:rightView];
+    self.navigationItem.titleView = searchView;
     
     CGFloat naviHeight = 20 + 44;
     if ([LMTool isBangsScreen]) {
@@ -74,18 +90,17 @@ static NSString* cellIdentifier = @"cellIdentifier";
     self.tableView.dataSource = self;
     self.tableView.refreshDelegate = self;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    [self.tableView registerClass:[LMBaseBookTableViewCell class] forCellReuseIdentifier:cellIdentifier];
+    [self.tableView registerClass:[LMChoiceListTableViewCell class] forCellReuseIdentifier:listCellIdentifier];
+    [self.tableView registerClass:[LMChoiceCollectionTableViewCell class] forCellReuseIdentifier:collectionCellIdentifier];
     [self.view addSubview:self.tableView];
     [self.tableView setupNoMoreData];
     
     self.topArr = [NSMutableArray array];
-    
-    self.editorArr = [NSMutableArray array];
-    self.interestArr = [NSMutableArray array];
-    self.hotArr = [NSMutableArray array];
-    self.publishArr = [NSMutableArray array];
+    self.dataArray = [NSMutableArray array];
     
     self.firstLoad = YES;
+    
+    [self loadChoiceData];
 }
 
 -(void)viewDidAppear:(BOOL)animated {
@@ -101,10 +116,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
         }
         tabBarController.tabBar.frame = CGRectMake(0, screenRect.size.height - tabBarHeight, screenRect.size.width, tabBarHeight);
     }
-    
+    /*
     if (self.firstLoad) {
         [self loadChoiceData];
     }else {
+        
         NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
         NSDate* saveDate = [userDefaults objectForKey:@"LMChoiceViewControllerDate"];
         BOOL shouldReload = NO;
@@ -121,136 +137,76 @@ static NSString* cellIdentifier = @"cellIdentifier";
             [self loadChoiceData];
         }
     }
+    */
 }
 
 -(void)viewDidDisappear:(BOOL)animated {
     [self hideNetworkLoadingView];
 }
 
--(void)setupTimer {
-    if (!self.timer) {
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(startCount) userInfo:nil repeats:YES];
-        [self.timer setFireDate:[NSDate distantFuture]];
-    }
-}
-
--(void)startCount {
-    if (self.topArr.count == 0) {
-        return;
-    }
-    TopicAd* detailAd = [self.topArr objectAtIndex:self.currentAdIndex];
-    Ad* ad;
-    if ([detailAd hasBook]) {
-        ad = detailAd.book;
-    }else {
-        ad = detailAd.ad;
-    }
-    self.adTimeCount ++;
-    if (self.adTimeCount >= ad.lT) {
-        [self autoscrollToNextAd];
-    }
-}
-
-//自动跳转到下一个广告
--(void)autoscrollToNextAd {
-    self.adTimeCount = 0;
-    [self.timer setFireDate:[NSDate distantFuture]];
-    if (self.currentAdIndex == self.topArr.count - 1) {
-        self.currentAdIndex = 0;
-    }else {
-        self.currentAdIndex ++;
-    }
-    self.pageControl.currentPage = self.currentAdIndex;
-    [UIView animateWithDuration:0.2 animations:^{
-        self.adScrollView.contentOffset = CGPointMake(self.adScrollView.frame.size.width * self.currentAdIndex, 0);
-    }];
-    [self.timer setFireDate:[NSDate distantPast]];
-}
-
 -(void)setupTableHeaderView {
-    CGFloat btnHeight = 85;
+    CGFloat topHeaderHeight = 0;
+    CGFloat spaceHeight = 20 * 2;
+    CGFloat btnHeight = 75;
     CGFloat btnWidth = 50;
-    CGFloat btnCenterY = btnHeight / 2;
-    CGFloat totalHeaderHeight = btnHeight;
+    CGFloat btnCenterY = topHeaderHeight + btnHeight / 2 + spaceHeight / 2;
+    CGFloat totalHeaderHeight = btnHeight + spaceHeight;
     CGFloat adHeight = 0;
     if (self.topArr != nil && self.topArr.count > 0) {
+        topHeaderHeight = 20;
         adHeight = self.view.frame.size.width * 27 / 64;
-        btnCenterY = adHeight + btnHeight / 2;
-        totalHeaderHeight = btnHeight + adHeight;
+        btnCenterY = topHeaderHeight + adHeight + btnHeight / 2 + spaceHeight / 2;
+        totalHeaderHeight = topHeaderHeight + adHeight + btnHeight + spaceHeight;
     }
     self.headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, totalHeaderHeight)];
     self.headerView.backgroundColor = [UIColor whiteColor];
     
     if (self.topArr != nil && self.topArr.count > 0) {
-        self.adScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, adHeight)];
-        self.adScrollView.showsHorizontalScrollIndicator = NO;
-        self.adScrollView.showsVerticalScrollIndicator = NO;
-        self.adScrollView.contentSize = CGSizeMake(self.view.frame.size.width * self.topArr.count, 0);
-        self.adScrollView.delegate = self;
-        self.adScrollView.pagingEnabled = YES;
-        [self.headerView addSubview:self.adScrollView];
-        for (NSInteger i = 0; i < self.topArr.count; i ++) {
-            TopicAd* topAd = [self.topArr objectAtIndex:i];
-            Ad* detailAd;
-            if ([topAd.book hasBook]) {
-                detailAd = topAd.book;
-            }else {
-                detailAd = topAd.ad;
-            }
-            UIImageView* adIV = [[UIImageView alloc]initWithFrame:CGRectMake(self.adScrollView.frame.size.width * i, 0, self.adScrollView.frame.size.width, self.adScrollView.frame.size.height)];
-            adIV.tag = i;
-            adIV.userInteractionEnabled  = YES;
-            NSString* picStr = [detailAd.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-            [adIV sd_setImageWithURL:[NSURL URLWithString:picStr] placeholderImage:[UIImage imageNamed:@"ad_DefaultImage"]];
-            [self.adScrollView addSubview:adIV];
-            
-            CGRect infoFrame = CGRectMake(5, adIV.frame.size.height - 20, 30, 15);
-            if (detailAd.pos == 1) {//右上角
-                infoFrame = CGRectMake(adIV.frame.size.width - 35, 5, 30, 15);
-            }else if (detailAd.pos == 2) {//右下角
-                infoFrame = CGRectMake(adIV.frame.size.width - 35, adIV.frame.size.height - 20, 30, 15);
-            }else if (detailAd.pos == 3) {//左上角
-                infoFrame = CGRectMake(5, 5, 30, 15);
-            }else if (detailAd.pos == 4) {//左下角 默认
-                
-            }
-            if (![topAd.book hasBook]) {//广告
-                UILabel* infoLab = [[UILabel alloc]initWithFrame:infoFrame];
-                infoLab.backgroundColor = [UIColor grayColor];
-                infoLab.alpha = 0.8f;
-                infoLab.textColor = [UIColor whiteColor];
-                infoLab.textAlignment = NSTextAlignmentCenter;
-                infoLab.font = [UIFont systemFontOfSize:13];
-                infoLab.text = @"广告";
-                [adIV addSubview:infoLab];
-            }
-            
-            UITapGestureRecognizer* tapAdGR = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedAdImageView:)];
-            [adIV addGestureRecognizer:tapAdGR];
+        if (!self.scAdView) {
+            [self.scAdView pause];
+            self.scAdView.delegate = nil;
+            self.scAdView = nil;
         }
-        self.pageControl = [[UIPageControl alloc]initWithFrame:CGRectMake(0, self.adScrollView.frame.size.height - 20, self.adScrollView.frame.size.width, 20)];
-        self.pageControl.numberOfPages = self.topArr.count;
-        self.pageControl.currentPage = 0;
-        self.pageControl.pageIndicatorTintColor = [UIColor lightGrayColor];
-        self.pageControl.currentPageIndicatorTintColor = [UIColor grayColor];
-        [self.headerView addSubview:self.pageControl];
-        
-        self.currentAdIndex = 0;
-        self.adTimeCount = 0;
-        [self setupTimer];
-        [self.timer setFireDate:[NSDate distantPast]];
+        __weak LMChoiceViewController* weakSelf = self;
+        self.scAdView = [[SCAdView alloc] initWithBuilder:^(SCAdViewBuilder *builder) {
+            CGFloat adWidth = weakSelf.view.bounds.size.width - 13 * 2;
+            CGFloat scale = 1.1;
+            builder.adArray = [NSArray arrayWithArray:weakSelf.topArr];
+            builder.viewFrame = CGRectMake(0, topHeaderHeight, weakSelf.view.bounds.size.width, adHeight);
+            builder.adItemSize = CGSizeMake(adWidth / scale, adHeight / scale);
+            builder.allowedInfinite = YES;
+            builder.minimumLineSpacing = 0;
+            builder.secondaryItemMinAlpha = 0.8;
+            builder.threeDimensionalScale = scale;
+            builder.itemCellClassName = @"LMChoiceAdCollectionViewCell";
+        }];
+        self.scAdView.backgroundColor = [UIColor whiteColor];
+        self.scAdView.delegate = self;
+        [self.headerView addSubview:self.scAdView];
+        [self.scAdView play];
+    }else {
+        if (!self.scAdView) {
+            [self.scAdView pause];
+            self.scAdView.delegate = nil;
+            [self.scAdView removeFromSuperview];
+            self.scAdView = nil;
+        }
     }
     
     UIButton* rangeBtn = [self createTitleButtonWithFrame:CGRectMake(0, 0, btnWidth, btnHeight) title:@"排行榜" imageStr:@"choice_Range" selector:@selector(clickedRangeButton:)];
-    rangeBtn.center = CGPointMake(self.headerView.frame.size.width / 4, btnCenterY);
+    rangeBtn.center = CGPointMake(self.headerView.frame.size.width / 8, btnCenterY);
     [self.headerView addSubview:rangeBtn];
     
     UIButton* specialBtn = [self createTitleButtonWithFrame:CGRectMake(0, 0, rangeBtn.frame.size.width, rangeBtn.frame.size.height) title:@"精选专题" imageStr:@"choice_Special" selector:@selector(clickedSpecialChoiceButton:)];
-    specialBtn.center = CGPointMake(self.headerView.frame.size.width * 2/4, rangeBtn.center.y);
+    specialBtn.center = CGPointMake(self.headerView.frame.size.width * 3/8, rangeBtn.center.y);
     [self.headerView addSubview:specialBtn];
     
+    UIButton* recommandBtn = [self createTitleButtonWithFrame:CGRectMake(0, 0, rangeBtn.frame.size.width, rangeBtn.frame.size.height) title:@"编辑推荐" imageStr:@"choice_Recommand" selector:@selector(clickedRecommandChoiceButton:)];
+    recommandBtn.center = CGPointMake(self.headerView.frame.size.width * 5/8, rangeBtn.center.y);
+    [self.headerView addSubview:recommandBtn];
+    
     UIButton* overBtn = [self createTitleButtonWithFrame:CGRectMake(0, 0, rangeBtn.frame.size.width, rangeBtn.frame.size.height) title:@"经典完结" imageStr:@"choice_Over" selector:@selector(clickedOverChoiceButton:)];
-    overBtn.center = CGPointMake(self.headerView.frame.size.width * 3/4, rangeBtn.center.y);
+    overBtn.center = CGPointMake(self.headerView.frame.size.width * 7/8, rangeBtn.center.y);
     [self.headerView addSubview:overBtn];
     
     self.tableView.tableHeaderView = self.headerView;
@@ -260,35 +216,17 @@ static NSString* cellIdentifier = @"cellIdentifier";
     UIButton* btn = [[UIButton alloc]initWithFrame:frame];
     [btn addTarget:self action:selector forControlEvents:UIControlEventTouchUpInside];
     
-    UIImageView* overIV = [[UIImageView alloc]initWithFrame:CGRectMake(5, 15, frame.size.width - 10, frame.size.height - 45)];
+    UIImageView* overIV = [[UIImageView alloc]initWithFrame:CGRectMake(5, 0, frame.size.width - 10, 40)];
     overIV.image = [UIImage imageNamed:imageStr];
     [btn addSubview:overIV];
     
-    UILabel* overLab = [[UILabel alloc]initWithFrame:CGRectMake(-10, btn.frame.size.height - 25, btn.frame.size.width + 20, 20)];
+    UILabel* overLab = [[UILabel alloc]initWithFrame:CGRectMake(-10, btn.frame.size.height - 25, btn.frame.size.width + 20, 25)];
     overLab.text = titleStr;
     overLab.textAlignment = NSTextAlignmentCenter;
-    overLab.font = [UIFont systemFontOfSize:14];
+    overLab.font = [UIFont systemFontOfSize:self.bookNameFontSize];
     [btn addSubview:overLab];
     
     return btn;
-}
-
-//点击广告、图书
--(void)tappedAdImageView:(UITapGestureRecognizer* )tapGR {
-    UIImageView* iv = (UIImageView* )tapGR.view;
-    NSInteger tag = iv.tag;
-    TopicAd* topAd = [self.topArr objectAtIndex:tag];
-    if ([topAd.book hasBook]) {
-        Book* book = topAd.book.book;
-        LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
-        detailVC.bookId = book.bookId;
-        [self.navigationController pushViewController:detailVC animated:YES];
-    }else {
-        NSString* targetUrlStr = [topAd.ad.to stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-        LMLaunchDetailViewController* launchDetailVC = [[LMLaunchDetailViewController alloc]init];
-        launchDetailVC.urlString = targetUrlStr;
-        [self.navigationController pushViewController:launchDetailVC animated:YES];
-    }
 }
 
 //排行榜
@@ -303,181 +241,419 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [self.navigationController pushViewController:specialChoiceVC animated:YES];
 }
 
-//经典完结
--(void)clickedOverChoiceButton:(UIButton* )sender {
-    LMInterestOrEndType type = LMEndType;
+//编辑推荐
+-(void)clickedRecommandChoiceButton:(UIButton* )sender {
     LMInterestOrEndViewController* interestOrEndVC = [[LMInterestOrEndViewController alloc]init];
-    interestOrEndVC.type = type;
+    interestOrEndVC.type = LMEditorRecommandType;
     [self.navigationController pushViewController:interestOrEndVC animated:YES];
 }
 
-//section头部  更多
--(void)clickedSectionButton:(UIButton* )sender {
-    LMInterestOrEndType type = LMInterestType;
-    if (sender.tag == 0) {//编辑推荐
-        type = LMEditorRecommandType;
-    }else if (sender.tag == 1) {//兴趣推荐
-        type = LMInterestType;
-    }else if (sender.tag == 2) {//热门新书
-        type = LMHotBookType;
-    }else if (sender.tag == 3) {//出版图书
-        type = LMPublishBookType;
-    }
+//经典完结
+-(void)clickedOverChoiceButton:(UIButton* )sender {
     LMInterestOrEndViewController* interestOrEndVC = [[LMInterestOrEndViewController alloc]init];
-    interestOrEndVC.type = type;
+    interestOrEndVC.type = LMEndType;
     [self.navigationController pushViewController:interestOrEndVC animated:YES];
+}
+
+//查看更多
+-(void)clcikedSectionFooterButton:(UIButton* )sender {
+    NSInteger section = sender.tag;
+    SelfDefinedTopic* topic = [self.dataArray objectAtIndex:section];
+    LMChoiceMoreViewController* choiceMoreVC = [[LMChoiceMoreViewController alloc]init];
+    choiceMoreVC.moreId = topic.id;
+    choiceMoreVC.moreName = topic.name;
+    [self.navigationController pushViewController:choiceMoreVC animated:YES];
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    if ([self isEmptyData]) {
+    if (self.dataArray.count == 0) {
         UIView* tempVi = [[UIView alloc]initWithFrame:CGRectZero];
         return tempVi;
     }
-    NSString* titleStr = @"编辑推荐";
-    if (section == 1) {
-        titleStr = @"兴趣推荐";
-    }else if (section == 2) {
-        titleStr = @"热门新书";
-    }else if (section == 3) {
-        titleStr = @"出版图书";
-    }
-    UIView* tempHeaderView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 50)];
-    tempHeaderView.backgroundColor = [UIColor colorWithRed:243/255.f green:243/255.f blue:243/255.f alpha:1];
+    CGFloat headerGraySpace = 10;
+    SelfDefinedTopic* topic = [self.dataArray objectAtIndex:section];
+    NSString* titleStr = topic.name;
     
-    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 10, self.view.frame.size.width, 40)];
+    UIView* tempHeaderView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10 + 60)];
+    tempHeaderView.backgroundColor = [UIColor colorWithRed:237.f/255 green:237.f/255 blue:237.f/255 alpha:1];
+    
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, headerGraySpace, self.view.frame.size.width, tempHeaderView.frame.size.height - headerGraySpace)];
     vi.backgroundColor = [UIColor whiteColor];
     [tempHeaderView addSubview:vi];
     
-    UILabel* lab0 = [[UILabel alloc]initWithFrame:CGRectMake(10, (vi.frame.size.height - 20) / 2, 5, 20)];
+    UILabel* lab0 = [[UILabel alloc]initWithFrame:CGRectMake(20, vi.frame.size.height - 25 - 10, 3, 25)];
     lab0.backgroundColor = THEMEORANGECOLOR;
-    lab0.layer.cornerRadius = 2.5;
+    lab0.layer.cornerRadius = 1.5;
     lab0.layer.masksToBounds = YES;
     [vi addSubview:lab0];
     
-    UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(lab0.frame.origin.x + lab0.frame.size.width + 10, 0, 200, vi.frame.size.height)];
+    UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(lab0.frame.origin.x + lab0.frame.size.width + 7, lab0.frame.origin.y, 250, 25)];
     lab.textColor = [UIColor blackColor];
-    lab.font = [UIFont boldSystemFontOfSize:18];
+    lab.font = [UIFont systemFontOfSize:self.sectionHeaderFontSize];
     lab.text = titleStr;
     [vi addSubview:lab];
     
-    UIButton* btn = [[UIButton alloc]initWithFrame:CGRectMake(vi.frame.size.width - 60, 0, 60, vi.frame.size.height)];
-    NSMutableAttributedString* btnStr = [[NSMutableAttributedString alloc]initWithString:@"更多>" attributes:@{NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle), NSForegroundColorAttributeName : [UIColor colorWithRed:100/255.f green:100/255.f blue:100/255.f alpha:1], NSFontAttributeName : [UIFont systemFontOfSize:16]}];
-    [btn setAttributedTitle:btnStr forState:UIControlStateNormal];
-    [btn addTarget:self action:@selector(clickedSectionButton:) forControlEvents:UIControlEventTouchUpInside];
-    btn.tag = section;
-    [vi addSubview:btn];
     return tempHeaderView;
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
-    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.01)];
+    if (self.dataArray.count == 0) {
+        UIView* tempVi = [[UIView alloc]initWithFrame:CGRectZero];
+        return tempVi;
+    }
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
+    UIButton* btn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, vi.frame.size.width, 40)];
+    btn.titleLabel.font = [UIFont systemFontOfSize:self.bookNameFontSize];
+    [btn setTitleColor:THEMEORANGECOLOR forState:UIControlStateNormal];
+    [btn setTitle:@"查看更多" forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(clcikedSectionFooterButton:) forControlEvents:UIControlEventTouchUpInside];
+    btn.tag = section;
+    [vi addSubview:btn];
     return vi;
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 4;
+    return self.dataArray.count;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (section == 0) {
-        return self.editorArr.count;
-    }else if (section == 1) {
-        return self.interestArr.count;
-    }else if (section == 2) {
-        return self.hotArr.count;
-    }else if (section == 3) {
-        return self.publishArr.count;
+    SelfDefinedTopic* topic = [self.dataArray objectAtIndex:section];
+    NSArray* booksArr = topic.books;
+    NSInteger styleInteger = topic.style;
+    if (styleInteger == 2) {//九宫格样式
+        return 1;
+    }else if (styleInteger == 3) {//一图+九宫格样式
+        return 2;
+    }else {//列表样式
+        return booksArr.count;
     }
     return 0;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 50;
+    return 10 + 60;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
-    return 0.01;
+    return 60;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return baseBookCellHeight;
+    NSInteger section = indexPath.section;
+    NSInteger row = indexPath.row;
+    SelfDefinedTopic* topic = [self.dataArray objectAtIndex:section];
+    NSArray* booksArr = topic.books;
+    NSInteger styleInteger = topic.style;
+    if (styleInteger == 2) {//九宫格样式
+        UILabel* tempLab = [[UILabel alloc]initWithFrame:CGRectZero];
+        tempLab.numberOfLines = 0;
+        tempLab.lineBreakMode = NSLineBreakByTruncatingTail;
+        tempLab.font = [UIFont systemFontOfSize:self.bookNameFontSize];
+        
+        CGFloat totalCollectionHeight = 0;
+        for (NSInteger i = 0; i < booksArr.count; i ++) {
+            if (i % 3 == 0) {
+                CGFloat itemHeight = 10 + self.bookCoverHeight + 10 + 10 + 20;
+                
+                CGFloat maxLabHeight = 25;
+                Book* subBook0 = [booksArr objectAtIndex:i];
+                tempLab.text = subBook0.name;
+                CGSize tempLabSize0 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                if (tempLabSize0.height > tempLab.font.lineHeight * 2) {
+                    tempLabSize0.height = tempLab.font.lineHeight * 2;
+                }
+                
+                if (i + 1 < booksArr.count) {
+                    Book* subBook1 = [booksArr objectAtIndex:i + 1];
+                    tempLab.text = subBook1.name;
+                    CGSize tempLabSize1 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                    if (tempLabSize1.height > tempLab.font.lineHeight * 2) {
+                        tempLabSize1.height = tempLab.font.lineHeight * 2;
+                    }
+                    maxLabHeight = MAX(tempLabSize0.height, tempLabSize1.height);
+                }
+                
+                if (i + 2 < booksArr.count) {
+                    Book* subBook2 = [booksArr objectAtIndex:i + 2];
+                    tempLab.text = subBook2.name;
+                    CGSize tempLabSize2 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                    if (tempLabSize2.height > tempLab.font.lineHeight * 2) {
+                        tempLabSize2.height = tempLab.font.lineHeight * 2;
+                    }
+                    maxLabHeight = MAX(maxLabHeight, tempLabSize2.height);
+                }
+                itemHeight += maxLabHeight;
+                totalCollectionHeight+= itemHeight;
+            }
+        }
+        
+        NSInteger booksCount = booksArr.count;
+        NSInteger lineCount = booksCount / 3;
+        if (booksCount % 3 != 0) {
+            lineCount ++;
+        }
+        return totalCollectionHeight + 20 * (lineCount + 1);
+    }else if (styleInteger == 3) {//一图+九宫格样式
+        if (row == 0) {
+            return self.bookCoverHeight + 20 * 2;
+        }else {
+            NSArray* subBooksArr = [booksArr subarrayWithRange:NSMakeRange(1, booksArr.count - 1)];
+            NSInteger booksCount = subBooksArr.count;
+            NSInteger lineCount = booksCount / 3;
+            if (booksCount % 3 != 0) {
+                lineCount ++;
+            }
+            
+            UILabel* tempLab = [[UILabel alloc]initWithFrame:CGRectZero];
+            tempLab.numberOfLines = 0;
+            tempLab.lineBreakMode = NSLineBreakByTruncatingTail;
+            tempLab.font = [UIFont systemFontOfSize:self.bookNameFontSize];
+            
+            CGFloat totalCollectionHeight = 0;
+            for (NSInteger i = 0; i < subBooksArr.count; i ++) {
+                if (i % 3 == 0) {
+                    CGFloat itemHeight = 10 + self.bookCoverHeight + 10 + 10 + 20;
+                    
+                    CGFloat maxLabHeight = 25;
+                    Book* subBook0 = [subBooksArr objectAtIndex:i];
+                    tempLab.text = subBook0.name;
+                    CGSize tempLabSize0 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                    if (tempLabSize0.height > tempLab.font.lineHeight * 2) {
+                        tempLabSize0.height = tempLab.font.lineHeight * 2;
+                    }
+                    
+                    if (i + 1 < subBooksArr.count) {
+                        Book* subBook1 = [subBooksArr objectAtIndex:i + 1];
+                        tempLab.text = subBook1.name;
+                        CGSize tempLabSize1 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                        if (tempLabSize1.height > tempLab.font.lineHeight * 2) {
+                            tempLabSize1.height = tempLab.font.lineHeight * 2;
+                        }
+                        maxLabHeight = MAX(tempLabSize0.height, tempLabSize1.height);
+                    }
+                    
+                    if (i + 2 < subBooksArr.count) {
+                        Book* subBook2 = [subBooksArr objectAtIndex:i + 2];
+                        tempLab.text = subBook2.name;
+                        CGSize tempLabSize2 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                        if (tempLabSize2.height > tempLab.font.lineHeight * 2) {
+                            tempLabSize2.height = tempLab.font.lineHeight * 2;
+                        }
+                        maxLabHeight = MAX(maxLabHeight, tempLabSize2.height);
+                    }
+                    itemHeight += maxLabHeight;
+                    totalCollectionHeight+= itemHeight;
+                }
+            }
+            return totalCollectionHeight + 20 * (lineCount + 1);
+        }
+    }else {//列表样式
+        return self.bookCoverHeight + 20 * 2;
+    }
+    return 0;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    LMBaseBookTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
-    if (!cell) {
-        cell = [[LMBaseBookTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
-    }
     NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
-    Book* book;
-    BOOL showLine = YES;
-    if (section == 0) {
-        book = [self.editorArr objectAtIndex:row];
-        if (row == self.editorArr.count - 1) {
-            showLine = NO;
+    SelfDefinedTopic* topic = [self.dataArray objectAtIndex:section];
+    NSArray* booksArr = topic.books;
+    NSInteger styleInteger = topic.style;
+    if (styleInteger == 2) {//九宫格样式
+        LMChoiceCollectionTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:collectionCellIdentifier forIndexPath:indexPath];
+        if (!cell) {
+            cell = [[LMChoiceCollectionTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:collectionCellIdentifier];
         }
-    }else if (section == 1) {
-        book = [self.interestArr objectAtIndex:row];
-        if (row == self.interestArr.count - 1) {
-            showLine = NO;
+        
+        UILabel* tempLab = [[UILabel alloc]initWithFrame:CGRectZero];
+        tempLab.numberOfLines = 0;
+        tempLab.lineBreakMode = NSLineBreakByTruncatingTail;
+        tempLab.font = [UIFont systemFontOfSize:self.bookNameFontSize];
+        
+        CGFloat totalCollectionHeight = 0;
+        NSMutableArray* tempHeightArr = [NSMutableArray array];
+        for (NSInteger i = 0; i < booksArr.count; i ++) {
+            if (i % 3 == 0) {
+                CGFloat itemHeight = 10 + self.bookCoverHeight + 10 + 10 + 20;
+                
+                CGFloat maxLabHeight = 25;
+                Book* subBook0 = [booksArr objectAtIndex:i];
+                tempLab.text = subBook0.name;
+                CGSize tempLabSize0 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                if (tempLabSize0.height > tempLab.font.lineHeight * 2) {
+                    tempLabSize0.height = tempLab.font.lineHeight * 2;
+                }
+                
+                if (i + 1 < booksArr.count) {
+                    Book* subBook1 = [booksArr objectAtIndex:i + 1];
+                    tempLab.text = subBook1.name;
+                    CGSize tempLabSize1 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                    if (tempLabSize1.height > tempLab.font.lineHeight * 2) {
+                        tempLabSize1.height = tempLab.font.lineHeight * 2;
+                    }
+                    maxLabHeight = MAX(tempLabSize0.height, tempLabSize1.height);
+                }
+                
+                if (i + 2 < booksArr.count) {
+                    Book* subBook2 = [booksArr objectAtIndex:i + 2];
+                    tempLab.text = subBook2.name;
+                    CGSize tempLabSize2 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                    if (tempLabSize2.height > tempLab.font.lineHeight * 2) {
+                        tempLabSize2.height = tempLab.font.lineHeight * 2;
+                    }
+                    maxLabHeight = MAX(maxLabHeight, tempLabSize2.height);
+                }
+                itemHeight += maxLabHeight;
+                totalCollectionHeight+= itemHeight;
+                [tempHeightArr addObject:[NSNumber numberWithFloat:itemHeight]];
+            }
         }
-    }else if (section == 2) {
-        book = [self.hotArr objectAtIndex:row];
-        if (row == self.hotArr.count - 1) {
-            showLine = NO;
+        
+        NSInteger booksCount = booksArr.count;
+        NSInteger lineCount = booksCount / 3;
+        if (booksCount % 3 != 0) {
+            lineCount ++;
         }
-    }else if (section == 3) {
-        book = [self.publishArr objectAtIndex:row];
-        if (row == self.publishArr.count - 1) {
-            showLine = NO;
+        CGFloat cellHeight = totalCollectionHeight + 20 * (lineCount + 1);
+        [cell setupContentBookArray:booksArr cellHeight:cellHeight ivWidth:self.bookCoverWidth ivHeight:self.bookCoverHeight itemWidth:self.bookCoverWidth + 5 * 2 itemHeightArr:tempHeightArr nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
+        
+        cell.delegate = self;
+        
+        return cell;
+    }else if (styleInteger == 3) {//一图+九宫格样式
+        if (row == 0) {
+            LMChoiceListTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:listCellIdentifier forIndexPath:indexPath];
+            if (!cell) {
+                cell = [[LMChoiceListTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:listCellIdentifier];
+            }
+            Book* book = [booksArr objectAtIndex:row];
+            [cell setupContentBook:book cellHeight:self.bookCoverHeight + 20 * 2 ivWidth:self.bookCoverWidth nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
+            
+            return cell;
+        }else {
+            LMChoiceCollectionTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:collectionCellIdentifier forIndexPath:indexPath];
+            if (!cell) {
+                cell = [[LMChoiceCollectionTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:collectionCellIdentifier];
+            }
+            NSArray* subBooksArr = [booksArr subarrayWithRange:NSMakeRange(1, booksArr.count - 1)];
+            
+            UILabel* tempLab = [[UILabel alloc]initWithFrame:CGRectZero];
+            tempLab.numberOfLines = 0;
+            tempLab.lineBreakMode = NSLineBreakByTruncatingTail;
+            tempLab.font = [UIFont systemFontOfSize:self.bookNameFontSize];
+            
+            CGFloat totalCollectionHeight = 0;
+            NSMutableArray* tempHeightArr = [NSMutableArray array];
+            for (NSInteger i = 0; i < subBooksArr.count; i ++) {
+                if (i % 3 == 0) {
+                    CGFloat itemHeight = 10 + self.bookCoverHeight + 10 + 10 + 20;
+                    
+                    Book* subBook0 = [subBooksArr objectAtIndex:i];
+                    tempLab.text = subBook0.name;
+                    CGSize tempLabSize0 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                    if (tempLabSize0.height > tempLab.font.lineHeight * 2) {
+                        tempLabSize0.height = tempLab.font.lineHeight * 2;
+                    }
+                    CGFloat maxLabHeight = tempLabSize0.height;
+                    
+                    if (i + 1 < subBooksArr.count) {
+                        Book* subBook1 = [subBooksArr objectAtIndex:i + 1];
+                        tempLab.text = subBook1.name;
+                        CGSize tempLabSize1 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                        if (tempLabSize1.height > tempLab.font.lineHeight * 2) {
+                            tempLabSize1.height = tempLab.font.lineHeight * 2;
+                        }
+                        maxLabHeight = MAX(tempLabSize0.height, tempLabSize1.height);
+                    }
+                    
+                    if (i + 2 < subBooksArr.count) {
+                        Book* subBook2 = [subBooksArr objectAtIndex:i + 2];
+                        tempLab.text = subBook2.name;
+                        CGSize tempLabSize2 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                        if (tempLabSize2.height > tempLab.font.lineHeight * 2) {
+                            tempLabSize2.height = tempLab.font.lineHeight * 2;
+                        }
+                        maxLabHeight = MAX(maxLabHeight, tempLabSize2.height);
+                    }
+                    itemHeight += maxLabHeight;
+                    totalCollectionHeight += itemHeight;
+                    [tempHeightArr addObject:[NSNumber numberWithFloat:itemHeight]];
+                }
+            }
+            
+            NSInteger booksCount = subBooksArr.count;
+            NSInteger lineCount = booksCount / 3;
+            if (booksCount % 3 != 0) {
+                lineCount ++;
+            }
+            CGFloat cellHeight = totalCollectionHeight + 20 * (lineCount + 1);
+            [cell setupContentBookArray:subBooksArr cellHeight:cellHeight ivWidth:self.bookCoverWidth ivHeight:self.bookCoverHeight itemWidth:self.bookCoverWidth + 5 * 2 itemHeightArr:tempHeightArr nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
+            
+            cell.delegate = self;
+            
+            return cell;
         }
+    }else {//列表样式
+        LMChoiceListTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:listCellIdentifier forIndexPath:indexPath];
+        if (!cell) {
+            cell = [[LMChoiceListTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:listCellIdentifier];
+        }
+        
+        Book* book = [booksArr objectAtIndex:row];
+        [cell setupContentBook:book cellHeight:self.bookCoverHeight + 20 * 2 ivWidth:self.bookCoverWidth nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
+        
+        return cell;
     }
-    [cell setupContentBook:book];
-    
-    [cell showLineView:showLine];
-    
-    return cell;
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:NO];
     
     Book* book;
-    if (indexPath.section == 0) {
-        book = [self.editorArr objectAtIndex:indexPath.row];
-    }else if (indexPath.section == 1) {
-        book = [self.interestArr objectAtIndex:indexPath.row];
-    }else if (indexPath.section == 2) {
-        book = [self.hotArr objectAtIndex:indexPath.row];
-    }else if (indexPath.section == 3) {
-        book = [self.publishArr objectAtIndex:indexPath.row];
+    
+    NSInteger section = indexPath.section;
+    NSInteger row = indexPath.row;
+    SelfDefinedTopic* topic = [self.dataArray objectAtIndex:section];
+    NSArray* booksArr = topic.books;
+    NSInteger styleInteger = topic.style;
+    if (styleInteger == 2) {//九宫格样式
+        
+    }else if (styleInteger == 3) {//一图+九宫格样式
+        if (row == 0) {
+            book = [booksArr objectAtIndex:row];
+        }else {
+            
+        }
+    }else {//列表样式
+        book = [booksArr objectAtIndex:row];
     }
-    LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
-    detailVC.bookId = book.bookId;
-    [self.navigationController pushViewController:detailVC animated:YES];
+    
+    if (book != nil) {
+        LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
+        detailVC.bookId = book.bookId;
+        [self.navigationController pushViewController:detailVC animated:YES];
+    }
 }
 
 -(void)loadChoiceData {
     self.isRefreshing = YES;
     
-    TopicHomeReqBuilder* builder = [TopicHomeReq builder];
+    SelfDefinedHomeReqBuilder* builder = [SelfDefinedHomeReq builder];
     [builder setPage:0];
-    [builder setType:0];
-    TopicHomeReq* req = [builder build];
+    SelfDefinedHomeReq* req = [builder build];
     NSData* reqData = [req data];
     
     [self showNetworkLoadingView];
     __weak LMChoiceViewController* weakSelf = self;
     
     LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
-    [tool postWithCmd:10 ReqData:reqData successBlock:^(NSData *successData) {
+    [tool postWithCmd:43 ReqData:reqData successBlock:^(NSData *successData) {
         @try {
             FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
-            if (apiRes.cmd == 10) {
+            if (apiRes.cmd == 43) {
                 ErrCode err = apiRes.err;
                 if (err == ErrCodeErrNone) {
-                    TopicHomeRes* res = [TopicHomeRes parseFromData:apiRes.body];
+                    SelfDefinedHomeRes* res = [SelfDefinedHomeRes parseFromData:apiRes.body];
                     
                     NSArray* arr0 = res.ads;
                     if (arr0 != nil && arr0.count > 0) {
@@ -485,31 +661,15 @@ static NSString* cellIdentifier = @"cellIdentifier";
                         [weakSelf.topArr addObjectsFromArray:arr0];
                     }
                     
-                    NSArray* arr1 = res.interestBooks;
+                    NSArray* arr1 = res.selfDefinedTopics;
                     if (arr1.count > 0) {
-                        
                         self.firstLoad = NO;
                         
-                        [weakSelf.interestArr removeAllObjects];
-                        [weakSelf.interestArr addObjectsFromArray:arr1];
+                        [weakSelf.dataArray removeAllObjects];
+                        [weakSelf.dataArray addObjectsFromArray:arr1];
                         
                         //保存
                         [LMTool archiveChoiceData:apiRes.body];
-                    }
-                    NSArray* arr3 = res.hotnewBooks;
-                    if (arr3.count > 0) {
-                        [weakSelf.hotArr removeAllObjects];
-                        [weakSelf.hotArr addObjectsFromArray:arr3];
-                    }
-                    NSArray* arr4 = res.publicedBooks;
-                    if (arr4.count > 0) {
-                        [weakSelf.publishArr removeAllObjects];
-                        [weakSelf.publishArr addObjectsFromArray:arr4];
-                    }
-                    NSArray* arr5 = res.editorBooks;
-                    if (arr5.count > 0) {
-                        [weakSelf.editorArr removeAllObjects];
-                        [weakSelf.editorArr addObjectsFromArray:arr5];
                     }
                     
                     NSDate* date = [NSDate date];
@@ -520,39 +680,24 @@ static NSString* cellIdentifier = @"cellIdentifier";
             }
             
         } @catch (NSException *exception) {
+            /*
             NSData* data = [LMTool unArchiveChoiceData];
             if (data != nil && ![data isKindOfClass:[NSNull class]]) {
-                TopicHomeRes* res = [TopicHomeRes parseFromData:data];
+                SelfDefinedHomeRes* res = [SelfDefinedHomeRes parseFromData:data];
                 NSArray* arr0 = res.ads;
                 if (arr0 != nil && arr0.count > 0) {
                     [weakSelf.topArr removeAllObjects];
                     [weakSelf.topArr addObjectsFromArray:arr0];
                 }
-                NSArray* arr1 = res.interestBooks;
+                NSArray* arr1 = res.selfDefinedTopics;
                 if (arr1.count > 0) {
-                    
                     self.firstLoad = NO;
                     
-                    [weakSelf.interestArr removeAllObjects];
-                    [weakSelf.interestArr addObjectsFromArray:arr1];
-                }
-                NSArray* arr3 = res.hotnewBooks;
-                if (arr3.count > 0) {
-                    [weakSelf.hotArr removeAllObjects];
-                    [weakSelf.hotArr addObjectsFromArray:arr3];
-                }
-                NSArray* arr4 = res.publicedBooks;
-                if (arr4.count > 0) {
-                    [weakSelf.publishArr removeAllObjects];
-                    [weakSelf.publishArr addObjectsFromArray:arr4];
-                }
-                NSArray* arr5 = res.editorBooks;
-                if (arr5.count > 0) {
-                    [weakSelf.editorArr removeAllObjects];
-                    [weakSelf.editorArr addObjectsFromArray:arr5];
+                    [weakSelf.dataArray removeAllObjects];
+                    [weakSelf.dataArray addObjectsFromArray:arr1];
                 }
             }
-            
+            */
             [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
         } @finally {
             
@@ -566,44 +711,30 @@ static NSString* cellIdentifier = @"cellIdentifier";
         [weakSelf.tableView reloadData];
         
     } failureBlock:^(NSError *failureError) {
+        /*
         NSData* data = [LMTool unArchiveChoiceData];
         if (data != nil && ![data isKindOfClass:[NSNull class]]) {
-            TopicHomeRes* res = [TopicHomeRes parseFromData:data];
+            SelfDefinedHomeRes* res = [SelfDefinedHomeRes parseFromData:data];
             NSArray* arr0 = res.ads;
             if (arr0 != nil && arr0.count > 0) {
                 [weakSelf.topArr removeAllObjects];
                 [weakSelf.topArr addObjectsFromArray:arr0];
             }
-            NSArray* arr1 = res.interestBooks;
+            NSArray* arr1 = res.selfDefinedTopics;
             if (arr1.count > 0) {
                 
                 self.firstLoad = NO;
                 
-                [weakSelf.interestArr removeAllObjects];
-                [weakSelf.interestArr addObjectsFromArray:arr1];
-            }
-            NSArray* arr3 = res.hotnewBooks;
-            if (arr3.count > 0) {
-                [weakSelf.hotArr removeAllObjects];
-                [weakSelf.hotArr addObjectsFromArray:arr3];
-            }
-            NSArray* arr4 = res.publicedBooks;
-            if (arr4.count > 0) {
-                [weakSelf.publishArr removeAllObjects];
-                [weakSelf.publishArr addObjectsFromArray:arr4];
-            }
-            NSArray* arr5 = res.editorBooks;
-            if (arr5.count > 0) {
-                [weakSelf.editorArr removeAllObjects];
-                [weakSelf.editorArr addObjectsFromArray:arr5];
+                [weakSelf.dataArray removeAllObjects];
+                [weakSelf.dataArray addObjectsFromArray:arr1];
             }
         }
-        
+        */
         weakSelf.isRefreshing = NO;
         [weakSelf.tableView stopRefresh];
         [weakSelf hideNetworkLoadingView];
         [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
-        if (weakSelf.editorArr.count == 0 && weakSelf.interestArr.count == 0 && weakSelf.hotArr.count == 0 && weakSelf.publishArr.count == 0) {
+        if (weakSelf.dataArray.count == 0) {
             [weakSelf showReloadButton];
         }else {
             [weakSelf setupTableHeaderView];
@@ -618,19 +749,6 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [self loadChoiceData];
 }
 
--(BOOL)isEmptyData {
-    if (self.interestArr.count > 0) {
-        return NO;
-    }
-    if (self.hotArr.count > 0) {
-        return NO;
-    }
-    if (self.publishArr.count > 0) {
-        return NO;
-    }
-    return YES;
-}
-
 #pragma mark -LMBaseRefreshTableViewDelegate
 -(void)refreshTableViewDidStartRefresh:(LMBaseRefreshTableView *)tv {
     if (self.isRefreshing) {
@@ -643,16 +761,32 @@ static NSString* cellIdentifier = @"cellIdentifier";
     
 }
 
-#pragma mark -UIScrollViewDelegate
--(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    if (scrollView == self.adScrollView) {
-        NSInteger page = scrollView.contentOffset.x/CGRectGetWidth(self.adScrollView.frame);
-        if (page != self.currentAdIndex) {
-            self.currentAdIndex = page;
-            self.pageControl.currentPage = self.currentAdIndex;
-            self.adTimeCount = 0;
-            [self.timer setFireDate:[NSDate distantFuture]];
-            [self.timer setFireDate:[NSDate distantPast]];
+#pragma mark -SCAdViewRenderDelegate
+-(void)sc_didClickAd:(id)adModel {
+    if ([adModel isKindOfClass:[TopicAd class]]) {
+        TopicAd* topAd = (TopicAd* )adModel;
+        if ([topAd.book hasBook]) {
+            Book* book = topAd.book.book;
+            LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
+            detailVC.bookId = book.bookId;
+            [self.navigationController pushViewController:detailVC animated:YES];
+        }else {
+            NSString* targetUrlStr = [topAd.ad.to stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+            LMLaunchDetailViewController* launchDetailVC = [[LMLaunchDetailViewController alloc]init];
+            launchDetailVC.urlString = targetUrlStr;
+            [self.navigationController pushViewController:launchDetailVC animated:YES];
+        }
+    }
+}
+
+#pragma mark -LMChoiceCollectionTableViewCellDelegate
+-(void)didClickedChoiceTableViewCellCollectionViewCellOfBook:(id)bookModel {
+    if ([bookModel isKindOfClass:[Book class]]) {
+        Book* book = (Book* )bookModel;
+        if (book != nil) {
+            LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
+            detailVC.bookId = book.bookId;
+            [self.navigationController pushViewController:detailVC animated:YES];
         }
     }
 }

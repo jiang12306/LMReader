@@ -40,15 +40,15 @@ typedef enum {
     if (@available(ios 11.0, *)) {
         self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
-    self.scrollView.backgroundColor = [UIColor whiteColor];
+    self.scrollView.backgroundColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
     [self.view addSubview:self.scrollView];
     
     self.type = LMFeedBackTypeExperience;
     
-    UILabel* typeLab = [[UILabel alloc]initWithFrame:CGRectMake(spaceX, spaceY, 120, labHeight)];
-    NSMutableAttributedString* typeStr = [[NSMutableAttributedString alloc]initWithString:@"选择问题类型*" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16]}];
+    UILabel* typeLab = [[UILabel alloc]initWithFrame:CGRectMake(20, 20, 40, labHeight)];
+    NSMutableAttributedString* typeStr = [[NSMutableAttributedString alloc]initWithString:@"问题*" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:15]}];
     [typeStr setAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]} range:NSMakeRange(typeStr.length - 1, 1)];
     [typeLab setAttributedText:typeStr];
     [self.scrollView addSubview:typeLab];
@@ -56,7 +56,7 @@ typedef enum {
     __weak LMFeedBackViewController* weakSelf = self;
     
     NSArray* arr = @[@"APP体验问题", @"小说版权问题"];
-    LMComboxView* comboxView = [[LMComboxView alloc]initWithFrame:CGRectMake(typeLab.frame.origin.x + typeLab.frame.size.width + spaceX, typeLab.frame.origin.y, self.view.frame.size.width - typeLab.frame.size.width - spaceX * 3, labHeight * (arr.count + 1)) titleArr:arr cellHeight:labHeight];
+    LMComboxView* comboxView = [[LMComboxView alloc]initWithFrame:CGRectMake(typeLab.frame.origin.x + typeLab.frame.size.width + 20, typeLab.frame.origin.y, self.view.frame.size.width - typeLab.frame.size.width - 20 * 3, labHeight * (arr.count + 1)) titleArr:arr cellHeight:labHeight];
     [comboxView didSelectedIndex:^(NSInteger selectedIndex) {
         if (selectedIndex == 0) {
             weakSelf.type = LMFeedBackTypeExperience;
@@ -66,61 +66,57 @@ typedef enum {
     }];
     [self.scrollView addSubview:comboxView];
     
-    UILabel* explainLab = [[UILabel alloc]initWithFrame:CGRectMake(spaceX, labHeight * 3 + spaceY, 100, labHeight)];
-    NSMutableAttributedString* explainStr = [[NSMutableAttributedString alloc]initWithString:@"问题描述*" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16]}];
-    [explainStr setAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]} range:NSMakeRange(explainStr.length - 1, 1)];
-    [explainLab setAttributedText:explainStr];
-    [self.scrollView addSubview:explainLab];
-    
-    self.textView = [[UITextView alloc]initWithFrame:CGRectMake(spaceX, explainLab.frame.origin.y + explainLab.frame.size.height + 5, self.view.frame.size.width - 20, 100)];
-    self.textView.font = [UIFont systemFontOfSize:16];
-    self.textView.backgroundColor = [UIColor whiteColor];
-    self.textView.layer.cornerRadius = 3;
-    self.textView.layer.masksToBounds = YES;
-    self.textView.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
-    self.textView.layer.borderWidth = 1;
-    [self.scrollView addSubview:self.textView];
-    
-    UILabel* phoneLab = [[UILabel alloc]initWithFrame:CGRectMake(spaceX, self.textView.frame.origin.y + self.textView.frame.size.height + spaceY, 60, labHeight)];
-    NSMutableAttributedString* phoneStr = [[NSMutableAttributedString alloc]initWithString:@"手机号*" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16]}];
+    UILabel* phoneLab = [[UILabel alloc]initWithFrame:CGRectMake(20, labHeight * 3 + spaceY, typeLab.frame.size.width, labHeight)];
+    NSMutableAttributedString* phoneStr = [[NSMutableAttributedString alloc]initWithString:@"手机*" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:15]}];
     [phoneStr setAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]} range:NSMakeRange(phoneStr.length - 1, 1)];
     [phoneLab setAttributedText:phoneStr];
     [self.scrollView addSubview:phoneLab];
     
-    self.phoneTF = [[UITextField alloc]initWithFrame:CGRectMake(phoneLab.frame.origin.x + phoneLab.frame.size.width + spaceX, phoneLab.frame.origin.y, self.view.frame.size.width - phoneLab.frame.size.width - spaceX * 3, labHeight)];
+    self.phoneTF = [[UITextField alloc]initWithFrame:CGRectMake(phoneLab.frame.origin.x + phoneLab.frame.size.width + 20, phoneLab.frame.origin.y, self.view.frame.size.width - phoneLab.frame.size.width - 20 * 3, labHeight)];
     self.phoneTF.backgroundColor = [UIColor whiteColor];
+    self.phoneTF.font = [UIFont systemFontOfSize:15];
     self.phoneTF.layer.cornerRadius = 5;
     self.phoneTF.layer.masksToBounds = YES;
-    self.phoneTF.layer.borderWidth = 1;
-    self.phoneTF.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
     self.phoneTF.keyboardType = UIKeyboardTypeNumberPad;
     self.phoneTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     [self.scrollView addSubview:self.phoneTF];
     
-    UILabel* emailLab = [[UILabel alloc]initWithFrame:CGRectMake(spaceX, phoneLab.frame.origin.y + phoneLab.frame.size.height + spaceY, 60, labHeight)];
+    UILabel* emailLab = [[UILabel alloc]initWithFrame:CGRectMake(20, phoneLab.frame.origin.y + phoneLab.frame.size.height + spaceY, phoneLab.frame.size.width, labHeight)];
     emailLab.font = [UIFont systemFontOfSize:16];
     emailLab.text = @"邮箱";
     [self.scrollView addSubview:emailLab];
     
     self.emailTF = [[UITextField alloc]initWithFrame:CGRectMake(self.phoneTF.frame.origin.x, emailLab.frame.origin.y, self.phoneTF.frame.size.width, self.phoneTF.frame.size.height)];
     self.emailTF.backgroundColor = [UIColor whiteColor];
+    self.emailTF.font = [UIFont systemFontOfSize:15];
     self.emailTF.layer.cornerRadius = 5;
     self.emailTF.layer.masksToBounds = YES;
-    self.emailTF.layer.borderWidth = 1;
-    self.emailTF.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
     self.emailTF.keyboardType = UIKeyboardTypeEmailAddress;
     self.emailTF.clearButtonMode = UITextFieldViewModeWhileEditing;
     [self.scrollView addSubview:self.emailTF];
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(spaceX, emailLab.frame.origin.y + emailLab.frame.size.height + spaceY, self.view.frame.size.width - spaceX * 2, 40)];
+    UILabel* explainLab = [[UILabel alloc]initWithFrame:CGRectMake(20, emailLab.frame.origin.y + emailLab.frame.size.height + spaceY, 100, labHeight)];
+    NSMutableAttributedString* explainStr = [[NSMutableAttributedString alloc]initWithString:@"问题描述*" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:15]}];
+    [explainStr setAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]} range:NSMakeRange(explainStr.length - 1, 1)];
+    [explainLab setAttributedText:explainStr];
+    [self.scrollView addSubview:explainLab];
+    
+    self.textView = [[UITextView alloc]initWithFrame:CGRectMake(20, explainLab.frame.origin.y + explainLab.frame.size.height + 5, self.view.frame.size.width - 20 * 2, 100)];
+    self.textView.font = [UIFont systemFontOfSize:15];
+    self.textView.backgroundColor = [UIColor whiteColor];
+    self.textView.layer.cornerRadius = 5;
+    self.textView.layer.masksToBounds = YES;
+    [self.scrollView addSubview:self.textView];
+    
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.textView.frame.origin.y + self.textView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 50)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 5;
+    self.sendBtn.layer.cornerRadius = 25;
     self.sendBtn.layer.masksToBounds = YES;
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.scrollView addSubview:self.sendBtn];
     
-    self.scrollView.contentSize = CGSizeMake(0, self.view.frame.size.height);
+    self.scrollView.contentSize = CGSizeMake(0, self.sendBtn.frame.origin.y + self.sendBtn.frame.size.height + 20);
     
     UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapped:)];
     tap.cancelsTouchesInView = NO;
@@ -221,8 +217,8 @@ typedef enum {
     CGFloat keyboardHeight = rectValue.CGRectValue.size.height;
     NSNumber* animationNum = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
     CGFloat heightY = 0;
-    if ([UIScreen mainScreen].bounds.size.height <= 568) {
-        CGFloat tempY = self.emailTF.frame.origin.y + self.emailTF.frame.size.height - keyboardHeight;
+    if ([UIScreen mainScreen].bounds.size.width <= 320) {
+        CGFloat tempY = self.textView.frame.origin.y + self.textView.frame.size.height - keyboardHeight;
         
         heightY = tempY > 0 ? tempY : 0;
     }
@@ -234,7 +230,7 @@ typedef enum {
 }
 
 -(void)keyboardWillHide:(NSNotification* )notify {
-    self.scrollView.contentSize = CGSizeMake(0, self.view.frame.size.height);
+    self.scrollView.contentSize = CGSizeMake(0, self.sendBtn.frame.origin.y + self.sendBtn.frame.size.height + 20);
     self.scrollView.contentOffset = CGPointMake(0, 0);
 }
 

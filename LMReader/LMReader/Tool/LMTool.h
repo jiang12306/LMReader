@@ -45,6 +45,11 @@
 //获取是否允许推送
 +(BOOL )getUserNotificatioinState;
 
+//获取系统设置中 夜间模式
++(BOOL )getSystemNightShift;
+//更改系统设置中 夜间模式
++(void )changeSystemNightShift:(BOOL )nightShift;
+
 //获取 系统设置 配置 自动加载下一章节
 +(BOOL )getSystemAutoLoadNextChapterConfig;
 //获取 系统设置 配置

@@ -25,6 +25,8 @@
 @property (nonatomic, assign) BOOL isDownload;
 @property (nonatomic, assign) BOOL isLoadNext;
 
+@property (nonatomic, assign) BOOL isNightShift;//夜间模式
+
 @property (nonatomic, assign) BOOL allowedNotify;//系统级 用户是否禁止通知
 @property (nonatomic, assign) BOOL isNotify;//app里 用户是否关闭通知
 
@@ -56,13 +58,12 @@ static NSString* cellIdentifier = @"cellIdentifier";
     LoginedRegUser* regUser = [LMTool getLoginedRegUser];
     if (regUser != nil) {
         UIView* footerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 65)];
-        UIButton* loginOutBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 15, footerView.frame.size.width, 50)];
-        loginOutBtn.backgroundColor = [UIColor whiteColor];
-        loginOutBtn.layer.cornerRadius = 5;
+        UIButton* loginOutBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, 15, footerView.frame.size.width - 60 * 2, 50)];
+        loginOutBtn.backgroundColor = THEMEORANGECOLOR;
+        loginOutBtn.layer.cornerRadius = 25;
         loginOutBtn.layer.masksToBounds = YES;
-        loginOutBtn.titleLabel.font = [UIFont systemFontOfSize:16];
         [loginOutBtn setTitle:@"退出登录" forState:UIControlStateNormal];
-        [loginOutBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [loginOutBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [loginOutBtn addTarget:self action:@selector(clickedLoginOutButton:) forControlEvents:UIControlEventTouchUpInside];
         [footerView addSubview:loginOutBtn];
         
@@ -76,6 +77,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
         self.isDownload = download;
         self.isLoadNext = loadNext;
     }];
+    
+    self.isNightShift = [LMTool getSystemNightShift];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         SDWebImageManager* manager = [SDWebImageManager sharedManager];
@@ -108,13 +111,13 @@ static NSString* cellIdentifier = @"cellIdentifier";
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSIndexPath* indexpath = [NSIndexPath indexPathForRow:0 inSection:0];
+            NSIndexPath* indexpath = [NSIndexPath indexPathForRow:1 inSection:0];
             NSArray* arr = @[indexpath];
             [self.tableView reloadRowsAtIndexPaths:arr withRowAnimation:UITableViewRowAnimationNone];
         });
     });
     
-    self.titleArray = [NSMutableArray arrayWithObjects:@[@"清理缓存", @"预加载下一章节"], @[@"推送设置"], nil];
+    self.titleArray = [NSMutableArray arrayWithObjects:@"夜间模式", @"清理缓存", @"预加载下一章节", @"推送设置", nil];
     [self.tableView reloadData];
     
     //
@@ -191,29 +194,26 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
-    if (section == 1) {
-        if (self.allowedNotify == NO) {
-            UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 25)];
-            UIButton* btn = [[UIButton alloc]initWithFrame:CGRectMake(vi.frame.size.width - 90 - 10, 0, 90, vi.frame.size.height)];
-            NSMutableAttributedString* attributedStr = [[NSMutableAttributedString alloc]initWithString:@"前往“设置”" attributes:@{NSForegroundColorAttributeName : [UIColor grayColor], NSFontAttributeName : [UIFont systemFontOfSize:16]}];
-            [attributedStr addAttribute:NSForegroundColorAttributeName value:[UIColor blueColor] range:NSMakeRange(3, 2)];
-            [btn setAttributedTitle:attributedStr forState:UIControlStateNormal];
-            [btn addTarget:self action:@selector(clickedJumpToSystemSettingButton:) forControlEvents:UIControlEventTouchUpInside];
-            [vi addSubview:btn];
-            return vi;
-        }
+    if (self.allowedNotify == NO) {
+        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 25)];
+        UIButton* btn = [[UIButton alloc]initWithFrame:CGRectMake(vi.frame.size.width - 90 - 10, 0, 90, vi.frame.size.height)];
+        NSMutableAttributedString* attributedStr = [[NSMutableAttributedString alloc]initWithString:@"前往“设置”" attributes:@{NSForegroundColorAttributeName : [UIColor grayColor], NSFontAttributeName : [UIFont systemFontOfSize:16]}];
+        [attributedStr addAttribute:NSForegroundColorAttributeName value:[UIColor blueColor] range:NSMakeRange(3, 2)];
+        [btn setAttributedTitle:attributedStr forState:UIControlStateNormal];
+        [btn addTarget:self action:@selector(clickedJumpToSystemSettingButton:) forControlEvents:UIControlEventTouchUpInside];
+        [vi addSubview:btn];
+        return vi;
     }
     UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 25)];
     return vi;
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return self.titleArray.count;
+    return 1;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    NSArray* arr = [self.titleArray objectAtIndex:section];
-    return arr.count;
+    return self.titleArray.count;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
@@ -225,7 +225,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 50;
+    return 60;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -233,40 +233,41 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (!cell) {
         cell = [[LMSystemSettingTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
-    NSInteger section = indexPath.section;
-    NSInteger row = indexPath.row;
-    NSArray* arr = [self.titleArray objectAtIndex:section];
+    [cell showLineView:NO];
     
-    cell.nameLab.text = [arr objectAtIndex:row];
+    NSInteger row = indexPath.row;
+    cell.nameLab.text = [self.titleArray objectAtIndex:row];
+    
     cell.contentSwitch.hidden = YES;
     cell.contentLab.hidden = YES;
     cell.delegate = self;
     
-    if (section == 0) {
-        if (row == 0) {//清理缓存
-            cell.contentSwitch.hidden = YES;
-            cell.contentLab.hidden = NO;
-            
-            cell.contentLab.text = [NSString stringWithFormat:@"%.2fMB", ((float)self.memoryInt)/1024/1024];
-        }else if (row == 1) {
-            cell.contentSwitch.hidden = NO;
-            cell.contentLab.hidden = YES;
-            
-            cell.contentSwitch.on = self.isLoadNext;
-        }
-    }else if (section == 1) {
-        if (row == 0) {
-            cell.contentSwitch.hidden = NO;
-            cell.contentLab.hidden = YES;
-            
-            BOOL shouldOn = NO;
-            if (self.allowedNotify) {
-                if (self.isNotify) {
-                    shouldOn = YES;
-                }
+    if (row == 0) {
+        cell.contentSwitch.hidden = NO;
+        cell.contentLab.hidden = YES;
+        
+        cell.contentSwitch.on = self.isNightShift;
+    }else if (row == 1) {
+        cell.contentSwitch.hidden = YES;
+        cell.contentLab.hidden = NO;
+        
+        cell.contentLab.text = [NSString stringWithFormat:@"%.2fMB", ((float)self.memoryInt)/1024/1024];
+    }else if (row == 2) {
+        cell.contentSwitch.hidden = NO;
+        cell.contentLab.hidden = YES;
+        
+        cell.contentSwitch.on = self.isLoadNext;
+    }else if (row == 3) {
+        cell.contentSwitch.hidden = NO;
+        cell.contentLab.hidden = YES;
+        
+        BOOL shouldOn = NO;
+        if (self.allowedNotify) {
+            if (self.isNotify) {
+                shouldOn = YES;
             }
-            cell.contentSwitch.on = shouldOn;
         }
+        cell.contentSwitch.on = shouldOn;
     }
     
     return cell;
@@ -274,103 +275,112 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:NO];
-    NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
-    if (section == 0) {
-        if (row == 0) {
-            [self showNetworkLoadingView];
+    
+    if (row == 0) {
+        
+    }else if (row == 1) {
+        [self showNetworkLoadingView];
+        
+        SDWebImageManager* manager = [SDWebImageManager sharedManager];
+        SDImageCache* imageCache = manager.imageCache;
+        [imageCache clearMemory];
+        [imageCache clearDiskOnCompletion:^{
             
-            SDWebImageManager* manager = [SDWebImageManager sharedManager];
-            SDImageCache* imageCache = manager.imageCache;
-            [imageCache clearMemory];
-            [imageCache clearDiskOnCompletion:^{
-                
-            }];
-            
-            self.memoryInt = 0;
-            LMSystemSettingTableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-            cell.contentLab.text = [NSString stringWithFormat:@"%.2fMB", ((float)self.memoryInt)/1024/1024];
-            
-            
-            //添加子线程
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                NSArray* allBookPathArr = [LMTool queryAllBookDirectory];//所有图书目录
-                NSArray* bookShelfArr = [[LMDatabaseTool sharedDatabaseTool] queryAllUserBooks];
-                for (NSString* subBookPath in allBookPathArr) {
-                    NSString* bookNameStr = [[subBookPath componentsSeparatedByString:@"/"] lastObject];
-                    @try {
-                        int subBookId = bookNameStr.intValue;
-                        BOOL hasCollect = NO;
-                        for (UserBook* userBook in bookShelfArr) {
-                            UInt32 shelfBookId = userBook.book.bookId;
-                            if (subBookId == shelfBookId) {
-                                hasCollect = YES;
-                                break;
-                            }
+        }];
+        
+        self.memoryInt = 0;
+        LMSystemSettingTableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        cell.contentLab.text = [NSString stringWithFormat:@"%.2fMB", ((float)self.memoryInt)/1024/1024];
+        
+        
+        //添加子线程
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSArray* allBookPathArr = [LMTool queryAllBookDirectory];//所有图书目录
+            NSArray* bookShelfArr = [[LMDatabaseTool sharedDatabaseTool] queryAllUserBooks];
+            for (NSString* subBookPath in allBookPathArr) {
+                NSString* bookNameStr = [[subBookPath componentsSeparatedByString:@"/"] lastObject];
+                @try {
+                    int subBookId = bookNameStr.intValue;
+                    BOOL hasCollect = NO;
+                    for (UserBook* userBook in bookShelfArr) {
+                        UInt32 shelfBookId = userBook.book.bookId;
+                        if (subBookId == shelfBookId) {
+                            hasCollect = YES;
+                            break;
                         }
-                        if (!hasCollect) {//删除未加入书架、但是已经缓存的图书
-                            [LMTool deleteBookWithBookId:subBookId];
-                        }
-                    } @catch (NSException *exception) {
-                        continue;
-                    } @finally {
-                        
                     }
-                }
-                
-                //清理30天以上阅读记录
-                LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-                NSArray* recordArr = [tool queryBookReadRecordOver30Days];
-                for (NSDictionary* dic in recordArr) {//删除保存的图书
-                    NSNumber* bookIdNum = [dic objectForKey:@"bookId"];
-                    if (bookIdNum != nil && ![bookIdNum isKindOfClass:[NSNull class]]) {
-                        UInt32 bookId = bookIdNum.intValue;
-                        [LMTool deleteBookWithBookId:bookId];//删除章节内容
-                        
-                        //删除章节目录
-                        [LMTool deleteArchiveBookCatalogListWithBookId:bookId];
-                        [LMTool deleteArchiveBookNewParseCatalogListWithBookId:bookId];
+                    if (!hasCollect) {//删除未加入书架、但是已经缓存的图书
+                        [LMTool deleteBookWithBookId:subBookId];
                     }
+                } @catch (NSException *exception) {
+                    continue;
+                } @finally {
+                    
                 }
-                //阅读记录
-                [tool deleteBookReadRecordOver30Days];
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self hideNetworkLoadingView];
-                    [self showMBProgressHUDWithText:@"清理完成"];
-                });
+            }
+            
+            //清理30天以上阅读记录
+            LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+            NSArray* recordArr = [tool queryBookReadRecordOver30Days];
+            for (NSDictionary* dic in recordArr) {//删除保存的图书
+                NSNumber* bookIdNum = [dic objectForKey:@"bookId"];
+                if (bookIdNum != nil && ![bookIdNum isKindOfClass:[NSNull class]]) {
+                    UInt32 bookId = bookIdNum.intValue;
+                    [LMTool deleteBookWithBookId:bookId];//删除章节内容
+                    
+                    //删除章节目录
+                    [LMTool deleteArchiveBookCatalogListWithBookId:bookId];
+                    [LMTool deleteArchiveBookNewParseCatalogListWithBookId:bookId];
+                }
+            }
+            //阅读记录
+            [tool deleteBookReadRecordOver30Days];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self hideNetworkLoadingView];
+                [self showMBProgressHUDWithText:@"清理完成"];
             });
-        }
+        });
+    }else if (row == 2) {
+        
+    }else if (row == 3) {
+        
     }
 }
 
 #pragma mark -LMSystemSettingTableViewCellDelegate
 -(void)didClickSwitch:(BOOL)isOn systemSettingCell:(LMSystemSettingTableViewCell *)cell {
     NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
-    NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
-    if (section == 0) {
-        if (row == 1) {//预加载下章节
-            self.isLoadNext = isOn;
-            cell.contentSwitch.on = self.isLoadNext;
-            
-            [LMTool changeSystemSettingWithAlert:self.isAlert download:self.isDownload loadNext:self.isLoadNext];
+    if (row == 0) {//夜间模式
+        self.isNightShift = isOn;
+        cell.contentSwitch.on = self.isNightShift;
+        
+        [LMTool changeSystemNightShift:self.isNightShift];
+        
+        AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+        [appDelegate updateSystemNightShift];
+    }else if (row == 1) {//清理缓存
+        
+    }else if (row == 2) {//预加载下一章节
+        self.isLoadNext = isOn;
+        cell.contentSwitch.on = self.isLoadNext;
+        
+        [LMTool changeSystemSettingWithAlert:self.isAlert download:self.isDownload loadNext:self.isLoadNext];
+    }else if (row == 3) {//推送
+        if (self.isNotify == YES) {
+            self.isNotify = NO;
+            [JPUSHService deleteAlias:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
+                
+            } seq:0];
+        }else {
+            self.isNotify = YES;
+            [JPUSHService setAlias:[[LMTool uuid] stringByReplacingOccurrencesOfString:@"-" withString:@""] completion:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
+                
+            } seq:0];
         }
-    }else if (section == 1) {
-        if (row == 0) {
-            if (self.isNotify == YES) {
-                self.isNotify = NO;
-                [JPUSHService deleteAlias:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
-                    
-                } seq:0];
-            }else {
-                self.isNotify = YES;
-                [JPUSHService setAlias:[[LMTool uuid] stringByReplacingOccurrencesOfString:@"-" withString:@""] completion:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
-                    
-                } seq:0];
-            }
-            [LMTool setupUserNotificatioinState:self.isNotify];
-        }
+        [LMTool setupUserNotificatioinState:self.isNotify];
     }
 }
 

@@ -14,7 +14,9 @@
     self = [super initWithFrame:frame];
     if (self) {
         UIButton* rightItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
-        [rightItemBtn setImage:[UIImage imageNamed:@"rightItem_Search"] forState:UIControlStateNormal];
+        rightItemBtn.tintColor = UIColorFromRGB(0x656565);
+        UIImage* img = [UIImage imageNamed:@"rightItem_Search"];
+        [rightItemBtn setImage:[img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
         [rightItemBtn setImageEdgeInsets:UIEdgeInsetsMake(9, 12, 10, 7)];
         [rightItemBtn addTarget:self action:@selector(clickedButton:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:rightItemBtn];

@@ -8,6 +8,7 @@
 
 #import "LMReaderFeedBackAlertView.h"
 #import "LMReaderFeedBackAlertViewTableViewCell.h"
+#import "AppDelegate.h"
 
 
 @implementation LMReaderFeedBackAlertViewModel
@@ -22,6 +23,7 @@
 @interface LMReaderFeedBackAlertView () <UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, strong) UIView* contentView;
+@property (nonatomic, strong) UILabel* titleLab;
 @property (nonatomic, strong) UITableView* tableView;
 @property (nonatomic, strong) NSMutableArray* dataArray;
 @property (nonatomic, strong) UIButton* submitBtn;
@@ -45,7 +47,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
             [self.dataArray addObject:model];
         }
         
-        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.3];
+        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
         
         self.contentView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, screenRect.size.width - 100, screenRect.size.width)];
         self.contentView.backgroundColor = [UIColor whiteColor];
@@ -53,32 +55,34 @@ static NSString* cellIdentifier = @"cellIdentifier";
         self.contentView.layer.masksToBounds = YES;
         [self addSubview:self.contentView];
         
-        self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.contentView.frame.size.width, 40 * self.dataArray.count) style:UITableViewStylePlain];
+        self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake(20, 20, self.contentView.frame.size.width - 20 * 2, 20)];
+        self.titleLab.font = [UIFont boldSystemFontOfSize:18];
+        self.titleLab.text = @"反馈问题";
+        [self.contentView addSubview:self.titleLab];
+        
+        self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, self.titleLab.frame.origin.y + self.titleLab.frame.size.height + 20, self.contentView.frame.size.width, 40 * self.dataArray.count) style:UITableViewStylePlain];
         self.tableView.delegate = self;
         self.tableView.dataSource = self;
         self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         [self.tableView registerClass:[LMReaderFeedBackAlertViewTableViewCell class] forCellReuseIdentifier:cellIdentifier];
         [self.contentView addSubview:self.tableView];
         
-        self.submitBtn = [[UIButton alloc]initWithFrame:CGRectMake(10, self.tableView.frame.origin.y + self.tableView.frame.size.height + 10, self.contentView.frame.size.width - 20, 30)];
-        self.submitBtn.layer.cornerRadius = 5;
-        self.submitBtn.layer.masksToBounds = YES;
-        self.submitBtn.layer.borderColor = [UIColor blackColor].CGColor;
-        self.submitBtn.layer.borderWidth = 1;
-        [self.submitBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [self.submitBtn setTitle:@"提 交" forState:UIControlStateNormal];
+        self.submitBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.contentView.frame.size.width - 20 - 40, self.tableView.frame.origin.y + self.tableView.frame.size.height + 20, 40, 20)];
+        self.submitBtn.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+        [self.submitBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateNormal];
+        [self.submitBtn setTitle:@"提交" forState:UIControlStateNormal];
         [self.submitBtn addTarget:self action:@selector(clickedSubmitButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:self.submitBtn];
         
-        self.contentView.frame = CGRectMake(0, 0, screenRect.size.width - 100, self.submitBtn.frame.origin.y + self.submitBtn.frame.size.height + 10);
+        self.contentView.frame = CGRectMake(0, 0, screenRect.size.width - 100, self.submitBtn.frame.origin.y + self.submitBtn.frame.size.height + 20);
         self.contentView.center = self.center;
     }
     return self;
 }
 
 -(void)clickedSubmitButton:(UIButton* )sender {
+    NSString* subStr = @"";
     if (self.submitBlock) {
-        NSString* subStr = @"";
         for (LMReaderFeedBackAlertViewModel* model in self.dataArray) {
             if (model.isSelected) {
                 subStr = [subStr stringByAppendingString:[NSString stringWithFormat:@",%@", model.alertString]];
@@ -88,8 +92,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
             self.submitBlock(YES, subStr);
         }
     }
-    
-    [self startHide];
+    if (subStr.length > 0) {
+        [self startHide];
+    }
 }
 
 -(void)startShow {
@@ -100,6 +105,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
     } completion:^(BOOL finished) {
         
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate bringSystemNightShiftToFront];
 }
 
 -(void)startHide {
@@ -108,6 +116,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
     } completion:^(BOOL finished) {
         [self removeFromSuperview];
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate sendSystemNightShiftToback];
 }
 
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {

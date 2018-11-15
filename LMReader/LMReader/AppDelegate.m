@@ -226,7 +226,79 @@
     //增加统计次数
     [LMTool incrementLaunchCount];
     
+    
     return YES;
+}
+
+//更新 夜间、日间模式
+-(void)updateSystemNightShift {
+    BOOL isNight = [LMTool getSystemNightShift];
+    if (isNight) {
+        BOOL didContain = NO;
+        for (CALayer* subLayer in self.window.layer.sublayers) {
+            NSString* layerName = subLayer.name;
+            if (layerName != nil && [layerName isKindOfClass:[NSString class]] && [layerName isEqualToString:AppSystemNightShift]) {
+                didContain = YES;
+                break;
+            }
+        }
+        if (!didContain) {
+            CGRect screenRect = [UIScreen mainScreen].bounds;
+            CALayer* brightnessLayer = [CALayer layer];
+            brightnessLayer.frame = CGRectMake(0, 0, screenRect.size.width, screenRect.size.height);
+            brightnessLayer.name = AppSystemNightShift;
+            brightnessLayer.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5].CGColor;
+            brightnessLayer.zPosition = 0;
+            [self.window.layer addSublayer:brightnessLayer];
+        }
+    }else {
+        for (CALayer* subLayer in self.window.layer.sublayers) {
+            NSString* layerName = subLayer.name;
+            if (layerName != nil && [layerName isKindOfClass:[NSString class]] && [layerName isEqualToString:AppSystemNightShift]) {
+                [subLayer removeFromSuperlayer];
+            }
+        }
+    }
+}
+
+//夜间模式时，将layer置顶
+-(void)bringSystemNightShiftToFront {
+    BOOL isNight = [LMTool getSystemNightShift];
+    if (isNight) {
+        BOOL didContain = NO;
+        CALayer* nightLayer = nil;
+        for (CALayer* subLayer in self.window.layer.sublayers) {
+            NSString* layerName = subLayer.name;
+            if (layerName != nil && [layerName isKindOfClass:[NSString class]] && [layerName isEqualToString:AppSystemNightShift]) {
+                didContain = YES;
+                nightLayer = subLayer;
+                break;
+            }
+        }
+        if (didContain && nightLayer != nil) {
+            nightLayer.zPosition = 1;
+        }
+    }
+}
+
+//夜间模式时，将layer放底下 否则会覆盖广告
+-(void)sendSystemNightShiftToback {
+    BOOL isNight = [LMTool getSystemNightShift];
+    if (isNight) {
+        BOOL didContain = NO;
+        CALayer* nightLayer = nil;
+        for (CALayer* subLayer in self.window.layer.sublayers) {
+            NSString* layerName = subLayer.name;
+            if (layerName != nil && [layerName isKindOfClass:[NSString class]] && [layerName isEqualToString:AppSystemNightShift]) {
+                didContain = YES;
+                nightLayer = subLayer;
+                break;
+            }
+        }
+        if (didContain && nightLayer != nil) {
+            nightLayer.zPosition = 0;
+        }
+    }
 }
 
 -(void)removeSplash {
@@ -568,6 +640,10 @@
 }
 
 - (void)splashAdFailToPresent:(GDTSplashAd *)splashAd withError:(NSError *)error {
+    
+    //更新 夜间、日间模式
+    [self updateSystemNightShift];
+    
     NSLog(@"%s%@",__FUNCTION__,error);
 }
 
@@ -588,6 +664,10 @@
 }
 
 - (void)splashAdClosed:(GDTSplashAd *)splashAd {
+    
+    //更新 夜间、日间模式
+    [self updateSystemNightShift];
+    
     NSLog(@"%s",__FUNCTION__);
 }
 

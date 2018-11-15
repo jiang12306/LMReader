@@ -16,6 +16,6 @@
 @property (nonatomic, strong) UILabel* nameLab;
 @property (nonatomic, strong) UILabel* stateLab;
 
--(void)setupSourceWithSource:(Source* )source nameStr:(NSString* )nameStr timeStr:(NSString* )timeStr isClicked:(BOOL )isClicked;
+-(void)setupSourceWithSource:(Source* )source nameStr:(NSString* )nameStr isClicked:(BOOL )isClicked;
 
 @end

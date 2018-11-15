@@ -33,12 +33,13 @@ static NSInteger textCount = 300;
 -(void)viewDidLoad {
     [super viewDidLoad];
     
-    self.title = @"编辑评论";
+    self.title = @"写评论";
     
     self.scrollView = [[UIScrollView alloc]initWithFrame:self.view.frame];
     if (@available(iOS 11.0, *)) {
         self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
+    self.scrollView.backgroundColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
     self.scrollView.showsHorizontalScrollIndicator = NO;
     self.scrollView.showsVerticalScrollIndicator = NO;
     [self.view addSubview:self.scrollView];
@@ -62,11 +63,10 @@ static NSInteger textCount = 300;
     self.starLab.text = [self.starDic objectForKey:@0];
     [self.scrollView addSubview:self.starLab];
     
-    UIView* bgVi = [[UIView alloc]initWithFrame:CGRectMake(10, self.starLab.frame.origin.y + self.starLab.frame.size.height + 20, self.view.frame.size.width - 20, 140)];
-    bgVi.layer.cornerRadius = 5;
+    UIView* bgVi = [[UIView alloc]initWithFrame:CGRectMake(20, self.starLab.frame.origin.y + self.starLab.frame.size.height + 20, self.view.frame.size.width - 20 * 2, 140)];
+    bgVi.backgroundColor = [UIColor whiteColor];
+    bgVi.layer.cornerRadius = 3;
     bgVi.layer.masksToBounds = YES;
-    bgVi.layer.borderColor = [UIColor grayColor].CGColor;
-    bgVi.layer.borderWidth = 1;
     [self.scrollView addSubview:bgVi];
     
     self.placeholderLab = [[UILabel alloc]initWithFrame:CGRectMake(5, 7, bgVi.frame.size.width - 10, 20)];
@@ -75,7 +75,7 @@ static NSInteger textCount = 300;
     self.placeholderLab.text = @"请说说阅读感受吧，少于300个字";
     [bgVi addSubview:self.placeholderLab];
     
-    self.textView = [[UITextView alloc]initWithFrame:CGRectMake(5, 5, bgVi.frame.size.width - 10, bgVi.frame.size.height - 20)];
+    self.textView = [[UITextView alloc]initWithFrame:CGRectMake(5, 5, bgVi.frame.size.width - 10, bgVi.frame.size.height - 10)];
     self.textView.backgroundColor = [UIColor clearColor];
     self.textView.font = [UIFont systemFontOfSize:16];
     self.textView.showsVerticalScrollIndicator = NO;
@@ -83,16 +83,16 @@ static NSInteger textCount = 300;
     self.textView.delegate = self;
     [bgVi addSubview:self.textView];
     
-    self.alertLab = [[UILabel alloc]initWithFrame:CGRectMake(0, bgVi.frame.size.height - 15, bgVi.frame.size.width - 10, 15)];
+    self.alertLab = [[UILabel alloc]initWithFrame:CGRectMake(0, bgVi.frame.origin.y + bgVi.frame.size.height + 10, self.scrollView.frame.size.width - 20, 15)];
     self.alertLab.font = [UIFont systemFontOfSize:12];
     self.alertLab.textColor = [UIColor grayColor];
     self.alertLab.textAlignment = NSTextAlignmentRight;
     self.alertLab.text = @"300/300字";
-    [bgVi addSubview:self.alertLab];
+    [self.scrollView addSubview:self.alertLab];
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(10, bgVi.frame.origin.y + bgVi.frame.size.height + 20, self.view.frame.size.width - 20, 40)];
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.alertLab.frame.origin.y + self.alertLab.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 50)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 5;
+    self.sendBtn.layer.cornerRadius = 25;
     self.sendBtn.layer.masksToBounds = YES;
     self.sendBtn.titleLabel.font = [UIFont systemFontOfSize:18];
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];

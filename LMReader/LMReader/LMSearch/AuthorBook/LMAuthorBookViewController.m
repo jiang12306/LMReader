@@ -9,7 +9,7 @@
 #import "LMAuthorBookViewController.h"
 #import "LMBookDetailViewController.h"
 #import "LMBaseRefreshTableView.h"
-#import "LMBaseBookTableViewCell.h"
+#import "LMTypeBookStoreTableViewCell.h"
 #import "LMTool.h"
 #import "LMAuthorBookFilterListView.h"
 
@@ -25,6 +25,12 @@
 @property (nonatomic, strong) UIButton* gengXinBtn;
 @property (nonatomic, assign) LMBookStoreState bookState;
 
+@property (nonatomic, assign) CGFloat bookCoverWidth;//
+@property (nonatomic, assign) CGFloat bookCoverHeight;//
+@property (nonatomic, assign) CGFloat bookFontScale;//
+@property (nonatomic, assign) CGFloat bookNameFontSize;//
+@property (nonatomic, assign) CGFloat bookBriefFontSize;//
+
 @end
 
 @implementation LMAuthorBookViewController
@@ -34,6 +40,22 @@ static NSString* cellIdentifier = @"cellIdentifier";
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.bookCoverWidth = 105.f;
+    self.bookCoverHeight = 145.f;
+    self.bookNameFontSize = 15.f;
+    self.bookBriefFontSize = 12.f;
+    
+    CGFloat maxBookWidth = (self.view.frame.size.width - 20 * 4 - 10 * 3) / 3.f;
+    self.bookFontScale = (self.view.frame.size.width / 414.f);
+    if (self.bookFontScale > 1) {
+        self.bookFontScale = 1;
+    }
+    if (self.bookCoverWidth * self.bookFontScale > maxBookWidth) {
+        self.bookFontScale = maxBookWidth / self.bookCoverWidth;
+    }
+    self.bookCoverWidth *= self.bookFontScale;
+    self.bookCoverHeight *= self.bookFontScale;
+    
     if (self.author != nil) {
         self.title = self.author;
     }else {
@@ -42,7 +64,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
     
     UIView* filtView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 40, 25)];
     UIButton* filtItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, filtView.frame.size.width, filtView.frame.size.height)];
-    [filtItemBtn setImage:[UIImage imageNamed:@"rightBarButtonItem_Filter"] forState:UIControlStateNormal];
+    [filtItemBtn setImage:[[UIImage imageNamed:@"rightBarButtonItem_Filter"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [filtItemBtn setTintColor:UIColorFromRGB(0x656565)];
     [filtItemBtn addTarget:self action:@selector(clickedFilterButton:) forControlEvents:UIControlEventTouchUpInside];
     [filtView addSubview:filtItemBtn];
     UIBarButtonItem* filtItem = [[UIBarButtonItem alloc]initWithCustomView:filtView];
@@ -73,7 +96,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     self.tableView.dataSource = self;
     self.tableView.refreshDelegate = self;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    [self.tableView registerClass:[LMBaseBookTableViewCell class] forCellReuseIdentifier:cellIdentifier];
+    [self.tableView registerClass:[LMTypeBookStoreTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.view addSubview:self.tableView];
     
     UIView* headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.01)];
@@ -230,7 +253,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return baseBookCellHeight;
+    return self.bookCoverHeight + 20 * 2;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -238,13 +261,13 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    LMBaseBookTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
+    LMTypeBookStoreTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     if (!cell) {
-        cell = [[LMBaseBookTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        cell = [[LMTypeBookStoreTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
     
     Book* book = [self.dataArray objectAtIndex:indexPath.row];
-    [cell setupContentBook:book];
+    [cell setupContentBook:book cellHeight:self.bookCoverHeight + 20 * 2 ivWidth:self.bookCoverWidth nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
     
     return cell;
 }

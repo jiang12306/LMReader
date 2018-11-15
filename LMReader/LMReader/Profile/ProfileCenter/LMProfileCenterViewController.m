@@ -24,6 +24,8 @@
 
 @property (nonatomic, strong) UITableView* tableView;
 @property (nonatomic, strong) NSMutableArray* titleArray;
+@property (nonatomic, strong) UIImageView* avatorIV;
+
 @property (nonatomic, assign) GenderType centerType;/**<性别*/
 @property (nonatomic, copy) NSString* centerBirthday;/**<出生日期*/
 @property (nonatomic, copy) NSString* centerLocalArea;/**<地区*/
@@ -73,13 +75,81 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [self.tableView registerClass:[LMProfileCenterTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.view addSubview:self.tableView];
     
-    self.titleArray = [NSMutableArray arrayWithObjects:@"头像", @"昵称", @"性别", @"出生日期", @"所在地区", @"修改密码", @"绑定微信", @"绑定QQ", @"绑定手机", nil];
+    CGFloat avatorWidth = 70;
+    UIView* headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, avatorWidth + 20 * 2)];
+    headerView.backgroundColor = [UIColor whiteColor];
+    self.tableView.tableHeaderView = headerView;
+    self.avatorIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, avatorWidth, avatorWidth)];
+    self.avatorIV.layer.cornerRadius = avatorWidth / 2;
+    self.avatorIV.layer.masksToBounds = YES;
+    self.avatorIV.clipsToBounds = YES;
+    [headerView addSubview:self.avatorIV];
+    
+    UILabel* avatorLab = [[UILabel alloc]initWithFrame:CGRectMake(self.avatorIV.frame.origin.x + self.avatorIV.frame.size.width + 20, (headerView.frame.size.height - 30) / 2, 100, 30)];
+    avatorLab.font = [UIFont systemFontOfSize:18];
+    avatorLab.textColor = [UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1];
+    avatorLab.text = @"修改头像";
+    [headerView addSubview:avatorLab];
+    
+    UITapGestureRecognizer* headerGR = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedHeaderView:)];
+    [headerView addGestureRecognizer:headerGR];
+    
+    self.titleArray = [NSMutableArray arrayWithObjects:@[@"昵称", @"性别", @"出生日期", @"地区"], @[@"修改密码", @"绑定微信", @"绑定QQ", @"绑定手机"], nil];
     
     //
     [self initLoginedUserData];
     
     //微信 通知
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(weChatDidLogin:) name:weChatLoginNotifyName object:nil];
+}
+
+-(void)tappedHeaderView:(UITapGestureRecognizer* )tapGR {
+    UIAlertController* controller = [UIAlertController alertControllerWithTitle:@"更改头像" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction* maleAction = [UIAlertAction actionWithTitle:@"相册" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        
+        PHAuthorizationStatus photoStatus = [PHPhotoLibrary authorizationStatus];
+        if (photoStatus == PHAuthorizationStatusDenied || photoStatus == PHAuthorizationStatusRestricted) {
+            [self openSystemSettingWithCamera:NO];
+            return;
+        }
+        
+        UIImagePickerController* pickerController = [[UIImagePickerController alloc] init];
+        pickerController.delegate = self;
+        pickerController.allowsEditing = YES;
+        pickerController.editing = YES;
+        pickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+        [self presentViewController:pickerController animated:YES completion:nil];
+    }];
+    UIAlertAction* femaleAction = [UIAlertAction actionWithTitle:@"拍照" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        
+        BOOL cameraAvailable = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera];
+        if (!cameraAvailable) {
+            [self showMBProgressHUDWithText:@"相机不可用"];
+            return;
+        }
+        AVAuthorizationStatus cameraStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+        if (cameraStatus == AVAuthorizationStatusDenied || cameraStatus == AVAuthorizationStatusRestricted) {
+            [self openSystemSettingWithCamera:YES];
+            return;
+        }
+        
+        UIImagePickerController* pickerController = [[UIImagePickerController alloc] init];
+        pickerController.delegate = self;
+        pickerController.allowsEditing = YES;
+        pickerController.editing = YES;
+        pickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
+        pickerController.modalPresentationStyle = UIModalPresentationFullScreen;
+        pickerController.mediaTypes = @[(NSString* )kUTTypeImage];
+        pickerController.cameraCaptureMode = UIImagePickerControllerCameraCaptureModePhoto;
+        [self presentViewController:pickerController animated:YES completion:nil];
+    }];
+    UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        
+    }];
+    [controller addAction:maleAction];
+    [controller addAction:femaleAction];
+    [controller addAction:cancelAction];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 -(void)initLoginedUserData {
@@ -95,6 +165,13 @@ static NSString* cellIdentifier = @"cellIdentifier";
     self.avatorUrlStr = regUser.icon;
     if (regUser.iconB != nil && regUser.iconB.length > 0) {
         self.avatorImage = [UIImage imageWithData:regUser.iconB];
+    }
+    if (self.avatorImage != nil) {
+        self.avatorIV.image = self.avatorImage;
+    }else if (self.avatorUrlStr != nil && self.avatorUrlStr.length > 0) {
+        [self.avatorIV sd_setImageWithURL:[NSURL URLWithString:self.avatorUrlStr] placeholderImage:[UIImage imageNamed:@"avator_LoginOut"]];
+    }else {
+        self.avatorIV.image = [UIImage imageNamed:@"avator_LoginOut"];
     }
     self.phoneNumber = regUser.phoneNum;
     self.centerType = regUser.gender;
@@ -123,7 +200,8 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.01)];
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
+    vi.backgroundColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
     return vi;
 }
 
@@ -133,15 +211,16 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
-}
-
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return self.titleArray.count;
 }
 
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    NSArray* arr = [self.titleArray objectAtIndex:section];
+    return arr.count;
+}
+
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 0.01;
+    return 10;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
@@ -149,7 +228,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 50;
+    return 60;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -157,243 +236,199 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (!cell) {
         cell = [[LMProfileCenterTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
+    NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
-    cell.nameLab.text = [self.titleArray objectAtIndex:row];
+    NSArray* arr = [self.titleArray objectAtIndex:section];
+    cell.nameLab.text = [arr objectAtIndex:row];
     
-    [cell setupShowContentImageView:NO];
     [cell setupShowContentLabel:YES];
+    [cell showLineView:NO];
+    [cell showArrowImageView:NO];
     
-    if (row == 0) {
-        [cell setupShowContentImageView:YES];
-        [cell setupShowContentLabel:NO];
-        if (self.avatorImage != nil) {
-            cell.contentIV.image = self.avatorImage;
-        }else if (self.avatorUrlStr != nil && self.avatorUrlStr.length > 0) {
-            [cell.contentIV sd_setImageWithURL:[NSURL URLWithString:self.avatorUrlStr] placeholderImage:[UIImage imageNamed:@"avator_LoginOut"]];
-        }else {
-            cell.contentIV.image = [UIImage imageNamed:@"avator_LoginOut"];
-        }
-    }else if (row == 1) {
-        cell.contentLab.text = self.centerNick;
-    }else if (row == 2) {
-        NSString* genderStr = @"";
-        if (self.centerType == GenderTypeGenderMale) {
-            genderStr = @"男";
-        }else if (self.centerType == GenderTypeGenderFemale) {
-            genderStr = @"女";
-        }else if (self.centerType == GenderTypeGenderOther) {
-            genderStr = @"其它";
-        }
-        cell.contentLab.text = genderStr;
-    }else if (row == 3) {
-        if (self.centerBirthday != nil && self.centerBirthday.length > 0) {
-            cell.contentLab.text = self.centerBirthday;
-        }
-    }else if (row == 4) {
-        if (self.centerLocalArea != nil && self.centerLocalArea.length > 0) {
-            cell.contentLab.text = self.centerLocalArea;
-        }
-    }else if (row == 5) {//修改密码
-        [cell setupShowContentLabel:NO];
-    }else if (row == 6) {//绑定微信
-        NSString* str = @"未绑定";
-        if (self.isBindWeChat) {
-            str = @"已绑定";
-            if (self.weChatNick != nil && self.weChatNick.length > 0) {
-                str = self.weChatNick;
+    if (section == 0) {
+        if (row == 0) {
+            cell.contentLab.text = self.centerNick;
+        }else if (row == 1) {
+            NSString* genderStr = @"";
+            if (self.centerType == GenderTypeGenderMale) {
+                genderStr = @"男";
+            }else if (self.centerType == GenderTypeGenderFemale) {
+                genderStr = @"女";
+            }else if (self.centerType == GenderTypeGenderOther) {
+                genderStr = @"其它";
+            }
+            cell.contentLab.text = genderStr;
+        }else if (row == 2) {
+            if (self.centerBirthday != nil && self.centerBirthday.length > 0) {
+                cell.contentLab.text = self.centerBirthday;
+            }
+        }else if (row == 3) {
+            if (self.centerLocalArea != nil && self.centerLocalArea.length > 0) {
+                cell.contentLab.text = self.centerLocalArea;
             }
         }
-        cell.contentLab.text = str;
-    }else if (row == 7) {//绑定QQ
-        NSString* str = @"未绑定";
-        if (self.isBindQQ) {
-            str = @"已绑定";
-            if (self.qqNick != nil && self.qqNick.length > 0) {
-                str = self.qqNick;
+    }else if (section == 1) {
+        if (row == 0) {
+            [cell setupShowContentLabel:NO];
+        }else if (row == 1) {
+            NSString* str = @"未绑定";
+            if (self.isBindWeChat) {
+                str = @"已绑定";
+                if (self.weChatNick != nil && self.weChatNick.length > 0) {
+                    str = self.weChatNick;
+                }
             }
+            cell.contentLab.text = str;
+        }else if (row == 2) {
+            NSString* str = @"未绑定";
+            if (self.isBindQQ) {
+                str = @"已绑定";
+                if (self.qqNick != nil && self.qqNick.length > 0) {
+                    str = self.qqNick;
+                }
+            }
+            cell.contentLab.text = str;
+        }else if (row == 3) {
+            cell.contentLab.text = self.phoneNumber;
         }
-        cell.contentLab.text = str;
-    }else if (row == 8) {
-        cell.contentLab.text = self.phoneNumber;
     }
+    
     return cell;
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self.tableView deselectRowAtIndexPath:indexPath animated:NO];
+    NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
-    if (row == 0) {
-        UIAlertController* controller = [UIAlertController alertControllerWithTitle:@"更改头像" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-        UIAlertAction* maleAction = [UIAlertAction actionWithTitle:@"相册" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            
-            PHAuthorizationStatus photoStatus = [PHPhotoLibrary authorizationStatus];
-            if (photoStatus == PHAuthorizationStatusDenied || photoStatus == PHAuthorizationStatusRestricted) {
-                [self openSystemSettingWithCamera:NO];
-                return;
-            }
-            
-            UIImagePickerController* pickerController = [[UIImagePickerController alloc] init];
-            pickerController.delegate = self;
-            pickerController.allowsEditing = YES;
-            pickerController.editing = YES;
-            pickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-            [self presentViewController:pickerController animated:YES completion:nil];
-        }];
-        UIAlertAction* femaleAction = [UIAlertAction actionWithTitle:@"拍照" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            
-            BOOL cameraAvailable = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera];
-            if (!cameraAvailable) {
-                [self showMBProgressHUDWithText:@"相机不可用"];
-                return;
-            }
-            AVAuthorizationStatus cameraStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-            if (cameraStatus == AVAuthorizationStatusDenied || cameraStatus == AVAuthorizationStatusRestricted) {
-                [self openSystemSettingWithCamera:YES];
-                return;
-            }
-            
-            UIImagePickerController* pickerController = [[UIImagePickerController alloc] init];
-            pickerController.delegate = self;
-            pickerController.allowsEditing = YES;
-            pickerController.editing = YES;
-            pickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
-            pickerController.modalPresentationStyle = UIModalPresentationFullScreen;
-            pickerController.mediaTypes = @[(NSString* )kUTTypeImage];
-            pickerController.cameraCaptureMode = UIImagePickerControllerCameraCaptureModePhoto;
-            [self presentViewController:pickerController animated:YES completion:nil];
-        }];
-        UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-            
-        }];
-        [controller addAction:maleAction];
-        [controller addAction:femaleAction];
-        [controller addAction:cancelAction];
-        [self presentViewController:controller animated:YES completion:nil];
-    }else if (row == 1) {//昵称
-        UIAlertController* alertController = [UIAlertController alertControllerWithTitle:@"请输入昵称" message:@"不超过12个字符" preferredStyle:UIAlertControllerStyleAlert];
-        [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-            
-        }];
-        UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-            
-        }];
-        UIAlertAction* sureAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            UITextField *tf = [alertController.textFields objectAtIndex:0];
-            NSString* tempNickStr = [tf.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-            if (tempNickStr == nil || tempNickStr.length == 0) {
-                return;
-            }else if (tempNickStr.length > 12) {
-                [self showMBProgressHUDWithText:@"昵称太长了"];
-                return;
-            }
-            RegUserBuilder* regBuilder = [RegUser builder];
-            [regBuilder setNickname:tempNickStr];
-            //
-            RegUser* tempUser = [self buildRegUserWithRegUserBuilder:regBuilder];
-            [self updateUserInfoWithUser:tempUser];
-        }];
-        [alertController addAction:cancelAction];
-        [alertController addAction:sureAction];
-        [self presentViewController:alertController animated:YES completion:nil];
-    }else if (row == 2) {
-        UIAlertController* controller = [UIAlertController alertControllerWithTitle:@"选择性别" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-        UIAlertAction* maleAction = [UIAlertAction actionWithTitle:@"男" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            if (self.centerType == GenderTypeGenderMale) {
-                return ;
-            }
-            self.centerType = GenderTypeGenderMale;
-            
-            RegUserBuilder* regBuilder = [RegUser builder];
-            [regBuilder setGender:self.centerType];
-            //
-            RegUser* tempUser = [self buildRegUserWithRegUserBuilder:regBuilder];
-            [self updateUserInfoWithUser:tempUser];
-        }];
-        UIAlertAction* femaleAction = [UIAlertAction actionWithTitle:@"女" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            if (self.centerType == GenderTypeGenderFemale) {
-                return ;
-            }
-            self.centerType = GenderTypeGenderFemale;
-            
-            RegUserBuilder* regBuilder = [RegUser builder];
-            [regBuilder setGender:self.centerType];
-            //
-            RegUser* tempUser = [self buildRegUserWithRegUserBuilder:regBuilder];
-            [self updateUserInfoWithUser:tempUser];
-        }];
-        UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-            
-        }];
-        [controller addAction:maleAction];
-        [controller addAction:femaleAction];
-        [controller addAction:cancelAction];
-        [self presentViewController:controller animated:YES completion:nil];
-    }else if (row == 3) {
-        [self showDateView];
-    }else if (row == 4) {
-        [self loadPlacePickerViewData];
-    }else if (row == 5) {
-        //进入设置密码界面，如果是第三方登录的，先必须绑定手机号
-        if (self.phoneNumber != nil && self.phoneNumber.length > 0) {
-            LMCheckVerifyCodeViewController* checkVC = [[LMCheckVerifyCodeViewController alloc]init];
-            checkVC.type = SmsTypeSmsForgotpwd;
-            [self.navigationController pushViewController:checkVC animated:YES];
-        }else {
-            LMCheckVerifyCodeViewController* checkVC = [[LMCheckVerifyCodeViewController alloc]init];
-            checkVC.type = SmsTypeSmsBind;
-            [self.navigationController pushViewController:checkVC animated:YES];
-        }
-    }else if (row == 6) {//绑定微信
-        if (self.isBindWeChat) {
-            [self showMBProgressHUDWithText:@"已经绑定过微信"];
-            return;
-        }
-        if ([WXApi isWXAppInstalled] && [WXApi isWXAppSupportApi]) {
-            SendAuthReq* request = [[SendAuthReq alloc]init];
-            request.state = weChatLoginState;
-            request.scope = @"snsapi_userinfo";
-            [WXApi sendReq:request];
-        }else {
-            [self showMBProgressHUDWithText:@"暂不能绑定"];
-        }
-    }else if (row == 7) {//绑定QQ
-        if (self.isBindQQ) {
-            [self showMBProgressHUDWithText:@"已经绑定过QQ"];
-            return;
-        }
-        self.qqAuth = [[TencentOAuth alloc]initWithAppId:qqAppId andDelegate:self];
-        NSArray* permissionArr = @[@"get_user_info", @"get_simple_userinfo"];
-        [self.qqAuth authorize:permissionArr inSafari:NO];
-    }else if (row == 8) {//绑定手机号
-        if (self.phoneNumber != nil && self.phoneNumber.length > 0) {
-            [self showMBProgressHUDWithText:@"已经绑定过手机号"];
-            return;
-        }
-        __weak LMProfileCenterViewController* weakSelf = self;
-        
-        LMCheckVerifyCodeViewController* checkVC = [[LMCheckVerifyCodeViewController alloc]init];
-        checkVC.type = SmsTypeSmsBind;
-        checkVC.bindPhone = YES;
-        checkVC.bindBlock = ^(NSString *bindPhoneStr) {
-            if (bindPhoneStr != nil && bindPhoneStr.length > 0) {
+    if (section == 0) {
+        if (row == 0) {
+            UIAlertController* alertController = [UIAlertController alertControllerWithTitle:@"请输入昵称" message:@"不超过12个字符" preferredStyle:UIAlertControllerStyleAlert];
+            [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+                
+            }];
+            UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                
+            }];
+            UIAlertAction* sureAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                UITextField *tf = [alertController.textFields objectAtIndex:0];
+                NSString* tempNickStr = [tf.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                if (tempNickStr == nil || tempNickStr.length == 0) {
+                    return;
+                }else if (tempNickStr.length > 12) {
+                    [self showMBProgressHUDWithText:@"昵称太长了"];
+                    return;
+                }
                 RegUserBuilder* regBuilder = [RegUser builder];
-                [regBuilder setPhoneNum:bindPhoneStr];
+                [regBuilder setNickname:tempNickStr];
                 //
                 RegUser* tempUser = [self buildRegUserWithRegUserBuilder:regBuilder];
+                [self updateUserInfoWithUser:tempUser];
+            }];
+            [alertController addAction:cancelAction];
+            [alertController addAction:sureAction];
+            [self presentViewController:alertController animated:YES completion:nil];
+        }else if (row == 1) {
+            UIAlertController* controller = [UIAlertController alertControllerWithTitle:@"选择性别" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+            UIAlertAction* maleAction = [UIAlertAction actionWithTitle:@"男" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                if (self.centerType == GenderTypeGenderMale) {
+                    return ;
+                }
+                self.centerType = GenderTypeGenderMale;
                 
-                LoginedRegUserBuilder* builder = [LoginedRegUser builder];
-                [builder setToken:weakSelf.loginedUser.token];
-                [builder setUser:tempUser];
-                LoginedRegUser* tempLogUser = [builder build];
-                [LMTool saveLoginedRegUser:tempLogUser];
+                RegUserBuilder* regBuilder = [RegUser builder];
+                [regBuilder setGender:self.centerType];
+                //
+                RegUser* tempUser = [self buildRegUserWithRegUserBuilder:regBuilder];
+                [self updateUserInfoWithUser:tempUser];
+            }];
+            UIAlertAction* femaleAction = [UIAlertAction actionWithTitle:@"女" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                if (self.centerType == GenderTypeGenderFemale) {
+                    return ;
+                }
+                self.centerType = GenderTypeGenderFemale;
                 
-                [weakSelf showMBProgressHUDWithText:@"操作成功"];
+                RegUserBuilder* regBuilder = [RegUser builder];
+                [regBuilder setGender:self.centerType];
+                //
+                RegUser* tempUser = [self buildRegUserWithRegUserBuilder:regBuilder];
+                [self updateUserInfoWithUser:tempUser];
+            }];
+            UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
                 
-                //刷新
-                [weakSelf initLoginedUserData];
+            }];
+            [controller addAction:maleAction];
+            [controller addAction:femaleAction];
+            [controller addAction:cancelAction];
+            [self presentViewController:controller animated:YES completion:nil];
+        }else if (row == 2) {
+            [self showDateView];
+        }else if (row == 3) {
+            [self loadPlacePickerViewData];
+        }
+    }else if (section == 1) {
+        if (row == 0) {
+            //进入设置密码界面，如果是第三方登录的，先必须绑定手机号
+            if (self.phoneNumber != nil && self.phoneNumber.length > 0) {
+                LMCheckVerifyCodeViewController* checkVC = [[LMCheckVerifyCodeViewController alloc]init];
+                checkVC.type = SmsTypeSmsForgotpwd;
+                [self.navigationController pushViewController:checkVC animated:YES];
+            }else {
+                LMCheckVerifyCodeViewController* checkVC = [[LMCheckVerifyCodeViewController alloc]init];
+                checkVC.type = SmsTypeSmsBind;
+                [self.navigationController pushViewController:checkVC animated:YES];
             }
-        };
-        [self.navigationController pushViewController:checkVC animated:YES];
+        }else if (row == 1) {
+            if (self.isBindWeChat) {
+                [self showMBProgressHUDWithText:@"已经绑定过微信"];
+                return;
+            }
+            if ([WXApi isWXAppInstalled] && [WXApi isWXAppSupportApi]) {
+                SendAuthReq* request = [[SendAuthReq alloc]init];
+                request.state = weChatLoginState;
+                request.scope = @"snsapi_userinfo";
+                [WXApi sendReq:request];
+            }else {
+                [self showMBProgressHUDWithText:@"暂不能绑定"];
+            }
+        }else if (row == 2) {
+            if (self.isBindQQ) {
+                [self showMBProgressHUDWithText:@"已经绑定过QQ"];
+                return;
+            }
+            self.qqAuth = [[TencentOAuth alloc]initWithAppId:qqAppId andDelegate:self];
+            NSArray* permissionArr = @[@"get_user_info", @"get_simple_userinfo"];
+            [self.qqAuth authorize:permissionArr inSafari:NO];
+        }else if (row == 3) {
+            if (self.phoneNumber != nil && self.phoneNumber.length > 0) {
+                [self showMBProgressHUDWithText:@"已经绑定过手机号"];
+                return;
+            }
+            __weak LMProfileCenterViewController* weakSelf = self;
+            
+            LMCheckVerifyCodeViewController* checkVC = [[LMCheckVerifyCodeViewController alloc]init];
+            checkVC.type = SmsTypeSmsBind;
+            checkVC.bindPhone = YES;
+            checkVC.bindBlock = ^(NSString *bindPhoneStr) {
+                if (bindPhoneStr != nil && bindPhoneStr.length > 0) {
+                    RegUserBuilder* regBuilder = [RegUser builder];
+                    [regBuilder setPhoneNum:bindPhoneStr];
+                    //
+                    RegUser* tempUser = [self buildRegUserWithRegUserBuilder:regBuilder];
+                    
+                    LoginedRegUserBuilder* builder = [LoginedRegUser builder];
+                    [builder setToken:weakSelf.loginedUser.token];
+                    [builder setUser:tempUser];
+                    LoginedRegUser* tempLogUser = [builder build];
+                    [LMTool saveLoginedRegUser:tempLogUser];
+                    
+                    [weakSelf showMBProgressHUDWithText:@"操作成功"];
+                    
+                    //刷新
+                    [weakSelf initLoginedUserData];
+                }
+            };
+            [self.navigationController pushViewController:checkVC animated:YES];
+        }
     }
 }
 
@@ -426,10 +461,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [picker dismissViewControllerAnimated:YES completion:nil];
     //获取到的图片
     UIImage * image = [info valueForKey:UIImagePickerControllerEditedImage];
-    
-    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    LMProfileCenterTableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    cell.contentIV.image = image;
+    self.avatorIV.image = image;
     
     NSData* imgData = UIImageJPEGRepresentation(image, 0.5);
     
@@ -449,7 +481,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     CGRect screenRect = [UIScreen mainScreen].bounds;
     if (!_bgView) {
         _bgView = [[UIView alloc]initWithFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, screenRect.size.height)];
-        _bgView.backgroundColor = [UIColor clearColor];
+        _bgView.backgroundColor = [[UIColor blackColor]colorWithAlphaComponent:0.5];
         [self.view addSubview:_bgView];
         
         UITapGestureRecognizer* tapGR = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedBgView:)];
@@ -469,22 +501,23 @@ static NSString* cellIdentifier = @"cellIdentifier";
     CGRect screenRect = [UIScreen mainScreen].bounds;
     if (!self.dateView) {
         self.dateView = [[UIView alloc]initWithFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 250)];
-        self.dateView.backgroundColor = [[UIColor colorWithRed:244/255.f green:244/255.f blue:244/255.f alpha:1] colorWithAlphaComponent:1];
+        self.dateView.backgroundColor = [[UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1] colorWithAlphaComponent:1];
         [self.view insertSubview:self.dateView aboveSubview:self.bgView];
         
         UIButton* cancelBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 50, 30)];
-        [cancelBtn setTitleColor:THEMECOLOR forState:UIControlStateNormal];
+        [cancelBtn setTitleColor:[UIColor colorWithRed:60.f/255 green:60.f/255 blue:60.f/255 alpha:1] forState:UIControlStateNormal];
         [cancelBtn setTitle:@"取消" forState:UIControlStateNormal];
         [cancelBtn addTarget:self action:@selector(clickedDateViewCancelButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.dateView addSubview:cancelBtn];
         
         UIButton* sureBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.dateView.frame.size.width - 50, 0, 50, 30)];
-        [sureBtn setTitleColor:THEMECOLOR forState:UIControlStateNormal];
+        [sureBtn setTitleColor:[UIColor colorWithRed:60.f/255 green:60.f/255 blue:60.f/255 alpha:1] forState:UIControlStateNormal];
         [sureBtn setTitle:@"确定" forState:UIControlStateNormal];
         [sureBtn addTarget:self action:@selector(clickedDateViewSureButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.dateView addSubview:sureBtn];
         
         self.datePicker = [[UIDatePicker alloc]initWithFrame:CGRectMake(0, cancelBtn.frame.size.height, self.dateView.frame.size.width, self.dateView.frame.size.height - cancelBtn.frame.size.height)];
+        self.datePicker.backgroundColor = [UIColor whiteColor];
         self.datePicker.datePickerMode = UIDatePickerModeDate;
         [self.datePicker setLocale:[NSLocale currentLocale]];
         [self.datePicker setTimeZone:[NSTimeZone systemTimeZone]];
@@ -510,18 +543,23 @@ static NSString* cellIdentifier = @"cellIdentifier";
         NSDate* maxDate = [NSDate date];
         [self.datePicker setMaximumDate:maxDate];
     }
-    [UIView animateWithDuration:0.3 animations:^{
+    self.bgView.alpha = 0;
+    [UIView animateWithDuration:0.2 animations:^{
         self.bgView.frame = CGRectMake(0, 0, screenRect.size.width, screenRect.size.height);
         self.dateView.frame = CGRectMake(0, screenRect.size.height - 250, self.view.frame.size.width, 250);
+    } completion:^(BOOL finished) {
+        self.bgView.alpha = 1;
     }];
 }
 
 //隐藏日期
 -(void)hideDateView {
     CGRect screenRect = [UIScreen mainScreen].bounds;
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.2 animations:^{
         self.bgView.frame = CGRectMake(0, screenRect.size.height, screenRect.size.width, screenRect.size.height);
         self.dateView.frame = CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 250);
+    } completion:^(BOOL finished) {
+        self.bgView.alpha = 0;
     }];
 }
 
@@ -623,39 +661,46 @@ static NSString* cellIdentifier = @"cellIdentifier";
     CGRect screenRect = [UIScreen mainScreen].bounds;
     if (!self.placeView) {
         self.placeView = [[UIView alloc]initWithFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 250)];
-        self.placeView.backgroundColor = [UIColor colorWithRed:244/255.f green:244/255.f blue:244/255.f alpha:1];
+        self.placeView.backgroundColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
         [self.view insertSubview:self.placeView aboveSubview:self.bgView];
         
         UIButton* cancelBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 50, 30)];
         [cancelBtn setTitleColor:THEMECOLOR forState:UIControlStateNormal];
         [cancelBtn setTitle:@"取消" forState:UIControlStateNormal];
+        [cancelBtn setTitleColor:[UIColor colorWithRed:60.f/255 green:60.f/255 blue:60.f/255 alpha:1] forState:UIControlStateNormal];
         [cancelBtn addTarget:self action:@selector(clickedPlacePickerViewCancelButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.placeView addSubview:cancelBtn];
         
         UIButton* sureBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.placeView.frame.size.width - 50, 0, 50, 30)];
         [sureBtn setTitleColor:THEMECOLOR forState:UIControlStateNormal];
         [sureBtn setTitle:@"确定" forState:UIControlStateNormal];
+        [sureBtn setTitleColor:[UIColor colorWithRed:60.f/255 green:60.f/255 blue:60.f/255 alpha:1] forState:UIControlStateNormal];
         [sureBtn addTarget:self action:@selector(clickedPlacePickerViewSureButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.placeView addSubview:sureBtn];
         
         self.placePicker = [[UIPickerView alloc]initWithFrame:CGRectMake(0, 30, self.view.frame.size.width, 220)];
+        self.placePicker.backgroundColor = [UIColor whiteColor];
         self.placePicker.dataSource = self;
         self.placePicker.delegate = self;
         [self.placeView addSubview:self.placePicker];
     }
-    
-    [UIView animateWithDuration:0.3 animations:^{
+    self.bgView.alpha = 0;
+    [UIView animateWithDuration:0.2 animations:^{
         self.bgView.frame = CGRectMake(0, 0, screenRect.size.width, screenRect.size.height);
         self.placeView.frame = CGRectMake(0, screenRect.size.height - 250, self.view.frame.size.width, 250);
+    } completion:^(BOOL finished) {
+        self.bgView.alpha = 1;
     }];
 }
 
 //隐藏 地区
 -(void)hidePlacePickerView {
     CGRect screenRect = [UIScreen mainScreen].bounds;
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.2 animations:^{
         self.bgView.frame = CGRectMake(0, screenRect.size.height, screenRect.size.width, screenRect.size.height);
         self.placeView.frame = CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 250);
+    } completion:^(BOOL finished) {
+        self.bgView.alpha = 0;
     }];
 }
 

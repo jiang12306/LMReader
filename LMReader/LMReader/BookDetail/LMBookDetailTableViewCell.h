@@ -10,7 +10,6 @@
 
 @interface LMBookDetailTableViewCell : LMBaseArrowTableViewCell
 
-@property (nonatomic, strong) UIImageView* contentIV;
 @property (nonatomic, strong) UILabel* nameLab;
 @property (nonatomic, strong) UILabel* contentLab;
 

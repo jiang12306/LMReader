@@ -30,8 +30,8 @@ static CGFloat agreeButtonHeight = 15;
         [self addSubview:self.agreeBtn];
         
         NSMutableAttributedString* attributedStr = [[NSMutableAttributedString alloc]initWithString:@"同意《用户隐私协议》"];
-        [attributedStr addAttributes:@{NSForegroundColorAttributeName : [UIColor grayColor], NSFontAttributeName : [UIFont systemFontOfSize:15]} range:NSMakeRange(0, 2)];
-        [attributedStr addAttributes:@{NSForegroundColorAttributeName : [UIColor blueColor], NSFontAttributeName : [UIFont systemFontOfSize:15], NSUnderlineStyleAttributeName : [NSNumber numberWithInteger:NSUnderlineStyleSingle]} range:NSMakeRange(2, attributedStr.length - 2)];
+        [attributedStr addAttributes:@{NSForegroundColorAttributeName : [UIColor grayColor], NSFontAttributeName : [UIFont systemFontOfSize:12]} range:NSMakeRange(0, 2)];
+        [attributedStr addAttributes:@{NSForegroundColorAttributeName : [UIColor blueColor], NSFontAttributeName : [UIFont systemFontOfSize:12], NSUnderlineStyleAttributeName : [NSNumber numberWithInteger:NSUnderlineStyleSingle]} range:NSMakeRange(2, attributedStr.length - 2)];
         
         self.protocolBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.agreeBtn.frame.origin.x + self.agreeBtn.frame.size.width, self.agreeBtn.frame.origin.y, frame.size.width - 20, agreeButtonHeight)];
         [self.protocolBtn setAttributedTitle:attributedStr forState:UIControlStateNormal];

@@ -12,5 +12,7 @@
 
 @property (nonatomic, strong) UserBook* userBook;
 @property (nonatomic, assign) NSInteger markState;
+@property (nonatomic, copy) NSString* progressStr;
+@property (nonatomic, assign) BOOL isLastestRecord;
 
 @end

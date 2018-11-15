@@ -34,6 +34,13 @@ static dispatch_once_t onceToken;
     return sharedVC;
 }
 
+//-(instancetype)init {
+//    if (sharedVC == nil) {
+//        sharedVC = [super init];
+//    }
+//    return sharedVC;
+//}
+
 -(id)copyWithZone:(NSZone *)zone {
     return sharedVC;
 }
@@ -50,7 +57,6 @@ static dispatch_once_t onceToken;
     [super viewDidLoad];
     
     [self exchangeLaunchState:[LMTool isFirstLaunch]];
-    
 }
 
 -(void)exchangeLaunchState:(BOOL)isFirstLaunch {

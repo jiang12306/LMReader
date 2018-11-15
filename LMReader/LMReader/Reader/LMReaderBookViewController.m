@@ -8,8 +8,7 @@
 
 #import "LMReaderBookViewController.h"
 #import "LMContentViewController.h"
-#import "LMCatalogViewController.h"
-#import "LMNewCatalogViewController.h"
+#import "LMBookCatalogViewController.h"
 #import "LMChangeSourceViewController.h"
 #import "LMTool.h"
 #import "LMDatabaseTool.h"
@@ -33,18 +32,32 @@
 #import "LMLoginAlertView.h"
 #import "LMProfileProtocolViewController.h"
 #import "LMLaunchDetailViewController.h"
+#import "AppDelegate.h"
 
 @interface LMReaderBookViewController () <UIPageViewControllerDelegate, UIPageViewControllerDataSource, LMPageViewControllerDelegate, LMContentViewControllerDelegate>
 
-@property (nonatomic, strong) UIView* naviBarView;//naviBar
-@property (nonatomic, strong) UILabel* titleLab;
-@property (nonatomic, strong) UIView* toolBarView;//toolBar
+@property (nonatomic, strong) UIView* naviBarView;/**<naviBar*/
+@property (nonatomic, strong) UIButton* backBtn;/**<返回 按钮*/
+@property (nonatomic, strong) UIButton* moreBtn;/**<右上角...按钮*/
+@property (nonatomic, strong) UIButton* changeSourceBtn;/**<换源*/
+@property (nonatomic, strong) UILabel* titleLab;/**<标题*/
+
+@property (nonatomic, strong) UIView* toolBarView;/**<toolBar*/
+@property (nonatomic, strong) UIButton* brightSmallBtn;/**<调暗*/
+@property (nonatomic, strong) UISlider* brightSlider;/**<亮度调节slider*/
+@property (nonatomic, strong) UIButton* brightBigBtn;/**<调亮*/
+@property (nonatomic, strong) UIButton* catalogToolBtn;/**<toolBar 目录*/
+@property (nonatomic, strong) UIButton* nightToolBtn;/**<toolBar 夜间*/
+@property (nonatomic, strong) UIButton* setToolBtn;/**<toolBar 设置*/
+@property (nonatomic, strong) UIButton* feedbackToolBtn;/**<toolBar 报错*/
+@property (nonatomic, strong) UIButton* downloadToolBtn;/**<toolBar 下载*/
+
 @property (nonatomic, strong) UIButton* editCommentBtn;//编辑评论button
 
 @property (nonatomic, strong) LMPageViewController* pageVC;
 @property (nonatomic, strong) LMReaderSettingView*  settingView;//设置 视图
 @property (nonatomic, strong) LMDownloadBookView* downloadView;//下载 视图
-@property (nonatomic, strong) LMSourceTitleView* sourceView;//来源 视图
+@property (nonatomic, strong) LMSourceTitleView* sourceTV;//来源 视图
 @property (nonatomic, assign) CGFloat fontSize;
 @property (nonatomic, assign) LMReadModel readModel;
 @property (nonatomic, assign) CGFloat brightness;
@@ -96,7 +109,18 @@
     //设置屏幕常亮
     [[UIApplication sharedApplication]setIdleTimerDisabled:YES];
     
-    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+    
+    if (self.readModel == LMReaderBackgroundType4) {
+        self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+        
+    }else {
+        self.navigationController.navigationBar.barStyle = UIBarStyleDefault;
+        
+    }
+    
+    [self reloadTopNaviBarViewAndSourceTitleView];
+    [self reloadBottomToolBarViewAndSettingView];
+    [self reloadDownloadBookView];
 }
 
 -(BOOL)prefersStatusBarHidden {
@@ -109,7 +133,10 @@
 }
 
 -(UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleLightContent;
+    if (self.readModel == LMReaderBackgroundType4) {
+        return UIStatusBarStyleLightContent;
+    }
+    return UIStatusBarStyleDefault;
 }
 
 -(void)viewWillDisappear:(BOOL)animated{
@@ -124,81 +151,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapped:)];
-    tap.cancelsTouchesInView = NO;
-    UIView* tapVi = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width / 3, self.view.frame.size.height / 4, self.view.frame.size.width / 3, self.view.frame.size.height / 2)];
-    tapVi.backgroundColor = [UIColor clearColor];
-    [tapVi addGestureRecognizer:tap];
-    [self.view addSubview:tapVi];
-    
-    //退出app前 保存阅读记录
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
-    //微信分享通知
-    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(shareNewsSucceed:) name:weChatShareNotifyName object:nil];
-    
-    self.fd_prefersNavigationBarHidden = YES;
-    
-    CGFloat naviHeight = 20 + 44;
-    CGFloat startY = 20 + 7;
-    CGFloat toolBarHeight = 49;
-    if ([LMTool isBangsScreen]) {
-        naviHeight = 44 + 44;
-        startY = 44 + 7;
-        toolBarHeight = 83;
-    }
-    self.naviBarView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, naviHeight)];
-    self.naviBarView.backgroundColor = [UIColor blackColor];
-    [self.view addSubview:self.naviBarView];
-    
-    UIView* leftView = [[UIView alloc]initWithFrame:CGRectMake(10, startY, 52, 30)];
-    UIImage* leftImage = [UIImage imageNamed:@"navigationItem_Back"];
-    UIImage* tintImage = [leftImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIButton* leftButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, leftView.frame.size.width, leftView.frame.size.height)];
-    [leftButton setTintColor:[UIColor whiteColor]];
-    [leftButton setImage:tintImage forState:UIControlStateNormal];
-    [leftButton setImageEdgeInsets:UIEdgeInsetsMake(5, 0, 5, 40)];
-    [leftButton addTarget:self action:@selector(clickedBackButton:) forControlEvents:UIControlEventTouchUpInside];
-    leftButton.titleLabel.font = [UIFont systemFontOfSize:16];
-    [leftButton setTitle:@"返回" forState:UIControlStateNormal];
-    [leftButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [leftView addSubview:leftButton];
-    [self.naviBarView addSubview:leftView];
-    
-    UIView* rightView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width - 40 - 10, startY, 40, 30)];
-    UIButton* rightButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, rightView.frame.size.width, rightView.frame.size.height)];
-    [rightButton addTarget:self action:@selector(clickedRightBarButton:) forControlEvents:UIControlEventTouchUpInside];
-    [rightButton setImage:[UIImage imageNamed:@"rightBarButtonItem_More"] forState:UIControlStateNormal];
-    [rightButton setImageEdgeInsets:UIEdgeInsetsMake(4, 3, 5, 3)];
-    [rightView addSubview:rightButton];
-    [self.naviBarView addSubview:rightView];
-    
-    UIView* changeSourceVi = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width - rightView.frame.size.width - 10 * 2 - 40, startY, 40, 30)];
-    UIButton* changeSourceBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, changeSourceVi.frame.size.width, changeSourceVi.frame.size.height)];
-    changeSourceBtn.titleLabel.font = [UIFont systemFontOfSize:18];
-    [changeSourceBtn addTarget:self action:@selector(clickedChangeSourceButton:) forControlEvents:UIControlEventTouchUpInside];
-    [changeSourceBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [changeSourceBtn setTitle:@"换源" forState:UIControlStateNormal];
-    [changeSourceVi addSubview:changeSourceBtn];
-    [self.naviBarView addSubview:changeSourceVi];
-    
-    self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake((self.view.frame.size.width - 80) / 2, startY, 80, 30)];
-    self.titleLab.font = [UIFont boldSystemFontOfSize:18];
-    self.titleLab.textColor = [UIColor whiteColor];
-    self.titleLab.lineBreakMode = NSLineBreakByTruncatingMiddle;
-    NSString* titleStr = @"正文阅读";
-    if (self.bookName != nil && self.bookName.length > 0) {
-        titleStr = self.bookName;
-    }
-    self.titleLab.text = titleStr;
-    [self.naviBarView addSubview:self.titleLab];
-    CGFloat maxTitleWidth = (changeSourceVi.frame.origin.x - (self.view.frame.size.width / 2) - 10) * 2;
-    CGRect originalTitleFrame = self.titleLab.frame;
-    CGSize titleSize = [self.titleLab sizeThatFits:CGSizeMake(CGFLOAT_MAX, originalTitleFrame.size.height)];
-    if (titleSize.width > maxTitleWidth) {
-        titleSize.width = maxTitleWidth;
-    }
-    self.titleLab.frame = CGRectMake((self.view.frame.size.width - titleSize.width) / 2, originalTitleFrame.origin.y, titleSize.width, originalTitleFrame.size.height);
     
     self.isCollected = [[LMDatabaseTool sharedDatabaseTool] checkUserBooksIsExistWithBookId:self.bookId];
     self.autoLoadNext =  [LMTool getSystemAutoLoadNextChapterConfig];//预加载下一章节
@@ -220,11 +172,101 @@
         }
     }];
     
+    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapped:)];
+    tap.cancelsTouchesInView = NO;
+    UIView* tapVi = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width / 3, self.view.frame.size.height / 4, self.view.frame.size.width / 3, self.view.frame.size.height / 2)];
+    tapVi.backgroundColor = [UIColor clearColor];
+    [tapVi addGestureRecognizer:tap];
+    [self.view addSubview:tapVi];
+    
+    //退出app前 保存阅读记录
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
+    //微信分享通知
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(shareNewsSucceed:) name:weChatShareNotifyName object:nil];
+    
+    self.fd_prefersNavigationBarHidden = YES;
+    
+    CGFloat naviHeight = 20 + 44;
+    CGFloat startY = 20 + 7;
+    CGFloat toolBarHeight = 60 + 49;
+    if ([LMTool isBangsScreen]) {
+        naviHeight = 44 + 44;
+        startY = 44 + 7;
+        toolBarHeight = 60 + 83;
+    }
+    self.naviBarView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, naviHeight)];
+    self.naviBarView.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:self.naviBarView];
+    
+    UIImage* leftImage = [UIImage imageNamed:@"navigationItem_Back"];
+    UIImage* tintImage = [leftImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    self.backBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, startY, 40, 30)];
+    self.backBtn.tintColor = [UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1];
+    [self.backBtn setImage:tintImage forState:UIControlStateNormal];
+    [self.backBtn setImageEdgeInsets:UIEdgeInsetsMake(5, 20, 5, 8)];
+    [self.backBtn addTarget:self action:@selector(clickedBackButton:) forControlEvents:UIControlEventTouchUpInside];
+    [self.naviBarView addSubview:self.backBtn];
+    
+    self.moreBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width - 50, startY, 50, 30)];
+    [self.moreBtn addTarget:self action:@selector(clickedRightBarButton:) forControlEvents:UIControlEventTouchUpInside];
+    UIImage* moreImg = [UIImage imageNamed:@"readerBook_More"];
+    [self.moreBtn setImage:[moreImg imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [self.moreBtn setTintColor:[UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1]];
+    [self.moreBtn setImageEdgeInsets:UIEdgeInsetsMake(5, 18, 5, 20)];
+    [self.naviBarView addSubview:self.moreBtn];
+    
+    self.changeSourceBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.moreBtn.frame.origin.x - 40, startY, 40, 30)];
+    self.changeSourceBtn.titleLabel.font = [UIFont boldSystemFontOfSize:18];
+    [self.changeSourceBtn addTarget:self action:@selector(clickedChangeSourceButton:) forControlEvents:UIControlEventTouchUpInside];
+    [self.changeSourceBtn setTitleColor:[UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1] forState:UIControlStateNormal];
+    [self.changeSourceBtn setTitle:@"换源" forState:UIControlStateNormal];
+    [self.naviBarView addSubview:self.changeSourceBtn];
+    
+    CGFloat maxTitleWidth = (self.changeSourceBtn.frame.origin.x - (self.view.frame.size.width / 2) - 20) * 2;
+    self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake((self.view.frame.size.width - maxTitleWidth) / 2, startY, maxTitleWidth, 30)];
+    self.titleLab.font = [UIFont boldSystemFontOfSize:18];
+    self.titleLab.textColor = [UIColor blackColor];
+    self.titleLab.textAlignment = NSTextAlignmentCenter;
+    self.titleLab.lineBreakMode = NSLineBreakByTruncatingMiddle;
+    NSString* titleStr = @"正文阅读";
+    if (self.bookName != nil && self.bookName.length > 0) {
+        titleStr = self.bookName;
+    }
+    self.titleLab.text = titleStr;
+    [self.naviBarView addSubview:self.titleLab];
+    CGSize titleLabSize = [self.titleLab sizeThatFits:CGSizeMake(9999, 30)];
+    if (titleLabSize.width > maxTitleWidth) {
+        titleLabSize.width = self.changeSourceBtn.frame.origin.x - self.backBtn.frame.origin.x - self.backBtn.frame.size.width - 20 * 2;
+        self.titleLab.frame = CGRectMake(self.backBtn.frame.origin.x + self.backBtn.frame.size.width + 20, startY, titleLabSize.width, 30);
+    }
+    
     self.toolBarView = [[UIView alloc]initWithFrame:CGRectMake(0, self.view.frame.size.height - toolBarHeight, self.view.frame.size.width, toolBarHeight)];
-    self.toolBarView.backgroundColor = [UIColor blackColor];
+    self.toolBarView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:self.toolBarView];
     
-    self.editCommentBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width - 10 - 50, self.toolBarView.frame.origin.y - 10 - 50, 50, 50)];
+    self.brightSmallBtn = [[UIButton alloc]initWithFrame:CGRectMake(15, 20, 20, 20)];
+    [self.brightSmallBtn setImage:[UIImage imageNamed:@"readerSetting_Light_Low"] forState:UIControlStateNormal];
+    [self.brightSmallBtn setImageEdgeInsets:UIEdgeInsetsMake(2.5, 5, 2.5, 0)];
+    [self.brightSmallBtn addTarget:self action:@selector(clickedBrightSmallButton:) forControlEvents:UIControlEventTouchUpInside];
+    [self.toolBarView addSubview:self.brightSmallBtn];
+    
+    self.brightBigBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.toolBarView.frame.size.width - 20 - 20, 20, 20, 20)];
+    [self.brightBigBtn setImage:[UIImage imageNamed:@"readerSetting_Light_High"] forState:UIControlStateNormal];
+    [self.brightBigBtn addTarget:self action:@selector(clickedBrightBigButton:) forControlEvents:UIControlEventTouchUpInside];
+    [self.toolBarView addSubview:self.brightBigBtn];
+    
+    self.brightSlider = [[UISlider alloc]initWithFrame:CGRectMake(self.brightSmallBtn.frame.origin.x + self.brightSmallBtn.frame.size.width + 20, self.brightSmallBtn.frame.origin.y, self.brightBigBtn.frame.origin.x - self.brightSmallBtn.frame.origin.x - self.brightSmallBtn.frame.size.width - 20 * 2, 20)];
+    self.brightSlider.minimumValue = 0;
+    self.brightSlider.maximumValue = 1;
+    self.brightSlider.minimumTrackTintColor = THEMEORANGECOLOR;
+    [self.brightSlider addTarget:self action:@selector(didSlideBrightSlider:) forControlEvents:UIControlEventValueChanged];
+    self.brightSlider.value = self.brightness;
+    [self.toolBarView addSubview:self.brightSlider];
+    
+    UITapGestureRecognizer* sliderTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedBrightSlider:)];
+    [self.brightSlider addGestureRecognizer:sliderTap];
+    
+    self.editCommentBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width - 10 - 50, self.view.frame.size.height - self.settingView.frame.size.height - 10 - 50, 50, 50)];
     self.editCommentBtn.backgroundColor = [UIColor colorWithRed:36.f/255 green:36.f/255 blue:36.f/255 alpha:1];
     self.editCommentBtn.layer.cornerRadius = 25;
     self.editCommentBtn.layer.masksToBounds = YES;
@@ -235,29 +277,39 @@
     [self.editCommentBtn addTarget:self action:@selector(clickedEditCommentButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.editCommentBtn];
     
-    NSArray* normalTitleArr = @[@"目录", @"报错", @"下载", @"收藏", @"设置"];
-    NSArray* normalImgArr = @[@"toolBarItem_Catalog", @"toolBarItem_FeedBack", @"toolBarItem_Download", @"toolBarItem_Collect", @"toolBarItem_Setting"];
+    NSArray* normalTitleArr = @[@"目录", @"夜间", @"设置", @"报错", @"下载"];
+    NSArray* normalImgArr = @[@"toolBarItem_Catalog", @"toolBarItem_Night_Normal", @"toolBarItem_Setting", @"toolBarItem_FeedBack", @"toolBarItem_Download"];
     CGFloat btnWidth = 44;
-    CGFloat btnSpaceX = (self.view.frame.size.width - btnWidth * normalTitleArr.count) / (normalTitleArr.count + 1);
+    CGFloat btnSpaceX = (self.view.frame.size.width - btnWidth * normalTitleArr.count - 7 * 2) / (normalTitleArr.count - 1);
     for (NSInteger i = 0; i < normalTitleArr.count; i ++) {
         BOOL isSelected = NO;
         NSString* selectedTitle = nil;
         NSString* normalImg = normalImgArr[i];
         NSString* selectedImg = nil;
-        if (i == 3) {
-            isSelected = self.isCollected;
-            selectedTitle = @"已收藏";
-            selectedImg = @"toolBarItem_Collect_Selected";
+        if (i == 1) {
+            selectedImg = @"toolBarItem_Night_Selected";
         }
-        CGRect btnFrame = CGRectMake(btnSpaceX * (i + 1) + btnWidth * i, 0, btnWidth, btnWidth);
+        CGRect btnFrame = CGRectMake(7 + (btnSpaceX + btnWidth) * i, 60, btnWidth, btnWidth);
         UIButton* btn = [self createToolBarButtonWithFrame:btnFrame Title:normalTitleArr[i] selectedTitle:selectedTitle normalImg:normalImg selectedImg:selectedImg isSelected:isSelected tag:i];
+        btn.tintColor = [UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1];
         [self.toolBarView addSubview:btn];
+        if (i == 0) {
+            self.catalogToolBtn = btn;
+        }else if (i == 1) {
+            self.nightToolBtn = btn;
+        }else if (i == 2) {
+            self.setToolBtn = btn;
+        }else if (i == 3) {
+            self.feedbackToolBtn = btn;
+        }else if (i == 4) {
+            self.downloadToolBtn = btn;
+        }
     }
     
     __weak LMReaderBookViewController* weakSelf = self;
     
     //隐藏头、尾
-    [self setupNaviBarViewAndToolBarViewHidden:YES];
+    [self hideAllHeaderAndFooterView];
     
     if (self.readerBook != nil) {//从目录页进来，currentChapter等已被赋值
         //获取目录列表
@@ -908,6 +960,140 @@
     [self loadRelatedBook];
 }
 
+//调低 亮度
+-(void)clickedBrightSmallButton:(UIButton* )sender {
+    CGFloat value = self.brightSlider.value - 0.1;
+    if (value < self.brightSlider.minimumValue) {
+        value = self.brightSlider.minimumValue;
+    }
+    [self.brightSlider setValue:value animated:YES];
+    [self didSlideBrightSlider:self.brightSlider];
+}
+
+//调高 亮度
+-(void)clickedBrightBigButton:(UIButton* )sender {
+    CGFloat value = self.brightSlider.value + 0.1;
+    if (value > self.brightSlider.maximumValue) {
+        value = self.brightSlider.maximumValue;
+    }
+    [self.brightSlider setValue:value animated:YES];
+    [self didSlideBrightSlider:self.brightSlider];
+}
+
+//滑动 亮度 slider
+-(void)didSlideBrightSlider:(UISlider* )slider {
+    float brightFloat = self.brightSlider.value;
+    if (brightFloat != self.brightness) {
+        self.brightness = brightFloat;
+        [UIScreen mainScreen].brightness = self.brightness;
+        [LMTool changeReaderConfigWithBrightness:self.brightness];
+    }
+}
+
+//点击 亮度 slider
+-(void)tappedBrightSlider:(UITapGestureRecognizer* )sliderTap {
+    UIView* tapVi = sliderTap.view;
+    CGPoint touchPoint = [sliderTap locationInView:tapVi];
+    CGFloat value = (self.brightSlider.maximumValue - self.brightSlider.minimumValue) * (touchPoint.x / self.brightSlider.frame.size.width );
+    [self.brightSlider setValue:value animated:YES];
+    [self didSlideBrightSlider:self.brightSlider];
+}
+
+-(LMReaderSettingView *)settingView {
+    if (!_settingView) {
+        CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+        CGFloat settingHeight = 170;
+        if ([LMTool isBangsScreen]) {
+            settingHeight = 170 + 44;
+        }
+        _settingView = [[LMReaderSettingView alloc]initWithFrame:CGRectMake(0, screenHeight, self.view.frame.size.width, settingHeight) fontSize:self.fontSize bgInteger:self.readModel lineSpaceIndex:self.lineSpaceIndex];
+        [self.view addSubview:_settingView];
+    }
+    return _settingView;
+}
+
+//刷新naviBarView 背景、图片颜色
+-(void)reloadTopNaviBarViewAndSourceTitleView {
+    if (self.readModel == LMReaderBackgroundType4) {//夜间模式
+        self.naviBarView.backgroundColor = [UIColor blackColor];
+        self.backBtn.tintColor = [UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1];
+        self.moreBtn.tintColor = [UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1];
+        [self.changeSourceBtn setTitleColor:[UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1] forState:UIControlStateNormal];
+        self.titleLab.textColor = UIColorFromRGB(0xb4b3b3);
+        
+        self.sourceTV.backgroundColor = [UIColor blackColor];
+        
+        [self.sourceTV reloadSourceTitleViewWithModel:self.readModel];
+    }else {
+        self.naviBarView.backgroundColor = [UIColor whiteColor];
+        self.backBtn.tintColor = [UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1];
+        self.moreBtn.tintColor = [UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1];
+        [self.changeSourceBtn setTitleColor:[UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1] forState:UIControlStateNormal];
+        self.titleLab.textColor = [UIColor blackColor];
+        
+        self.sourceTV.backgroundColor = [UIColor colorWithRed:220.f/255 green:220.f/255 blue:220.f/255 alpha:1];
+        
+        [self.sourceTV reloadSourceTitleViewWithModel:self.readModel];
+    }
+    
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
+//刷新toolBarView 背景、图片颜色
+-(void)reloadBottomToolBarViewAndSettingView {
+    if (self.readModel == LMReaderBackgroundType4) {//夜间模式
+        self.toolBarView.backgroundColor = [UIColor blackColor];
+        self.catalogToolBtn.tintColor = [UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1];
+        self.nightToolBtn.tintColor = [UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1];
+        self.setToolBtn.tintColor = [UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1];
+        self.feedbackToolBtn.tintColor = [UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1];
+        self.downloadToolBtn.tintColor = [UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1];
+        
+        [self.catalogToolBtn setTitleColor:[UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.nightToolBtn setTitleColor:[UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.setToolBtn setTitleColor:[UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.feedbackToolBtn setTitleColor:[UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.downloadToolBtn setTitleColor:[UIColor colorWithRed:70.f/255 green:70.f/255 blue:70.f/255 alpha:1] forState:UIControlStateNormal];
+        
+    }else {
+        self.toolBarView.backgroundColor = [UIColor whiteColor];
+        self.catalogToolBtn.tintColor = [UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1];
+        self.nightToolBtn.tintColor = [UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1];
+        self.setToolBtn.tintColor = [UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1];
+        self.feedbackToolBtn.tintColor = [UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1];
+        self.downloadToolBtn.tintColor = [UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1];
+        
+        [self.catalogToolBtn setTitleColor:[UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.nightToolBtn setTitleColor:[UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.setToolBtn setTitleColor:[UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.feedbackToolBtn setTitleColor:[UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.downloadToolBtn setTitleColor:[UIColor colorWithRed:130.f/255 green:130.f/255 blue:130.f/255 alpha:1] forState:UIControlStateNormal];
+    }
+    
+    BOOL isNightModel = [LMTool getSystemNightShift];
+    if (isNightModel) {
+        [self.nightToolBtn setImage:[[UIImage imageNamed:@"toolBarItem_Night_Selected"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+        [self.nightToolBtn setTitle:@"日间" forState:UIControlStateNormal];
+    }else {
+        [self.nightToolBtn setImage:[[UIImage imageNamed:@"toolBarItem_Night_Normal"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+        [self.nightToolBtn setTitle:@"夜间" forState:UIControlStateNormal];
+    }
+    
+    //刷新设置界面
+    [self.settingView reloadReaderSettingViewWithModel:self.readModel];
+    //刷新下载界面
+    if (self.downloadView) {
+        [self.downloadView reloadDownloadBookViewWithModel:self.readModel];
+    }
+}
+
+//刷新 下载界面 颜色
+-(void)reloadDownloadBookView {
+    if (self.downloadView) {
+        [self.downloadView reloadDownloadBookViewWithModel:self.readModel];
+    }
+}
+
 //优先匹配title，其次匹配chapterId，查找当前章节角标
 -(NSInteger )queryCurrentChapterIndexWithChaptersArray:(NSArray* )chaptersArray currentChapter:(LMReaderBookChapter* )currentChapter {
     NSInteger currentIndex = 0;
@@ -989,29 +1175,145 @@
     }];
 }
 
--(void)setupNaviBarViewAndToolBarViewHidden:(BOOL )shouldHidden {
-    CGRect screenRect = [UIScreen mainScreen].bounds;
+//隐藏所有顶部、底部视图
+-(void)hideAllHeaderAndFooterView {
+    [self setupNaviBarViewHidden:YES];
+    [self setupToolBarViewHidden:YES];
+    [self setupDownloadViewHidden:YES];
+    [self setupSettingViewHidden:YES];
+    [self setupEditCommentButtonHidden:YES];
+    if (self.sourceTV) {
+        [self setupSourceTitleViewHidden:YES];
+    }
     
-    CGRect naviFrame = self.naviBarView.frame;
-    CGRect finalNaviFrame = CGRectMake(0, 0, naviFrame.size.width, naviFrame.size.height);
-    CGRect toolBarFrame = self.toolBarView.frame;
-    CGRect finalToolFrame = CGRectMake(0, screenRect.size.height - toolBarFrame.size.height, toolBarFrame.size.width, toolBarFrame.size.height);
-    CGRect editFrame = self.editCommentBtn.frame;
-    CGRect finalEditFrame = CGRectMake(editFrame.origin.x, finalToolFrame.origin.y - editFrame.size.height - 10, editFrame.size.width, editFrame.size.height);
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
+//naviBarView 动画
+-(void)setupNaviBarViewHidden:(BOOL )shouldHidden {
+    CGRect naviRect = self.naviBarView.frame;
     if (shouldHidden) {
-        finalNaviFrame = CGRectMake(0, 0 - finalNaviFrame.size.height, finalNaviFrame.size.width, finalNaviFrame.size.height);
-        finalToolFrame = CGRectMake(0, screenRect.size.height, toolBarFrame.size.width, toolBarFrame.size.height);
-        finalEditFrame = CGRectMake(editFrame.origin.x, screenRect.size.height, editFrame.size.width, editFrame.size.height);
+        if (naviRect.origin.y == 0 - naviRect.size.height) {
+            return;
+        }
+        naviRect.origin.y = 0 - naviRect.size.height;
+    }else {
+        if (naviRect.origin.y == 0) {
+            return;
+        }
+        naviRect.origin.y = 0;
     }
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
-        self.naviBarView.frame = finalNaviFrame;
-        self.toolBarView.frame = finalToolFrame;
-        self.editCommentBtn.frame = finalEditFrame;
+        self.naviBarView.frame = naviRect;
     } completion:^(BOOL finished) {
         
     }];
-    
-    [self setNeedsStatusBarAppearanceUpdate];
+}
+
+//来源sourceTitleView 动画
+-(void)setupSourceTitleViewHidden:(BOOL )shouldHidden {
+    if (shouldHidden) {
+        if (self.sourceTV.frame.origin.y < 0) {
+            return;
+        }
+        [self.sourceTV startHide];
+    }else {
+        if (self.sourceTV.frame.origin.y > 0) {
+            return;
+        }
+        [self.sourceTV startShow];
+    }
+}
+
+//toolBarView 动画
+-(void)setupToolBarViewHidden:(BOOL )shouldHidden {
+    CGRect screenRect = [UIScreen mainScreen].bounds;
+    CGRect toolRect = self.toolBarView.frame;
+    if (shouldHidden) {
+        if (toolRect.origin.y == screenRect.size.height) {
+            return;
+        }
+        toolRect.origin.y = screenRect.size.height;
+    }else {
+        if (toolRect.origin.y == screenRect.size.height - toolRect.size.height) {
+            return;
+        }
+        toolRect.origin.y = screenRect.size.height - toolRect.size.height;
+    }
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        self.toolBarView.frame = toolRect;
+    } completion:^(BOOL finished) {
+        
+    }];
+}
+
+//下载视图 动画
+-(void)setupDownloadViewHidden:(BOOL )shouldHidden {
+    if (self.downloadView) {
+        CGRect screenRect = [UIScreen mainScreen].bounds;
+        CGRect downloadRect = self.downloadView.frame;
+        if (shouldHidden) {
+            if (downloadRect.origin.y == screenRect.size.height) {
+                return;
+            }
+            downloadRect.origin.y = screenRect.size.height;
+        }else {
+            if (downloadRect.origin.y == screenRect.size.height - downloadRect.size.height - self.toolBarView.frame.size.height) {
+                return;
+            }
+            downloadRect.origin.y = screenRect.size.height - downloadRect.size.height - self.toolBarView.frame.size.height;
+        }
+        [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+            self.downloadView.frame = downloadRect;
+        } completion:^(BOOL finished) {
+            
+        }];
+    }
+}
+
+//editCommentBtn 动画
+-(void)setupEditCommentButtonHidden:(BOOL )shouldHidden {
+    CGRect screenRect = [UIScreen mainScreen].bounds;
+    CGRect editRect = self.editCommentBtn.frame;
+    if (shouldHidden) {
+        if (editRect.origin.x == screenRect.size.width) {
+            return;
+        }
+        editRect.origin.x = screenRect.size.width;
+    }else {
+        CGFloat settingX = screenRect.size.width - editRect.size.width - 10;
+        if (editRect.origin.x == settingX) {
+            return;
+        }
+        editRect.origin.x = settingX;
+    }
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        self.editCommentBtn.frame = editRect;
+    } completion:^(BOOL finished) {
+        
+    }];
+}
+
+//settingView 动画
+-(void)setupSettingViewHidden:(BOOL )shouldHidden {
+    CGRect screenRect = [UIScreen mainScreen].bounds;
+    CGRect settingRect = self.settingView.frame;
+    if (shouldHidden) {
+        if (settingRect.origin.y == screenRect.size.height) {
+            return;
+        }
+        settingRect.origin.y = screenRect.size.height;
+    }else {
+        if (settingRect.origin.y == screenRect.size.height - settingRect.size.height) {
+            return;
+        }
+        settingRect.origin.y = screenRect.size.height - settingRect.size.height;
+    }
+    [UIView animateWithDuration:UINavigationControllerHideShowBarDuration animations:^{
+        self.settingView.frame = settingRect;
+    } completion:^(BOOL finished) {
+        
+    }];
 }
 
 //新解析方式 加载章节列表
@@ -1189,19 +1491,17 @@
     btn.selected = NO;
     btn.tag = tag;
     [btn addTarget:self action:@selector(clickedToolBarButtonItem:) forControlEvents:UIControlEventTouchUpInside];
-    [btn setImage:[UIImage imageNamed:normalImg] forState:UIControlStateNormal];
+    [btn setImage:[[UIImage imageNamed:normalImg] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
     if (selectedImg) {
-        [btn setImage:[UIImage imageNamed:selectedImg] forState:UIControlStateSelected];
+        [btn setImage:[[UIImage imageNamed:selectedImg] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateSelected];
     }
-    [btn setImageEdgeInsets:UIEdgeInsetsMake(5, 13, 21, 13)];
-    btn.titleLabel.font = [UIFont systemFontOfSize:11];
+    [btn setImageEdgeInsets:UIEdgeInsetsMake(5, 13, 21, 13)];//44   26
+    btn.titleLabel.font = [UIFont systemFontOfSize:12];
     [btn setTitle:title forState:UIControlStateNormal];
-    [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     if (selectedTitle) {
         [btn setTitle:selectedTitle forState:UIControlStateSelected];
     }
-    [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    [btn setTitleEdgeInsets:UIEdgeInsetsMake(24, -22, 0, 0)];
+    [btn setTitleEdgeInsets:UIEdgeInsetsMake(24, -29, 0, 0)];
     if (isSelected) {
         btn.selected = YES;
     }else {
@@ -1268,7 +1568,7 @@
         [self saveReaderRecorder];
     }
     
-    if (self.relatedArray != nil && self.relatedArray.count > 0) {
+    if (self.isCollected == NO && self.relatedArray != nil && self.relatedArray.count > 0) {
         __weak LMReaderBookViewController* weakSelf = self;
         LMReaderRelatedBookAlertView* bookAV = [[LMReaderRelatedBookAlertView alloc]init];
         NSInteger subLength = self.relatedArray.count;
@@ -1482,20 +1782,20 @@
                         
                         [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
                         
-                        self.sourceView.hidden = NO;//换源成功，显示sourceTitleView
+                        self.sourceTV.hidden = NO;//换源成功，显示sourceTitleView
                         
                         [weakSelf hideNetworkLoadingView];
                         [weakSelf showMBProgressHUDWithText:@"换源成功"];
                     } failureBlock:^(NSError *error) {
                         
-                        self.sourceView.hidden = YES;//换源失败，隐藏sourceTitleView
+                        self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
                         
                         [weakSelf hideNetworkLoadingView];
                         [weakSelf setupPageViewControllerWithCurrentChapter:nil];
                         [weakSelf showMBProgressHUDWithText:@"换源失败"];
                     }];
                 } failureBlock:^(NSError *error) {
-                    self.sourceView.hidden = YES;//换源失败，隐藏sourceTitleView
+                    self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
                     
                     [weakSelf hideNetworkLoadingView];
                     [weakSelf setupPageViewControllerWithCurrentChapter:nil];
@@ -1556,363 +1856,304 @@
 
 //点击toolBar
 -(void)clickedToolBarButtonItem:(UIButton* )sender {
-    switch (sender.tag) {
-        case 0://目录
-        {
-            __weak LMReaderBookViewController* weakSelf = self;
-            if (self.readerBook.isNew) {
-                LMNewCatalogViewController* catalogVC = [[LMNewCatalogViewController alloc]init];
-                catalogVC.chapterIndex = [self.readerBook.chaptersArr indexOfObject:self.readerBook.currentChapter];
-                catalogVC.dataArray = [NSMutableArray arrayWithArray:self.readerBook.chaptersArr];
-                catalogVC.callBack = ^(BOOL didChange, NSInteger selectedIndex) {
-                    if (didChange) {
-                        [weakSelf showNetworkLoadingView];
-                        
-                        LMReaderBookChapter* bookChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:selectedIndex];
-                        weakSelf.readerBook.currentChapter = bookChapter;
-                        weakSelf.readerBook.currentChapter.offset = 0;
-                        weakSelf.readerBook.currentChapter.currentPage = 0;
-                        weakSelf.readerBook.currentChapter.pageChange = 0;
-                        if (bookChapter.pagesArr.count > 0) {
-                            [weakSelf setupPageViewControllerWithCurrentChapter:bookChapter];
-                            [weakSelf hideNetworkLoadingView];
-                            return;
-                        }else {
-                            weakSelf.readerBook.currentChapter.pagesArr = nil;
-                            UrlReadParse* parse = [weakSelf.readerBook.parseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
-                            [weakSelf initLoadNewParseChapterContentWithBookChapter:weakSelf.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                                weakSelf.readerBook.currentChapter.content = contentStr;
-                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
-                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
-                                
-                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                                
-                                [weakSelf hideNetworkLoadingView];
-                                [weakSelf showMBProgressHUDWithText:@"切换成功"];
-                            } failureBlock:^(NSError *error) {
-                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                                
-                                [weakSelf hideNetworkLoadingView];
-                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                            }];
-                        }
-                    }
-                };
-                [self.navigationController pushViewController:catalogVC animated:YES];
-            }else {
-                LMCatalogViewController* catalogVC = [[LMCatalogViewController alloc]init];
-                catalogVC.chapterIndex = [self.readerBook.chaptersArr indexOfObject:self.readerBook.currentChapter];
-                catalogVC.bookId = (UInt32 )self.readerBook.bookId;
-                catalogVC.dataArray = [NSMutableArray arrayWithArray:self.readerBook.chaptersArr];
-                catalogVC.callBlock = ^(BOOL didChange, NSMutableArray *catalogArr, NSInteger selectedIndex) {
-                    if (catalogArr != nil && ![catalogArr isKindOfClass:[NSNull class]] && catalogArr.count > 0 && weakSelf.readerBook.chaptersArr.count == 0) {
-                        weakSelf.readerBook.chaptersArr = [NSMutableArray arrayWithArray:catalogArr];
-                    }
-                    if (didChange) {
-                        [weakSelf showNetworkLoadingView];
-                        
-                        LMReaderBookChapter* bookChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:selectedIndex];
-                        weakSelf.readerBook.currentChapter = bookChapter;
-                        weakSelf.readerBook.currentChapter.offset = 0;
-                        weakSelf.readerBook.currentChapter.currentPage = 0;
-                        weakSelf.readerBook.currentChapter.pageChange = 0;
-                        weakSelf.readerBook.currentChapter.pagesArr = nil;
-                        if (bookChapter.pagesArr.count > 0) {
-                            [weakSelf setupPageViewControllerWithCurrentChapter:bookChapter];
-                            [weakSelf hideNetworkLoadingView];
-                            return;
-                        }else {
-                            [weakSelf loadOldParseChapterContentWithCurrentChapter:bookChapter shouldQueryCache:YES successBlock:^(NSString *contentStr) {
-                                weakSelf.readerBook.currentChapter.content = contentStr;
-                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
-                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
-                                
-                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                                
-                                [weakSelf hideNetworkLoadingView];
-                                [weakSelf showMBProgressHUDWithText:@"切换成功"];
-                            } failureBlock:^(NSError *error) {
-                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                                
-                                [weakSelf hideNetworkLoadingView];
-                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                            }];
-                        }
-                    }
-                };
-                [self.navigationController pushViewController:catalogVC animated:YES];
-            }
-        }
-            break;
-        case 1://报错
-        {
-            NSString* currentChapterStr = self.readerBook.currentChapter.content;
-            if (currentChapterStr != nil && ![currentChapterStr isKindOfClass:[NSNull class]] && currentChapterStr.length > 0) {
-                
-            }else {
-                return;
-            }
-            __weak LMReaderBookViewController* weakSelf = self;
-            
-            LMReaderFeedBackAlertView* feedBackAV = [[LMReaderFeedBackAlertView alloc]init];
-            feedBackAV.submitBlock = ^(BOOL submit, NSString *text) {
-                if (submit) {
-                    UInt32 sourceId = 0;
-                    if (weakSelf.readerBook.isNew) {
-                        if (weakSelf.readerBook.parseArr.count > 0) {
-                            UrlReadParse* parse = [weakSelf.readerBook.parseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
-                            sourceId = parse.source.id;
-                        }
-                    }else {
-                        sourceId = (UInt32 )weakSelf.readerBook.currentChapter.sourceId;
-                    }
-                    NSString* infoStr = [NSString stringWithFormat:@"%@[bid:%d][sid:%d]", text, weakSelf.bookId, sourceId];
-                    UInt32 typeInt = 0;
-                    FeedbackReqBuilder* builder = [FeedbackReq builder];
-                    [builder setType:typeInt];
-                    [builder setWords:infoStr];
-                    FeedbackReq* req = [builder build];
-                    NSData* reqData = [req data];
+    if (sender == self.catalogToolBtn) {//目录
+        __weak LMReaderBookViewController* weakSelf = self;
+        LMBookCatalogViewController* catalogVC = [[LMBookCatalogViewController alloc]init];
+        catalogVC.bookId = (UInt32 )self.readerBook.bookId;
+        catalogVC.fromWhich = 1;
+        catalogVC.bookNameStr = self.bookName;
+        catalogVC.chapterIndex = [self.readerBook.chaptersArr indexOfObject:self.readerBook.currentChapter];
+        catalogVC.dataArray = [NSMutableArray arrayWithArray:self.readerBook.chaptersArr];
+        [self.navigationController pushViewController:catalogVC animated:YES];
+        if (self.readerBook.isNew) {
+            catalogVC.isNew = YES;
+            catalogVC.callBack = ^(BOOL didChange, NSInteger selectedIndex) {
+                if (didChange) {
+                    [weakSelf showNetworkLoadingView];
                     
-                    LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
-                    [tool postWithCmd:16 ReqData:reqData successBlock:^(NSData *successData) {
-                        @try {
-                            FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
-                            if (apiRes.cmd == 16) {
-                                ErrCode err = apiRes.err;
-                                if (err == ErrCodeErrNone) {
-                                    [weakSelf showMBProgressHUDWithText:@"感谢您的反馈，我们将尽快处理"];
-                                }
-                            }
-                        } @catch (NSException *exception) {
-                            [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
-                        } @finally {
+                    LMReaderBookChapter* bookChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:selectedIndex];
+                    weakSelf.readerBook.currentChapter = bookChapter;
+                    weakSelf.readerBook.currentChapter.offset = 0;
+                    weakSelf.readerBook.currentChapter.currentPage = 0;
+                    weakSelf.readerBook.currentChapter.pageChange = 0;
+                    if (bookChapter.pagesArr.count > 0) {
+                        [weakSelf setupPageViewControllerWithCurrentChapter:bookChapter];
+                        [weakSelf hideNetworkLoadingView];
+                        return;
+                    }else {
+                        weakSelf.readerBook.currentChapter.pagesArr = nil;
+                        UrlReadParse* parse = [weakSelf.readerBook.parseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
+                        [weakSelf initLoadNewParseChapterContentWithBookChapter:weakSelf.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                            weakSelf.readerBook.currentChapter.content = contentStr;
+                            NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
+                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
                             
-                        }
-                        [weakSelf hideNetworkLoadingView];
-                        
-                    } failureBlock:^(NSError *failureError) {
-                        [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
-                        [weakSelf hideNetworkLoadingView];
-                    }];
+                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf showMBProgressHUDWithText:@"切换成功"];
+                        } failureBlock:^(NSError *error) {
+                            [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                        }];
+                    }
                 }
             };
-            [feedBackAV startShow];
-        }
-            break;
-        case 2://下载
-        {
-            NSString* currentChapterStr = self.readerBook.currentChapter.content;
-            if (currentChapterStr != nil && ![currentChapterStr isKindOfClass:[NSNull class]] && currentChapterStr.length > 0) {
-                
-            }else {
-                return;
-            }
-            CGRect screenRect = [UIScreen mainScreen].bounds;
-            if (self.downloadView.isShow == NO) {
-                if (self.downloadView.isDownload == NO) {
-                    NSArray* catalogArr = [NSArray arrayWithArray:self.readerBook.chaptersArr];
-                    if (self.readerBook.isNew) {
-                        UrlReadParse* parse = [self.readerBook.parseArr objectAtIndex:self.readerBook.currentParseIndex];
-                        [self.downloadView startDownloadNewParseBookWithBookId:self.bookId catalogList:catalogArr parse:parse block:^(BOOL isFinished, CGFloat progress) {
-                            
-                        }];
+        }else {
+            catalogVC.isNew = NO;
+            catalogVC.callBack = ^(BOOL didChange, NSInteger selectedIndex) {
+                if (didChange) {
+                    [weakSelf showNetworkLoadingView];
+                    
+                    LMReaderBookChapter* bookChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:selectedIndex];
+                    weakSelf.readerBook.currentChapter = bookChapter;
+                    weakSelf.readerBook.currentChapter.offset = 0;
+                    weakSelf.readerBook.currentChapter.currentPage = 0;
+                    weakSelf.readerBook.currentChapter.pageChange = 0;
+                    if (bookChapter.pagesArr.count > 0) {
+                        [weakSelf setupPageViewControllerWithCurrentChapter:bookChapter];
+                        [weakSelf hideNetworkLoadingView];
+                        return;
                     }else {
-                        [self.downloadView startDownloadBookWithBookId:self.bookId catalogList:catalogArr block:^(BOOL isFinished, CGFloat progress) {
-                            if (isFinished) {
-                                //                            NSLog(@"----------isFinished----------");
-                            }
-                            //                        NSLog(@"---progress---- = %f", progress);
+                        [weakSelf loadOldParseChapterContentWithCurrentChapter:bookChapter shouldQueryCache:YES successBlock:^(NSString *contentStr) {
+                            weakSelf.readerBook.currentChapter.content = contentStr;
+                            NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
+                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                            
+                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf showMBProgressHUDWithText:@"切换成功"];
+                        } failureBlock:^(NSError *error) {
+                            [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
                         }];
                     }
                 }
-                CGFloat toolBarHeight = 49;
-                if ([LMTool isBangsScreen]) {
-                    toolBarHeight = 83;
-                }
-                [self.downloadView showDownloadViewWithFinalFrame:CGRectMake(0, screenRect.size.height - toolBarHeight - 40, self.view.frame.size.width, 40)];
-            }else {
-                [self.downloadView hideDownloadViewWithFinalFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 40)];
-            }
-            
+            };
         }
-            break;
-        case 3://收藏
-        {
-            __weak LMReaderBookViewController* weakSelf = self;
-            UserBookStoreOperateType type = UserBookStoreOperateTypeOperateAdd;
-            if (self.isCollected) {
-                type = UserBookStoreOperateTypeOperateDel;
+//        [self.navigationController pushViewController:catalogVC animated:YES];
+        
+    }else if (sender == self.nightToolBtn) {//夜间、日间
+        BOOL isNightModel = [LMTool getSystemNightShift];
+        
+        [LMTool changeSystemNightShift:!isNightModel];
+        
+        AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+        [appDelegate updateSystemNightShift];
+        
+        if (isNightModel) {
+            if (self.settingView) {
+                self.readModel = LMReaderBackgroundType1;
+                
+                [LMTool changeReaderConfigWithBackgroundInteger:1];
+                
+                [self reloadTopNaviBarViewAndSourceTitleView];
+                [self reloadDownloadBookView];
+                
+                [self showNetworkLoadingView];
+                [self resetupPageViewControllers];
+                [self hideNetworkLoadingView];
             }
-            UserBookStoreOperateReqBuilder* builder = [UserBookStoreOperateReq builder];
-            [builder setBookId:weakSelf.bookId];
-            [builder setType:type];
-            UserBookStoreOperateReq* req = [builder build];
-            NSData* reqData = [req data];
+            self.settingView.bgInteger = 1;
+            [self.settingView reloadReaderSettingViewWithModel:self.readModel];
+        }else {
+            if (self.settingView) {
+                self.readModel = LMReaderBackgroundType4;
+                
+                [LMTool changeReaderConfigWithBackgroundInteger:4];
+                
+                [self reloadTopNaviBarViewAndSourceTitleView];
+                [self reloadDownloadBookView];
+                
+                [self showNetworkLoadingView];
+                [self resetupPageViewControllers];
+                [self hideNetworkLoadingView];
+            }
+            self.settingView.bgInteger = 4;
+            [self.settingView reloadReaderSettingViewWithModel:self.readModel];
+        }
+        [self reloadBottomToolBarViewAndSettingView];
+        
+    }else if (sender == self.setToolBtn) {//设置
+        [self setupToolBarViewHidden:YES];
+        [self setupDownloadViewHidden:YES];
+        
+        CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+        __weak LMReaderBookViewController* weakSelf = self;
+        NSString* contentText = self.readerBook.currentChapter.content;
+        if (contentText != nil && ![contentText isKindOfClass:[NSNull class]] && contentText.length > 0) {
             
-            [self showNetworkLoadingView];
+        }else {
+            return;
+        }
+        if (self.settingView) {
+            self.settingView.fontBlock = ^(CGFloat fontValue, CGFloat lineSpace) {//字号
+                LMReaderBookPage* tempCurrentPage =  [weakSelf.readerBook.currentChapter.pagesArr objectAtIndex:weakSelf.readerBook.currentChapter.currentPage];
+                weakSelf.readerBook.currentChapter.offset = tempCurrentPage.startLocation;
+                //清空之前缓存的章节页，等翻章节时再重新切页
+                for (NSInteger i = 0; i < weakSelf.readerBook.chaptersArr.count; i ++) {
+                    LMReaderBookChapter* tempChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:i];
+                    if (tempChapter.pagesArr != nil && tempChapter.pagesArr.count > 0) {
+                        tempChapter.pagesArr = nil;
+                    }
+                }
+                
+                weakSelf.fontSize = fontValue;
+                weakSelf.lineSpace = lineSpace;
+                [LMTool changeReaderConfigWithFontSize:fontValue];
+                
+                [weakSelf showNetworkLoadingView];
+                [weakSelf resetupPageViewControllers];
+                [weakSelf hideNetworkLoadingView];
+            };
+            self.settingView.bgBlock = ^(NSInteger bgValue) {//背景
+                weakSelf.readModel = bgValue;
+                [LMTool changeReaderConfigWithBackgroundInteger:bgValue];
+                
+                [weakSelf reloadTopNaviBarViewAndSourceTitleView];
+                [weakSelf reloadBottomToolBarViewAndSettingView];
+                [weakSelf reloadDownloadBookView];
+                
+                [weakSelf showNetworkLoadingView];
+                [weakSelf resetupPageViewControllers];
+                [weakSelf hideNetworkLoadingView];
+            };
+            self.settingView.lpBlock = ^(CGFloat lineSpaceValue, NSInteger lpIndex) {//行间距
+                LMReaderBookPage* tempCurrentPage =  [weakSelf.readerBook.currentChapter.pagesArr objectAtIndex:weakSelf.readerBook.currentChapter.currentPage];
+                weakSelf.readerBook.currentChapter.offset = tempCurrentPage.startLocation;
+                //清空之前缓存的章节页，等翻章节时再重新切页
+                for (NSInteger i = 0; i < weakSelf.readerBook.chaptersArr.count; i ++) {
+                    LMReaderBookChapter* tempChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:i];
+                    if (tempChapter.pagesArr != nil && tempChapter.pagesArr.count > 0) {
+                        tempChapter.pagesArr = nil;
+                    }
+                }
+                
+                weakSelf.lineSpace = lineSpaceValue;
+                weakSelf.lineSpaceIndex = lpIndex;
+                [LMTool changeReaderConfigWithLineSpace:lineSpaceValue lineSpaceIndex:lpIndex];
+                
+                [weakSelf showNetworkLoadingView];
+                [weakSelf resetupPageViewControllers];
+                [weakSelf hideNetworkLoadingView];
+            };
+        }
+        
+        CGFloat settingHeight = self.settingView.frame.size.height;
+        [self.settingView showSettingViewWithFinalFrame:CGRectMake(0, screenHeight - settingHeight, self.view.frame.size.width, settingHeight)];
+        
+    }else if (sender == self.feedbackToolBtn) {//报错
+        NSString* currentChapterStr = self.readerBook.currentChapter.content;
+        if (currentChapterStr != nil && ![currentChapterStr isKindOfClass:[NSNull class]] && currentChapterStr.length > 0) {
             
-            LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
-            [tool postWithCmd:4 ReqData:reqData successBlock:^(NSData *successData) {
-                @try {
-                    FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
-                    if (apiRes.cmd == 4) {
-                        ErrCode err = apiRes.err;
-                        if (err == ErrCodeErrNone) {//成功
-                            if (weakSelf.isCollected) {
-                                weakSelf.isCollected = NO;
-                                sender.selected = NO;
-                            }else {
-                                weakSelf.isCollected = YES;
-                                sender.selected = YES;
+        }else {
+            return;
+        }
+        __weak LMReaderBookViewController* weakSelf = self;
+        
+        LMReaderFeedBackAlertView* feedBackAV = [[LMReaderFeedBackAlertView alloc]init];
+        feedBackAV.submitBlock = ^(BOOL submit, NSString *text) {
+            if (submit) {
+                UInt32 sourceId = 0;
+                if (weakSelf.readerBook.isNew) {
+                    if (weakSelf.readerBook.parseArr.count > 0) {
+                        UrlReadParse* parse = [weakSelf.readerBook.parseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
+                        sourceId = parse.source.id;
+                    }
+                }else {
+                    sourceId = (UInt32 )weakSelf.readerBook.currentChapter.sourceId;
+                }
+                NSString* infoStr = [NSString stringWithFormat:@"%@[bid:%d][sid:%d]", text, weakSelf.bookId, sourceId];
+                UInt32 typeInt = 0;
+                FeedbackReqBuilder* builder = [FeedbackReq builder];
+                [builder setType:typeInt];
+                [builder setWords:infoStr];
+                FeedbackReq* req = [builder build];
+                NSData* reqData = [req data];
+                
+                LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
+                [tool postWithCmd:16 ReqData:reqData successBlock:^(NSData *successData) {
+                    @try {
+                        FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+                        if (apiRes.cmd == 16) {
+                            ErrCode err = apiRes.err;
+                            if (err == ErrCodeErrNone) {
+                                [weakSelf showMBProgressHUDWithText:@"感谢您的反馈，我们将尽快处理"];
                             }
-                            //通知书架界面刷新
-                            [[NSNotificationCenter defaultCenter] postNotificationName:@"refreshBookShelfViewController" object:nil];
-                            
-                            [weakSelf showMBProgressHUDWithText:@"操作成功"];
-                        }else {
-                            [weakSelf showMBProgressHUDWithText:@"操作失败"];
                         }
+                    } @catch (NSException *exception) {
+                        [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+                    } @finally {
+                        
                     }
+                    [weakSelf hideNetworkLoadingView];
                     
-                } @catch (NSException *exception) {
+                } failureBlock:^(NSError *failureError) {
                     [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
-                } @finally {
-                    
-                }
-                [weakSelf hideNetworkLoadingView];
-                
-            } failureBlock:^(NSError *failureError) {
-                
-                [weakSelf hideNetworkLoadingView];
-                [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
-            }];
+                    [weakSelf hideNetworkLoadingView];
+                }];
+            }
+        };
+        [feedBackAV startShow];
+    }else if (sender == self.downloadToolBtn) {//下载
+        NSString* currentChapterStr = self.readerBook.currentChapter.content;
+        if (currentChapterStr != nil && ![currentChapterStr isKindOfClass:[NSNull class]] && currentChapterStr.length > 0) {
+            
+        }else {
+            return;
         }
-            break;
-        case 4://设置
-        {
-            CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+        if (!self.downloadView) {
+            self.downloadView = [[LMDownloadBookView alloc]initWithFrame:CGRectMake(0, self.toolBarView.frame.origin.y - 40, self.view.frame.size.width, 40)];
+            [self.downloadView reloadDownloadBookViewWithModel:self.readModel];
+            [self.view addSubview:self.downloadView];
+        }
+        if (self.downloadView.isDownload == NO) {
             __weak LMReaderBookViewController* weakSelf = self;
-            NSString* contentText = self.readerBook.currentChapter.content;
-            if (contentText != nil && ![contentText isKindOfClass:[NSNull class]] && contentText.length > 0) {
-                
+            NSArray* catalogArr = [NSArray arrayWithArray:self.readerBook.chaptersArr];
+            if (self.readerBook.isNew) {
+                UrlReadParse* parse = [self.readerBook.parseArr objectAtIndex:self.readerBook.currentParseIndex];
+                [self.downloadView startDownloadNewParseBookWithBookId:self.bookId catalogList:catalogArr parse:parse block:^(BOOL isFinished, BOOL isFailed, NSInteger totalCount, CGFloat progress) {
+                    if (isFailed && totalCount < LMDownloadBookViewMaxCount) {
+                        [weakSelf clickedToolBarButtonItem:weakSelf.downloadToolBtn];
+                    }
+                }];
             }else {
-                return;
-            }
-            if (!self.settingView) {
-                self.settingView = [[LMReaderSettingView alloc]initWithFrame:CGRectMake(0, screenHeight, self.view.frame.size.width, 250) bringht:self.brightness fontSize:self.fontSize bgInteger:self.readModel lineSpaceIndex:self.lineSpaceIndex];
-                [self.view addSubview:self.settingView];
-                self.settingView.brightBlock = ^(CGFloat brightValue) {//亮度
-                    [UIScreen mainScreen].brightness = brightValue;
-                    [LMTool changeReaderConfigWithBackgroundInteger:brightValue];
-                };
-                self.settingView.fontBlock = ^(CGFloat fontValue, CGFloat lineSpace) {//字号
-                    LMReaderBookPage* tempCurrentPage =  [weakSelf.readerBook.currentChapter.pagesArr objectAtIndex:weakSelf.readerBook.currentChapter.currentPage];
-                    weakSelf.readerBook.currentChapter.offset = tempCurrentPage.startLocation;
-                    //清空之前缓存的章节页，等翻章节时再重新切页
-                    for (NSInteger i = 0; i < weakSelf.readerBook.chaptersArr.count; i ++) {
-                        LMReaderBookChapter* tempChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:i];
-                        if (tempChapter.pagesArr != nil && tempChapter.pagesArr.count > 0) {
-                            tempChapter.pagesArr = nil;
+                [self.downloadView startDownloadOldParseBookWithBookId:self.bookId catalogList:catalogArr block:^(BOOL isFinished, BOOL isFailed, NSInteger totalCount, CGFloat progress) {
+                    if (isFinished) {
+                        if (isFailed && totalCount < LMDownloadBookViewMaxCount) {
+                            [weakSelf clickedToolBarButtonItem:weakSelf.downloadToolBtn];
                         }
                     }
-                    
-                    weakSelf.fontSize = fontValue;
-                    weakSelf.lineSpace = lineSpace;
-                    [LMTool changeReaderConfigWithFontSize:fontValue];
-                    
-                    [weakSelf showNetworkLoadingView];
-                    [weakSelf resetupPageViewControllers];
-                    [weakSelf hideNetworkLoadingView];
-                };
-                self.settingView.bgBlock = ^(NSInteger bgValue) {//背景
-                    weakSelf.readModel = bgValue;
-                    [LMTool changeReaderConfigWithBackgroundInteger:bgValue];
-                    
-                    [weakSelf showNetworkLoadingView];
-                    [weakSelf resetupPageViewControllers];
-                    [weakSelf hideNetworkLoadingView];
-                };
-                self.settingView.lpBlock = ^(CGFloat lineSpaceValue, NSInteger lpIndex) {//行间距
-                    LMReaderBookPage* tempCurrentPage =  [weakSelf.readerBook.currentChapter.pagesArr objectAtIndex:weakSelf.readerBook.currentChapter.currentPage];
-                    weakSelf.readerBook.currentChapter.offset = tempCurrentPage.startLocation;
-                    //清空之前缓存的章节页，等翻章节时再重新切页
-                    for (NSInteger i = 0; i < weakSelf.readerBook.chaptersArr.count; i ++) {
-                        LMReaderBookChapter* tempChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:i];
-                        if (tempChapter.pagesArr != nil && tempChapter.pagesArr.count > 0) {
-                            tempChapter.pagesArr = nil;
-                        }
-                    }
-                    
-                    weakSelf.lineSpace = lineSpaceValue;
-                    weakSelf.lineSpaceIndex = lpIndex;
-                    [LMTool changeReaderConfigWithLineSpace:lineSpaceValue lineSpaceIndex:lpIndex];
-                    
-                    [weakSelf showNetworkLoadingView];
-                    [weakSelf resetupPageViewControllers];
-                    [weakSelf hideNetworkLoadingView];
-                };
-            }
-            CGFloat toolBarHeight = 44;
-            if ([LMTool isBangsScreen]) {
-                toolBarHeight = 83;
-            }
-            if (self.settingView.isShow) {
-                [self.settingView hideSettingViewWithFinalFrame:CGRectMake(0, screenHeight, self.view.frame.size.width, 250)];
-            }else {
-                [self.settingView showSettingViewWithFinalFrame:CGRectMake(0, screenHeight - toolBarHeight - 250, self.view.frame.size.width, 250)];
+                }];
             }
         }
-            break;
-        default:
-            break;
+        [self setupDownloadViewHidden:NO];
     }
 }
 
 -(void)tapped:(UITapGestureRecognizer* )tapGR {
-    CGRect screenRect = [UIScreen mainScreen].bounds;
+    BOOL isNaviBarHidden = self.naviBarView.frame.origin.y < 0;
+    [self setupNaviBarViewHidden:!isNaviBarHidden];
+    [self setupToolBarViewHidden:!isNaviBarHidden];
+    [self setupSourceTitleViewHidden:!isNaviBarHidden];
+    if (self.downloadView) {
+        [self setupDownloadViewHidden:!isNaviBarHidden];
+    }
     if (self.settingView) {
-        BOOL isSettingHidden = self.settingView.frame.origin.y >= screenRect.size.height;
-        if (!isSettingHidden) {
-            [self.settingView hideSettingViewWithFinalFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 250)];
-        }
+        [self setupSettingViewHidden:YES];
     }
-    //
-    [self.downloadView hideDownloadViewWithFinalFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 40)];
+    [self setupEditCommentButtonHidden:!isNaviBarHidden];
     
-    BOOL isNaviHidden = self.naviBarView.frame.origin.y < 0;
-    if (isNaviHidden) {
-        [self setupNaviBarViewAndToolBarViewHidden:NO];
-        
-        [self.sourceView startShow];
-    }else {
-        [self setupNaviBarViewAndToolBarViewHidden:YES];
-        
-        [self.sourceView startHide];
-    }
+    [self setNeedsStatusBarAppearanceUpdate];
 }
 
-//
--(void)hideAllOtherViews {
-    CGRect screenRect = [UIScreen mainScreen].bounds;
-    if (self.settingView) {
-        BOOL isSettingHidden = self.settingView.frame.origin.y >= screenRect.size.height;
-        if (!isSettingHidden) {
-            [self.settingView hideSettingViewWithFinalFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 250)];
-        }
-    }
-    //
-    [self.downloadView hideDownloadViewWithFinalFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 40)];
-    
-    BOOL isNaviHidden = self.naviBarView.frame.origin.y < 0;
-    if (!isNaviHidden) {
-        [self setupNaviBarViewAndToolBarViewHidden:YES];
-        
-        [self.sourceView startHide];
-    }
-}
-
--(LMSourceTitleView *)sourceView {
+//来源
+-(LMSourceTitleView *)sourceTV {
     if (self.readerBook.isNew && self.readerBook.parseArr.count > 0) {
         __weak LMReaderBookViewController* weakSelf = self;
         UrlReadParse* parse = [self.readerBook.parseArr objectAtIndex:self.readerBook.currentParseIndex];
@@ -1923,13 +2164,13 @@
         }else {
             chapterUrlStr = parse.listUrl;
         }
-        if (!_sourceView) {
-            _sourceView = [[LMSourceTitleView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 30)];
-            [self.view addSubview:_sourceView];
+        if (!_sourceTV) {
+            _sourceTV = [[LMSourceTitleView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 30)];
+            [self.view addSubview:_sourceTV];
         }
-        if (_sourceView) {
-            _sourceView.alertText = parse.source.name;
-            _sourceView.callBlock = ^(BOOL didClick) {
+        if (_sourceTV) {
+            _sourceTV.alertText = parse.source.name;
+            _sourceTV.callBlock = ^(BOOL didClick) {
                 LMSourceAlertView* sourceAV = [[LMSourceAlertView alloc]initWithFrame:CGRectZero text:chapterUrlStr sourceName:parse.source.name];
                 sourceAV.sureBlock = ^(BOOL sure) {
                     if ([[UIApplication sharedApplication] respondsToSelector:@selector(openURL:options:completionHandler:)]) {
@@ -1942,8 +2183,9 @@
                 };
                 [sourceAV startShow];
             };
-            [self.view bringSubviewToFront:_sourceView];
-            return _sourceView;
+            [_sourceTV reloadSourceTitleViewWithModel:self.readModel];
+            [self.view bringSubviewToFront:_sourceTV];
+            return _sourceTV;
         }
     }
     return nil;
@@ -1962,7 +2204,7 @@
     }
     
     //隐藏头尾
-    [self hideAllOtherViews];
+    [self hideAllHeaderAndFooterView];
     
     NSInteger bookCurrentPage = self.readerBook.currentChapter.currentPage;
     NSArray* bookPagesArray = self.readerBook.currentChapter.pagesArr;
@@ -2108,7 +2350,7 @@
     }
     
     //隐藏头尾
-    [self hideAllOtherViews];
+    [self hideAllHeaderAndFooterView];
     
     NSInteger bookCurrentPage = self.readerBook.currentChapter.currentPage;
     NSArray* bookPagesArray = self.readerBook.currentChapter.pagesArr;
@@ -2190,14 +2432,14 @@
                             
                             [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
                             
-                            self.sourceView.hidden = NO;//换源成功，显示sourceTitleView
+                            self.sourceTV.hidden = NO;//换源成功，显示sourceTitleView
                             
                             [weakSelf hideNetworkLoadingView];
                             [weakSelf hideEmptyLabel];
                             [weakSelf showMBProgressHUDWithText:@"换源成功"];
                         } failureBlock:^(NSError *error) {
                             
-                            self.sourceView.hidden = YES;//换源失败，隐藏sourceTitleView
+                            self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
                             
                             [weakSelf hideNetworkLoadingView];
                             [weakSelf hideEmptyLabel];
@@ -2205,7 +2447,7 @@
                             [weakSelf showMBProgressHUDWithText:@"换源失败"];
                         }];
                     } failureBlock:^(NSError *error) {
-                        self.sourceView.hidden = YES;//换源失败，隐藏sourceTitleView
+                        self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
                         
                         [weakSelf hideNetworkLoadingView];
                         [weakSelf hideEmptyLabel];
@@ -2381,14 +2623,6 @@
     self.isAnimate = NO;
 }
 
--(LMDownloadBookView *)downloadView {
-    if (!_downloadView) {
-        CGRect screenRect = [UIScreen mainScreen].bounds;
-        _downloadView = [[LMDownloadBookView alloc]initWithFrame:CGRectMake(0, screenRect.size.height, self.view.frame.size.width, 40)];
-        [self.view addSubview:_downloadView];
-    }
-    return _downloadView;
-}
 
 -(NSArray<LMReaderBookPage* >* )cutBookPageWithChapterContent:(NSString* )chapterContent offset:(NSInteger )offset {
     NSMutableArray* arr = [NSMutableArray array];
@@ -2404,8 +2638,7 @@
     paraStyle.lineBreakMode = NSLineBreakByCharWrapping;
     paraStyle.lineSpacing = self.lineSpace;
     
-    NSMutableAttributedString* beforeAttributedStr = [[NSMutableAttributedString alloc]initWithString:resultStr attributes:@{NSFontAttributeName : [UIFont fontWithName:@"PingFang SC" size:self.fontSize], NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];//[UIFont systemFontOfSize:self.fontSize]
-    
+    NSMutableAttributedString* beforeAttributedStr = [[NSMutableAttributedString alloc]initWithString:resultStr attributes:@{NSFontAttributeName : [UIFont fontWithName:@"PingFang SC" size:self.fontSize], NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];//[UIFont systemFontOfSize:self.fontSize]指定字体，否则容易切页不准
     
     //Chiang
     NSMutableArray* tempPageArray = [NSMutableArray array];
@@ -2414,6 +2647,7 @@
     [textStorage addLayoutManager:layoutManager];
     while (YES) {
         NSTextContainer *textContainer = [[NSTextContainer alloc] initWithSize:contentLabRect.size];
+        
         [layoutManager addTextContainer:textContainer];
         
         NSRange rang = [layoutManager glyphRangeForTextContainer:textContainer];
@@ -2424,51 +2658,6 @@
         [tempPageArray addObject:@(loc)];
     }
     
-    /*
-    CTFramesetterRef beforeFrameSetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef) beforeAttributedStr);
-    CGPathRef path = CGPathCreateWithRect(CGRectMake(0, 0, CGRectGetWidth(contentRect), CGRectGetHeight(contentRect)), NULL);
-    
-    NSInteger beforeOffset = 0;
-    NSInteger beforeInnerOffset = 0;
-    BOOL hasBeforePage = YES;// 防止死循环，如果在同一个位置获取CTFrame超过2次，则跳出循环
-    NSInteger beforeLoopSign = beforeOffset;
-    NSInteger beforeRepeatCount = 0;
-    NSMutableArray* tempPageArray = [NSMutableArray array];
-    
-    while (hasBeforePage) {
-        if (beforeLoopSign == beforeOffset) {
-            ++beforeRepeatCount;
-        }else {
-            beforeRepeatCount = 0;
-        }
-        if (beforeRepeatCount > 1) {//退出循环前检查一下最后一页是否已经加上
-            if (tempPageArray.count == 0) {
-                [tempPageArray addObject:@(beforeOffset)];
-            }else {
-                NSUInteger lastOffset = [[tempPageArray lastObject] integerValue];
-                if (lastOffset != beforeOffset) {
-                    [tempPageArray addObject:@(beforeOffset)];
-                }
-            }
-            break;
-        }
-        [tempPageArray addObject:@(beforeOffset)];
-        
-        CTFrameRef frame = CTFramesetterCreateFrame(beforeFrameSetter, CFRangeMake(beforeInnerOffset, 0), path, NULL);
-        CFRange range = CTFrameGetVisibleStringRange(frame);
-        if ((range.location + range.length) != beforeAttributedStr.length) {
-            beforeOffset += range.length;
-            beforeInnerOffset += range.length;
-        } else {// 已经分完，提示跳出循环
-            hasBeforePage = NO;
-        }
-        if (frame) CFRelease(frame);
-    }
-    CGPathRelease(path);
-    CFRelease(beforeFrameSetter);
-    */
-     
-     
     
     NSInteger chapterIndex = 0;
     if (self.readerBook.chaptersArr.count > 0) {
@@ -2528,13 +2717,12 @@
         if (innerAdSwitch == YES || insertAdSwitch == YES) {
             if (i == tempPageArray.count - 1 && chapterIndex >= stepChapterIndex && i >= stepPageIndex) {//前n章中，不显示广告；任意章页数小于x均不显示广告
                 NSString* lastPageText = [bookPage.text stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-                NSAttributedString* attributeStr = [[NSAttributedString alloc]initWithString:lastPageText attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:self.fontSize], NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];
-                UILabel* lastPageLab = [[UILabel alloc]initWithFrame:contentLabRect];
-                lastPageLab.numberOfLines = 0;
-                lastPageLab.attributedText = attributeStr;
+                NSAttributedString* attributeStr = [[NSAttributedString alloc]initWithString:lastPageText attributes:@{NSFontAttributeName : [UIFont fontWithName:@"PingFang SC" size:self.fontSize], NSParagraphStyleAttributeName : paraStyle, NSKernAttributeName:@(1)}];
+                UITextView* lastPageTV = [[UITextView alloc]initWithFrame:contentLabRect];
+                lastPageTV.attributedText = attributeStr;
                 
-                CGRect labRect = lastPageLab.frame;
-                CGSize labSize = [lastPageLab sizeThatFits:CGSizeMake(labRect.size.width, MAXFLOAT)];
+                CGRect labRect = lastPageTV.frame;
+                CGSize labSize = [lastPageTV sizeThatFits:CGSizeMake(labRect.size.width, MAXFLOAT)];
                 labRect.size.height = labSize.height;
                 
                 CGFloat adWidth = contentScreenWidth - 20;//广告图片宽度
@@ -2586,8 +2774,8 @@
     
     //初始化设置pageVC
     if (!self.pageVC) {
-        self.pageVC = [[LMPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStylePageCurl navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:@{UIPageViewControllerOptionSpineLocationKey : @1}];
-        self.pageVC.doubleSided = YES;
+        self.pageVC = [[LMPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStylePageCurl navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];//@{UIPageViewControllerOptionSpineLocationKey : @1}
+//        self.pageVC.doubleSided = YES;
         self.pageVC.gestureDelegate = self;
         self.pageVC.delegate = self;
         self.pageVC.dataSource = self;
@@ -2671,9 +2859,16 @@
                 sourceId = parse.source.id;
             }
         }
+        
+        NSString* progressStr = @"";
+        if (self.readerBook.chaptersArr.count > 0 && self.readerBook.currentChapter != nil) {
+            NSInteger contentVCIndex = [self.readerBook.chaptersArr indexOfObject:self.readerBook.currentChapter];
+            progressStr = [NSString stringWithFormat:@"%.2f", ((float)(contentVCIndex + 1)) / self.readerBook.chaptersArr.count * 100];
+        }
+        
         LMReaderBookPage* bookPage = [bookChapter.pagesArr objectAtIndex:bookChapter.currentPage];
         LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-        [tool saveBookReadRecordWithBookId:self.bookId bookName:self.bookName chapterId:(UInt32 )bookChapter.chapterId chapterNo:(UInt32 )bookChapter.chapterNo chapterTitle:bookChapter.title sourceId:sourceId offset:bookPage.startLocation];
+        [tool saveBookReadRecordWithBookId:self.bookId bookName:self.bookName chapterId:(UInt32 )bookChapter.chapterId chapterNo:(UInt32 )bookChapter.chapterNo chapterTitle:bookChapter.title sourceId:sourceId offset:bookPage.startLocation progressStr:progressStr];
     }
 }
 

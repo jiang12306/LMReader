@@ -8,6 +8,9 @@
 
 #import "LMBaseViewController.h"
 
+#define LMRangeTitleCollectionViewHeight 40
+#define LMRangeLeftTableViewWidth 85
+
 @interface LMRangeViewController : LMBaseViewController
 
 @end

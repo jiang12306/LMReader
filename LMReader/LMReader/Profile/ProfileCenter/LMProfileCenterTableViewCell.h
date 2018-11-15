@@ -12,9 +12,7 @@
 
 @property (nonatomic, strong) UILabel* nameLab;
 @property (nonatomic, strong) UILabel* contentLab;
-@property (nonatomic, strong) UIImageView* contentIV;
 
 -(void)setupShowContentLabel:(BOOL )show;
--(void)setupShowContentImageView:(BOOL )show;
 
 @end

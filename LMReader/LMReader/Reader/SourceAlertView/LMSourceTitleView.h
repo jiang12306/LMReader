@@ -7,6 +7,7 @@
 //
 
 #import "LMBaseAlertView.h"
+#import "LMContentViewController.h"
 
 typedef void (^LMSourceTitleViewBlock) (BOOL didClick);
 
@@ -16,7 +17,7 @@ typedef void (^LMSourceTitleViewBlock) (BOOL didClick);
 @property (nonatomic, copy) NSString* alertText;
 
 -(void)startShow;
-
 -(void)startHide;
+-(void)reloadSourceTitleViewWithModel:(LMReadModel )currentModel;/**<更换字体颜色*/
 
 @end

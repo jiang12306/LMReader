@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "LMBookShelfModel.h"
 
 @interface LMDatabaseTool : NSObject
 
@@ -41,8 +42,10 @@
 -(BOOL )createReadRecordTable;
 //删除
 -(BOOL )deleteReadRecordTable;
+//清空阅读记录
+-(BOOL )deleteAllReadRecord;
 //保存一条阅读记录
--(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(UInt32 )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset;
+-(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(UInt32 )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset progressStr:(NSString* )progressStr;
 //删除一条阅读记录
 -(BOOL)deleteBookReadRecordWithBookId:(UInt32 )bookId;
 //删除过时的阅读记录
@@ -103,8 +106,10 @@
 -(BOOL )deleteUserBookWithBook:(Book* )book;
 //取所有 书
 -(NSMutableArray* )queryAllUserBooks;
-//取出 书架页面 书 page默认0，size默认20
--(NSMutableArray* )queryBookShelfUserBooksWithPage:(NSInteger )page size:(NSInteger )size;
+//取出 书架页面 书
+-(NSMutableArray* )queryAllBookShelfUserBooks;
+//取一本 书架页面 书
+-(LMBookShelfModel* )queryBookShelfUserBooksWithBookId:(NSInteger )bookId;
 //置顶/取消置顶 书架页面 书
 -(BOOL )setUpside:(BOOL )upside book:(Book* )book;
 

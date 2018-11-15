@@ -7,6 +7,7 @@
 //
 
 #import "LMSourceAlertView.h"
+#import "AppDelegate.h"
 
 @interface LMSourceAlertView ()
 
@@ -25,7 +26,7 @@
     CGRect screenRect = [UIScreen mainScreen].bounds;
     self = [super initWithFrame:CGRectMake(0, 0, screenRect.size.width, screenRect.size.height)];
     if (self) {
-        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.3];
+        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
         
         self.contentView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, screenRect.size.width - 100, screenRect.size.width)];
         self.contentView.backgroundColor = [UIColor whiteColor];
@@ -33,59 +34,48 @@
         self.contentView.layer.masksToBounds = YES;
         [self addSubview:self.contentView];
         
-        self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.contentView.frame.size.width, 50)];
+        self.titleLab = [[UILabel alloc]initWithFrame:CGRectMake(20, 20, self.contentView.frame.size.width, 20)];
         self.titleLab.font = [UIFont boldSystemFontOfSize:18];
-        self.titleLab.textAlignment = NSTextAlignmentCenter;
-        self.titleLab.text = @"温馨提示";
+        self.titleLab.text = @"提示";
         [self.contentView addSubview:self.titleLab];
         
-        self.textLab = [[UILabel alloc]initWithFrame:CGRectMake(10, self.titleLab.frame.origin.y + self.titleLab.frame.size.height, self.contentView.frame.size.width - 20, 0)];
-        self.textLab.font = [UIFont systemFontOfSize:16];
+        self.textLab = [[UILabel alloc]initWithFrame:CGRectMake(20, self.titleLab.frame.origin.y + self.titleLab.frame.size.height + 20, self.contentView.frame.size.width - 20 * 2, 0)];
+        self.textLab.font = [UIFont systemFontOfSize:15];
         self.textLab.numberOfLines = 0;
-        self.textLab.textAlignment = NSTextAlignmentCenter;
         self.textLab.lineBreakMode = NSLineBreakByCharWrapping;
-        self.textLab.text = [NSString stringWithFormat:@"将跳转至源网址%@", text];
-        CGSize textSize = [self.textLab sizeThatFits:CGSizeMake(self.contentView.frame.size.width - 20, CGFLOAT_MAX)];
+        self.textLab.text = [NSString stringWithFormat:@"来源网址：%@", text];
+        CGSize textSize = [self.textLab sizeThatFits:CGSizeMake(self.contentView.frame.size.width - 20 * 2, CGFLOAT_MAX)];
         CGFloat maxHeight = textSize.height;
         if (maxHeight > screenRect.size.height - 200) {
             maxHeight = screenRect.size.height - 200;
         }
-        self.textLab.frame = CGRectMake(10, self.titleLab.frame.origin.y + self.titleLab.frame.size.height, textSize.width, maxHeight);
+        self.textLab.frame = CGRectMake(20, self.titleLab.frame.origin.y + self.titleLab.frame.size.height + 20, textSize.width, maxHeight);
         [self.contentView addSubview:self.textLab];
         
-        self.infoLab = [[UILabel alloc]initWithFrame:CGRectMake(10, self.textLab.frame.origin.y + self.textLab.frame.size.height + 10, self.contentView.frame.size.width - 20, 40)];
-        self.infoLab.font = [UIFont systemFontOfSize:16];
+        self.infoLab = [[UILabel alloc]initWithFrame:CGRectMake(20, self.textLab.frame.origin.y + self.textLab.frame.size.height + 20, self.contentView.frame.size.width - 20 * 2, 40)];
+        self.infoLab.font = [UIFont systemFontOfSize:15];
         self.infoLab.numberOfLines = 0;
         self.infoLab.lineBreakMode = NSLineBreakByCharWrapping;
-        self.infoLab.textAlignment = NSTextAlignmentCenter;
-        self.infoLab.text = [NSString stringWithFormat:@"本小说来自\"%@\"，如有侵权请联系屏蔽，谢谢。", sourceName];
-        CGSize infoSize = [self.infoLab sizeThatFits:CGSizeMake(self.contentView.frame.size.width - 20, CGFLOAT_MAX)];
-        self.infoLab.frame = CGRectMake(10, self.textLab.frame.origin.y + self.textLab.frame.size.height + 10, self.contentView.frame.size.width - 20, infoSize.height);
+        self.infoLab.text = [NSString stringWithFormat:@"此书籍来源于\"%@\"，如有侵权请联系屏蔽，谢谢", sourceName];
+        CGSize infoSize = [self.infoLab sizeThatFits:CGSizeMake(self.contentView.frame.size.width - 20 * 2, CGFLOAT_MAX)];
+        self.infoLab.frame = CGRectMake(20, self.textLab.frame.origin.y + self.textLab.frame.size.height + 20, self.contentView.frame.size.width - 20 * 2, infoSize.height);
         [self.contentView addSubview:self.infoLab];
         
-        self.sureBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, self.infoLab.frame.origin.y + self.infoLab.frame.size.height + 15, self.contentView.frame.size.width / 2, 40)];
-        [self.sureBtn setTitleColor:[UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1] forState:UIControlStateNormal];
-        [self.sureBtn setTitle:@"确定" forState:UIControlStateNormal];
-        [self.sureBtn addTarget:self action:@selector(clickedSureButton:) forControlEvents:UIControlEventTouchUpInside];
-        [self.contentView addSubview:self.sureBtn];
-        
-        self.cancelBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.sureBtn.frame.size.width, self.sureBtn.frame.origin.y, self.sureBtn.frame.size.width, self.sureBtn.frame.size.height)];
-        [self.cancelBtn setTitleColor:[UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1] forState:UIControlStateNormal];
+        self.cancelBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.contentView.frame.size.width - 20 - 40, self.infoLab.frame.origin.y + self.infoLab.frame.size.height + 20, 40, 20)];
+        self.cancelBtn.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+        [self.cancelBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateNormal];
         [self.cancelBtn setTitle:@"取消" forState:UIControlStateNormal];
         [self.cancelBtn addTarget:self action:@selector(clickedCancelButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:self.cancelBtn];
         
-        CALayer* hLayer = [CALayer layer];
-        hLayer.frame = CGRectMake(0, self.sureBtn.frame.origin.y, self.contentView.frame.size.width, 0.3);
-        hLayer.backgroundColor = [UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1].CGColor;
-        [self.contentView.layer addSublayer:hLayer];
+        self.sureBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.cancelBtn.frame.origin.x - 15 - 85, self.cancelBtn.frame.origin.y, 85, self.cancelBtn.frame.size.height)];
+        self.sureBtn.titleLabel.font = [UIFont boldSystemFontOfSize:15];
+        [self.sureBtn setTitleColor:[UIColor colorWithRed:170.f/255 green:170.f/255 blue:170.f/255 alpha:1] forState:UIControlStateNormal];
+        [self.sureBtn setTitle:@"打开源网页" forState:UIControlStateNormal];
+        [self.sureBtn addTarget:self action:@selector(clickedSureButton:) forControlEvents:UIControlEventTouchUpInside];
+        [self.contentView addSubview:self.sureBtn];
         
-        CALayer* vLayer = [CALayer layer];
-        vLayer.frame = CGRectMake(self.sureBtn.frame.size.width, self.sureBtn.frame.origin.y, 0.5, self.sureBtn.frame.size.height);
-        vLayer.backgroundColor = [UIColor colorWithRed:100.f/255 green:100.f/255 blue:100.f/255 alpha:1].CGColor;
-        [self.contentView.layer addSublayer:vLayer];
-        
-        self.contentView.frame = CGRectMake(0, 0, screenRect.size.width - 100, self.sureBtn.frame.origin.y + self.sureBtn.frame.size.height);
+        self.contentView.frame = CGRectMake(0, 0, screenRect.size.width - 100, self.sureBtn.frame.origin.y + self.sureBtn.frame.size.height + 20);
         self.contentView.center = self.center;
     }
     return self;
@@ -115,6 +105,9 @@
     } completion:^(BOOL finished) {
         
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate bringSystemNightShiftToFront];
 }
 
 -(void)startHide {
@@ -123,6 +116,9 @@
     } completion:^(BOOL finished) {
         [self removeFromSuperview];
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate sendSystemNightShiftToback];
 }
 
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {

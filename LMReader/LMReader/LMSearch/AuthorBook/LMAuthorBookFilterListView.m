@@ -7,6 +7,7 @@
 //
 
 #import "LMAuthorBookFilterListView.h"
+#import "AppDelegate.h"
 
 static CGFloat const kPopoverViewMargin = 8.f;        ///< 边距
 static CGFloat const kPopoverViewArrowHeight = 13.f;  ///< 箭头高度
@@ -18,9 +19,8 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
 @interface LMAuthorBookFilterListView ()
 
 @property (nonatomic, weak) UIWindow *keyWindow;                ///< 当前窗口
-@property (nonatomic, strong) LMBaseAlertView *shadeView;                ///< 遮罩层
+@property (nonatomic, strong) LMBaseAlertView *contentView;
 @property (nonatomic, weak) CAShapeLayer *borderLayer;          ///< 边框Layer
-@property (nonatomic, weak) UITapGestureRecognizer *tapGesture; ///< 点击背景阴影的手势
 
 #pragma mark - Data
 @property (nonatomic, assign) CGFloat windowWidth;   ///< 窗口宽度
@@ -33,7 +33,18 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
-    if (!(self = [super initWithFrame:frame])) return nil;
+    // keyWindow
+    _keyWindow = [UIApplication sharedApplication].keyWindow;
+    _windowWidth = CGRectGetWidth(_keyWindow.bounds);
+    _windowHeight = CGRectGetHeight(_keyWindow.bounds);
+    
+    self = [super initWithFrame:_keyWindow.frame];
+    if (!self) {
+        return nil;
+    }
+    
+    _contentView = [[LMBaseAlertView alloc] initWithFrame:frame];
+    
     [self initialize];
     return self;
 }
@@ -46,19 +57,8 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
     _isUpward = YES;
     
     // current view
-    self.backgroundColor = [UIColor whiteColor];
-    
-    // keyWindow
-    _keyWindow = [UIApplication sharedApplication].keyWindow;
-    _windowWidth = CGRectGetWidth(_keyWindow.bounds);
-    _windowHeight = CGRectGetHeight(_keyWindow.bounds);
-    
-    // shadeView
-    _shadeView = [[LMBaseAlertView alloc] initWithFrame:_keyWindow.bounds];
-    [self setShowShade:NO];
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hide)];
-    [_shadeView addGestureRecognizer:tapGesture];
-    _tapGesture = tapGesture;
+    _contentView.backgroundColor = [UIColor whiteColor];
+    [self setShowShade:YES];
     
     
     CGFloat startY = 10 + kPopoverViewArrowHeight;
@@ -66,21 +66,21 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
     lineLab.layer.cornerRadius = 2.5;
     lineLab.layer.masksToBounds = YES;
     lineLab.backgroundColor = THEMEORANGECOLOR;
-    [self addSubview:lineLab];
+    [_contentView addSubview:lineLab];
     
     UILabel* textLab = [[UILabel alloc]initWithFrame:CGRectMake(lineLab.frame.origin.x + lineLab.frame.size.width + 5, startY, 60, 20)];
     textLab.font = [UIFont boldSystemFontOfSize:18];
     textLab.text = @"状态";
-    [self addSubview:textLab];
+    [_contentView addSubview:textLab];
     
     self.allBtn = [self createItemButtonWithFrame:CGRectMake(10, 40 + kPopoverViewArrowHeight, 40, 30) title:@"全部" selected:NO selector:@selector(clickedStateButton:)];
-    [self addSubview:self.allBtn];
+    [_contentView addSubview:self.allBtn];
     
     self.finishBtn = [self createItemButtonWithFrame:CGRectMake(self.allBtn.frame.origin.x + self.allBtn.frame.size.width + 10, self.allBtn.frame.origin.y, 40, 30) title:@"完结" selected:NO selector:@selector(clickedStateButton:)];
-    [self addSubview:self.finishBtn];
+    [_contentView addSubview:self.finishBtn];
     
     self.loadBtn = [self createItemButtonWithFrame:CGRectMake(self.finishBtn.frame.origin.x + self.finishBtn.frame.size.width + 10, self.allBtn.frame.origin.y, 60, 30) title:@"连载中" selected:NO selector:@selector(clickedStateButton:)];
-    [self addSubview:self.loadBtn];
+    [_contentView addSubview:self.loadBtn];
 }
 
 -(void)setBookState:(LMBookStoreState)bookState {
@@ -153,8 +153,11 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
 
 - (void)setShowShade:(BOOL)showShade
 {
-    _shadeView.backgroundColor = showShade ? [UIColor colorWithWhite:0.f alpha:0.18f] : [UIColor clearColor];
-    
+    if (showShade) {
+        self.backgroundColor = [[UIColor colorWithWhite:0 alpha:1]colorWithAlphaComponent:0.18];
+    }else {
+        self.backgroundColor = [UIColor clearColor];
+    }
     if (_borderLayer) {
         _borderLayer.strokeColor = showShade ? [UIColor clearColor].CGColor : [UIColor grayColor].CGColor;
     }
@@ -203,12 +206,12 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
     }
     
     // 遮罩层
-    _shadeView.alpha = 0.f;
-    [_keyWindow addSubview:_shadeView];
+    self.alpha = 0.f;
+    [_keyWindow addSubview:self];
     
     // 根据刷新后的ContentSize和箭头指向方向来设置当前视图的frame
-    CGFloat currentW = self.frame.size.width; // 宽度通过计算获取最大值
-    CGFloat currentH = self.frame.size.height;
+    CGFloat currentW = self.contentView.frame.size.width; // 宽度通过计算获取最大值
+    CGFloat currentH = self.contentView.frame.size.height;
     
     // 箭头高度
     currentH += kPopoverViewArrowHeight;
@@ -227,10 +230,10 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
         currentY = toPoint.y - currentH;
     }
     
-    self.frame = CGRectMake(currentX, currentY, currentW, currentH);
+    self.contentView.frame = CGRectMake(currentX, currentY, currentW, currentH);
     
     // 截取箭头
-    CGPoint arrowPoint = CGPointMake(toPoint.x - CGRectGetMinX(self.frame), _isUpward ? 0 : currentH); // 箭头顶点在当前视图的坐标
+    CGPoint arrowPoint = CGPointMake(toPoint.x - CGRectGetMinX(self.contentView.frame), _isUpward ? 0 : currentH); // 箭头顶点在当前视图的坐标
     CGFloat maskTop = _isUpward ? kPopoverViewArrowHeight : 0; // 顶部Y值
     CGFloat maskBottom = _isUpward ? currentH : currentH - kPopoverViewArrowHeight; // 底部Y值
     UIBezierPath *maskPath = [UIBezierPath bezierPath];
@@ -280,31 +283,29 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
     [maskPath closePath];
     // 截取圆角和箭头
     CAShapeLayer *maskLayer = [CAShapeLayer layer];
-    maskLayer.frame = self.bounds;
+    maskLayer.frame = self.contentView.bounds;
     maskLayer.path = maskPath.CGPath;
-    self.layer.mask = maskLayer;
+    self.contentView.layer.mask = maskLayer;
     // 边框 (只有在不显示半透明阴影层时才设置边框线条)
     
     CAShapeLayer *borderLayer = [CAShapeLayer layer];
-    borderLayer.frame = self.bounds;
+    borderLayer.frame = self.contentView.bounds;
     borderLayer.path = maskPath.CGPath;
     borderLayer.lineWidth = 1;
     borderLayer.fillColor = [UIColor clearColor].CGColor;
     borderLayer.strokeColor = [UIColor grayColor].CGColor;
-    [self.layer addSublayer:borderLayer];
+    [self.contentView.layer addSublayer:borderLayer];
     _borderLayer = borderLayer;
     
-    [_keyWindow addSubview:self];
+    [self addSubview:self.contentView];
     
     // 弹出动画
-    CGRect oldFrame = self.frame;
-    self.layer.anchorPoint = CGPointMake(arrowPoint.x/currentW, _isUpward ? 0.f : 1.f);
-    self.frame = oldFrame;
-    self.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
-    [UIView animateWithDuration:0.25f animations:^{
-        self.transform = CGAffineTransformIdentity;
-        self->_shadeView.alpha = 1.f;
+    [UIView animateWithDuration:0.2f animations:^{
+        self.alpha = 1.f;
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate bringSystemNightShiftToFront];
 }
 
 /**
@@ -314,12 +315,22 @@ float LMAuthorBookPopoverViewDegreesToRadians(float angle) {
 {
     [UIView animateWithDuration:0.25f animations:^{
         self.alpha = 0.f;
-        self->_shadeView.alpha = 0.f;
-        self.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
     } completion:^(BOOL finished) {
-        [self->_shadeView removeFromSuperview];
+        [self.contentView removeFromSuperview];
         [self removeFromSuperview];
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate sendSystemNightShiftToback];
+}
+
+-(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    UITouch* touch = [touches anyObject];
+    CGPoint point = [touch locationInView:self];
+    bool isContain = CGRectContainsPoint(self.contentView.frame, point);
+    if (!isContain) {
+        [self hide];
+    }
 }
 
 

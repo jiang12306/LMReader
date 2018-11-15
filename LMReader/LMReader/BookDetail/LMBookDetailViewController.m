@@ -21,19 +21,20 @@
 #import "LMShareView.h"
 #import "LMShareMessage.h"
 #import "LMRecommandMoreViewController.h"
-#import "LMBookDetailCatalogViewController.h"
+#import "LMBookCatalogViewController.h"
 #import "LMBookCommentTableViewCell.h"
 #import "LMBookEditCommentViewController.h"
 #import "LMBookCommentDetailViewController.h"
 #import "LMLoginAlertView.h"
 #import "LMProfileProtocolViewController.h"
+#import "LMChoiceTableViewCellCollectionViewCell.h"
+#import "LMCommentStarView.h"
 
-@interface LMBookDetailViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate, LMBookCommentTableViewCellDelegate>
+@interface LMBookDetailViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate, LMBookCommentTableViewCellDelegate, UICollectionViewDelegate, UICollectionViewDataSource>
 
 @property (nonatomic, strong) LMBaseRefreshTableView* tableView;
 @property (nonatomic, strong) NSMutableArray* relatedArray;
 @property (nonatomic, strong) UIView* headerView;
-@property (nonatomic, strong) UIView* footerView;
 @property (nonatomic, strong) UILabel* briefLab;//小说简介
 @property (nonatomic, strong) UIButton* showMoreBtn;//展开按钮
 @property (nonatomic, strong) UIView* toolBarView;//toolBar
@@ -45,26 +46,43 @@
 
 @property (nonatomic, strong) LMDownloadBookView* downloadView;//下载 视图
 
+@property (nonatomic, assign) CGFloat bookCoverWidth;//
+@property (nonatomic, assign) CGFloat bookCoverHeight;//
+@property (nonatomic, assign) CGFloat bookFontScale;//
+
 @end
 
 @implementation LMBookDetailViewController
 
 static NSString* cellIdentifier = @"cellIdentifier";
 static NSString* commentCellIdentifier = @"commentCellIdentifier";
+static NSString* cvCellIdentifier = @"cvCellIdentifier";
 
-static CGFloat cellHeight = 50;
-static CGFloat briefHeight = 50;
-static CGFloat bookIVWidth = 75;
-static CGFloat bookIVHeight = 100;
+static CGFloat cellHeight = 60;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.bookCoverWidth = 105.f;
+    self.bookCoverHeight = 145.f;
+    
+    CGFloat maxBookWidth = (self.view.frame.size.width - 20 * 4 - 10 * 3) / 3.f;
+    self.bookFontScale = (self.view.frame.size.width / 414.f);
+    if (self.bookFontScale > 1) {
+        self.bookFontScale = 1;
+    }
+    if (self.bookCoverWidth * self.bookFontScale > maxBookWidth) {
+        self.bookFontScale = maxBookWidth / self.bookCoverWidth;
+    }
+    self.bookCoverWidth *= self.bookFontScale;
+    self.bookCoverHeight *= self.bookFontScale;
     
     self.title = @"书籍详情";
     
     UIView* moreItemView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 40, 40)];
     UIButton* moreItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, moreItemView.frame.size.width, moreItemView.frame.size.height)];
-    [moreItemBtn setImage:[UIImage imageNamed:@"rightBarButtonItem_More_Black"] forState:UIControlStateNormal];
+    [moreItemBtn setImage:[[UIImage imageNamed:@"rightBarButtonItem_More_Black"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [moreItemBtn setTintColor:UIColorFromRGB(0x656565)];
     [moreItemBtn setImageEdgeInsets:UIEdgeInsetsMake(5, 5, 5, 5)];
     [moreItemBtn addTarget:self action:@selector(clickedMoreItemButton:) forControlEvents:UIControlEventTouchUpInside];
     [moreItemView addSubview:moreItemBtn];
@@ -72,7 +90,8 @@ static CGFloat bookIVHeight = 100;
     
     UIView* shareItemView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 40, 40)];
     UIButton* shareItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, shareItemView.frame.size.width, shareItemView.frame.size.height)];
-    [shareItemBtn setImage:[UIImage imageNamed:@"rightBarButtonItem_Share"] forState:UIControlStateNormal];
+    [shareItemBtn setImage:[[UIImage imageNamed:@"rightBarButtonItem_Share"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [shareItemBtn setTintColor:UIColorFromRGB(0x656565)];
     [shareItemBtn setImageEdgeInsets:UIEdgeInsetsMake(7, 7, 7, 7)];
     [shareItemBtn addTarget:self action:@selector(clickedShareButton:) forControlEvents:UIControlEventTouchUpInside];
     [shareItemView addSubview:shareItemBtn];
@@ -130,9 +149,91 @@ static CGFloat bookIVHeight = 100;
     [self.tableView registerClass:[LMBookDetailTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.tableView registerClass:[LMBookCommentTableViewCell class] forCellReuseIdentifier:commentCellIdentifier];
     [self.view addSubview:self.tableView];
+}
+
+-(void)setupFooterView {
+    UIView* footerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
+    footerView.backgroundColor = [UIColor colorWithRed:233.f/255 green:233.f/255 blue:233.f/255 alpha:1];
+    if (self.relatedArray.count == 0) {
+        self.tableView.tableFooterView = footerView;
+        return;
+    }
     
-    UIView* tempVi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 30)];
-    self.tableView.tableFooterView = tempVi;
+    UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 10, footerView.frame.size.width, 0)];
+    vi.backgroundColor = [UIColor whiteColor];
+    [footerView addSubview:vi];
+    
+    UILabel* sectionLab = [[UILabel alloc]initWithFrame:CGRectMake(20, 20, vi.frame.size.width, 20)];
+    sectionLab.font = [UIFont systemFontOfSize:18];
+    sectionLab.text = @"喜欢这本书的人还喜欢";
+    [vi addSubview:sectionLab];
+    
+    UILabel* tempLab = [[UILabel alloc]initWithFrame:CGRectZero];
+    tempLab.numberOfLines = 0;
+    tempLab.lineBreakMode = NSLineBreakByTruncatingTail;
+    tempLab.font = [UIFont systemFontOfSize:15];
+    
+    CGFloat itemStartY = sectionLab.frame.origin.y + sectionLab.frame.size.height;
+    CGFloat itemHeight = 10 + self.bookCoverHeight + 10 + 10 + 20;
+    CGFloat maxLabHeight = 25;
+    for (NSInteger i = 0; i < self.relatedArray.count; i ++) {
+        if (i == 0) {
+            Book* subBook0 = [self.relatedArray objectAtIndex:i];
+            tempLab.text = subBook0.name;
+            CGSize tempLabSize0 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+            if (tempLabSize0.height > tempLab.font.lineHeight * 2) {
+                tempLabSize0.height = tempLab.font.lineHeight * 2;
+            }
+            
+            if (i + 1 < self.relatedArray.count) {
+                Book* subBook1 = [self.relatedArray objectAtIndex:i + 1];
+                tempLab.text = subBook1.name;
+                CGSize tempLabSize1 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                if (tempLabSize1.height > tempLab.font.lineHeight * 2) {
+                    tempLabSize1.height = tempLab.font.lineHeight * 2;
+                }
+                maxLabHeight = MAX(tempLabSize0.height, tempLabSize1.height);
+            }
+            
+            if (i + 2 < self.relatedArray.count) {
+                Book* subBook2 = [self.relatedArray objectAtIndex:i + 2];
+                tempLab.text = subBook2.name;
+                CGSize tempLabSize2 = [tempLab sizeThatFits:CGSizeMake(self.bookCoverWidth, 9999)];
+                if (tempLabSize2.height > tempLab.font.lineHeight * 2) {
+                    tempLabSize2.height = tempLab.font.lineHeight * 2;
+                }
+                maxLabHeight = MAX(maxLabHeight, tempLabSize2.height);
+            }
+            itemHeight += maxLabHeight;
+        }
+    }
+    
+    UICollectionViewFlowLayout* layout = [[UICollectionViewFlowLayout alloc]init];
+    layout.scrollDirection = UICollectionViewScrollDirectionVertical;
+    UICollectionView* collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, itemStartY, self.view.frame.size.width, itemHeight + 20 * 2) collectionViewLayout:layout];
+    if (@available(iOS 11.0, *)) {
+        collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
+    collectionView.showsVerticalScrollIndicator = NO;
+    collectionView.showsHorizontalScrollIndicator = NO;
+    collectionView.backgroundColor = [UIColor whiteColor];
+    collectionView.dataSource = self;
+    collectionView.delegate = self;
+    collectionView.scrollEnabled = NO;
+    [collectionView registerClass:[LMChoiceTableViewCellCollectionViewCell class] forCellWithReuseIdentifier:cvCellIdentifier];
+    [vi addSubview:collectionView];
+    
+    UIButton* moreBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, collectionView.frame.origin.y + collectionView.frame.size.height, vi.frame.size.width, 40)];
+    moreBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+    [moreBtn setTitle:@"查看更多" forState:UIControlStateNormal];
+    [moreBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateNormal];
+    [moreBtn addTarget:self action:@selector(clickedSectionMoreButton:) forControlEvents:UIControlEventTouchUpInside];
+    [vi addSubview:moreBtn];
+    
+    vi.frame = CGRectMake(0, 10, footerView.frame.size.width, moreBtn.frame.origin.y + moreBtn.frame.size.height + 10);
+    footerView.frame = CGRectMake(0, 0, self.view.frame.size.width, vi.frame.origin.y + vi.frame.size.height);
+    
+    self.tableView.tableFooterView = footerView;
 }
 
 //
@@ -232,6 +333,17 @@ static CGFloat bookIVHeight = 100;
                     
                     [weakSelf setupHeaderViewWithState:isAdd];
                     
+                    NSArray* arr = res.relateBooks;
+                    if (arr.count > 0) {
+                        if (arr.count > 3) {
+                            [weakSelf.relatedArray addObjectsFromArray:[arr subarrayWithRange:NSMakeRange(0, 3)]];
+                        }else {
+                            weakSelf.relatedArray = [NSMutableArray arrayWithArray:arr];
+                        }
+                    }
+                    
+                    [weakSelf setupFooterView];
+                    
                     //
                     [weakSelf setupToolBarView];
                     
@@ -239,10 +351,6 @@ static CGFloat bookIVHeight = 100;
                         weakSelf.addBtn.selected = YES;
                     }else {//未加入到书架
                         weakSelf.addBtn.selected = NO;
-                    }
-                    NSArray* arr = res.relateBooks;
-                    if (arr.count > 0) {
-                        weakSelf.relatedArray = [NSMutableArray arrayWithArray:arr];
                     }
                     NSArray* commentArr = res.book.comments;
                     if (commentArr.count > 0) {
@@ -277,89 +385,75 @@ static CGFloat bookIVHeight = 100;
 
 //头视图
 -(void)setupHeaderViewWithState:(BOOL )isAdd {
-    CGFloat headerSpaceY = 10;
-    CGFloat labHeight = 40;
     if (!self.headerView) {
-        self.headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, headerSpaceY + 75 + labHeight * 2)];
+        self.headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
         self.headerView.backgroundColor = [UIColor whiteColor];
     }
     for (UIView* subvi in self.headerView.subviews) {
         [subvi removeFromSuperview];
     }
     NSString* picStr = [self.book.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(headerSpaceY, headerSpaceY, bookIVWidth, bookIVHeight)];
-    iv.layer.borderColor = [UIColor colorWithRed:200.f / 255 green:200.f / 255 blue:200.f / 255 alpha:1].CGColor;
-    iv.layer.borderWidth = 0.5;
-    iv.layer.shadowColor = [UIColor grayColor].CGColor;
-    iv.layer.shadowOffset = CGSizeMake(-5, 5);
-    iv.layer.shadowOpacity = 0.4;
+    UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, self.bookCoverWidth, self.bookCoverHeight)];
     iv.contentMode = UIViewContentModeScaleAspectFill;
     iv.clipsToBounds = YES;
     [iv sd_setImageWithURL:[NSURL URLWithString:picStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage"]];
     [self.headerView addSubview:iv];
     
-    UILabel* nameLab = [[UILabel alloc]initWithFrame:CGRectMake(iv.frame.origin.x + iv.frame.size.width + headerSpaceY, iv.frame.origin.y, self.view.frame.size.width - bookIVWidth - headerSpaceY * 3, 20)];
+    if ([self.book hasMarkUrl]) {
+        NSString* markUrlStr = [self.book.markUrl stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+        CGFloat markIVWidth = 50;
+        CGFloat markTopSpace = 4;
+        if (self.view.frame.size.width <= 320) {
+            markIVWidth = 40;
+            markTopSpace = 3;
+        }
+        UIImageView* markIV = [[UIImageView alloc]initWithFrame:CGRectMake(iv.frame.origin.x + iv.frame.size.width - markIVWidth + markTopSpace, iv.frame.origin.y - markTopSpace, markIVWidth, markIVWidth)];
+        [self.headerView addSubview:markIV];
+        
+        UIImage* markImg = [[SDImageCache sharedImageCache] imageFromCacheForKey:markUrlStr];
+        if (markImg != nil) {
+            markIV.image = markImg;
+        }else {
+            [markIV sd_setImageWithURL:[NSURL URLWithString:markUrlStr] placeholderImage:nil options:SDWebImageProgressiveDownload completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+                if (error == nil && image != nil) {
+                    
+                }
+            }];
+        }
+    }
+    
+    UILabel* nameLab = [[UILabel alloc]initWithFrame:CGRectMake(iv.frame.origin.x + iv.frame.size.width + 20, iv.frame.origin.y, self.headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, 20)];
     nameLab.numberOfLines = 0;
     nameLab.lineBreakMode = NSLineBreakByCharWrapping;
     nameLab.font = [UIFont systemFontOfSize:18];
     nameLab.text = self.book.name;
     [self.headerView addSubview:nameLab];
-    CGSize nameSize = [nameLab sizeThatFits:CGSizeMake(self.view.frame.size.width - bookIVWidth - headerSpaceY * 3, 9999)];
-    nameLab.frame = CGRectMake(iv.frame.origin.x + iv.frame.size.width + headerSpaceY, iv.frame.origin.y, self.view.frame.size.width - bookIVWidth - headerSpaceY * 3, nameSize.height);
+    CGSize nameSize = [nameLab sizeThatFits:CGSizeMake(self.headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, 9999)];
     
-    UILabel* authorLab = [[UILabel alloc]initWithFrame:CGRectMake(nameLab.frame.origin.x, nameLab.frame.origin.y + nameLab.frame.size.height + 5, 100, 20)];
-    authorLab.font = [UIFont systemFontOfSize:16];
-    authorLab.textColor = THEMEORANGECOLOR;
-    authorLab.text = self.book.author;
-    [self.headerView addSubview:authorLab];
-    CGRect authorFrame = authorLab.frame;
-    CGSize authorSize = [authorLab sizeThatFits:CGSizeMake(9999, authorFrame.size.height)];
-    authorLab.frame = CGRectMake(authorFrame.origin.x, authorFrame.origin.y, authorSize.width, authorFrame.size.height);
+    CGFloat tempSpaceY = (self.bookCoverHeight - nameSize.height - 20 - 15 - 15) / 5;
+    if (tempSpaceY < 0) {
+        tempSpaceY = 0;
+    }
     
-    authorLab.userInteractionEnabled = YES;
-    UITapGestureRecognizer* authorTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(clickedAuthorButton)];
-    [authorLab addGestureRecognizer:authorTap];
+    nameLab.frame = CGRectMake(iv.frame.origin.x + iv.frame.size.width + 20, iv.frame.origin.y + tempSpaceY, self.headerView.frame.size.width - iv.frame.origin.x - iv.frame.size.width - 20 * 2, nameSize.height);
     
-    UILabel* typeLab = [[UILabel alloc]initWithFrame:CGRectMake(nameLab.frame.origin.x, authorLab.frame.origin.y + authorLab.frame.size.height + 5, 45, 20)];
+    UILabel* typeLab = [[UILabel alloc]initWithFrame:CGRectMake(nameLab.frame.origin.x, nameLab.frame.origin.y + nameLab.frame.size.height + tempSpaceY, 45, 20)];
+    typeLab.backgroundColor = [UIColor colorWithRed:237.f/255 green:237.f/255 blue:237.f/255 alpha:1];
     typeLab.textAlignment = NSTextAlignmentCenter;
-    typeLab.font = [UIFont systemFontOfSize:14];
-    typeLab.textColor = [UIColor grayColor];
+    typeLab.font = [UIFont systemFontOfSize:12];
+    typeLab.textColor = [UIColor colorWithRed:170.f/255 green:170.f/255 blue:170.f/255 alpha:1];
     NSArray* typeArr = self.book.bookType;
     typeLab.text = [typeArr objectAtIndex:0];
     [self.headerView addSubview:typeLab];
     CGRect typeFrame = typeLab.frame;
     CGSize typeSize = [typeLab sizeThatFits:CGSizeMake(9999, typeFrame.size.height)];
-    typeLab.frame = CGRectMake(typeFrame.origin.x, typeFrame.origin.y, typeSize.width, typeFrame.size.height);
+    typeLab.frame = CGRectMake(typeFrame.origin.x, typeFrame.origin.y, typeSize.width + 5, typeFrame.size.height);
     
-    UILabel* readersLab = [[UILabel alloc]initWithFrame:CGRectMake(typeLab.frame.origin.x + typeLab.frame.size.width + 10, typeLab.frame.origin.y, 50, 20)];
-    readersLab.backgroundColor = [UIColor whiteColor];
-    readersLab.textAlignment = NSTextAlignmentCenter;
-    readersLab.font = [UIFont systemFontOfSize:14];
-    readersLab.textColor = [UIColor grayColor];
-    [self.headerView addSubview:readersLab];
-    NSString* readerStr = @"";
-    if (self.book.clicked / 10000 > 0) {
-        readerStr = [NSString stringWithFormat:@"%d万人阅读", self.book.clicked/10000];
-    }else if (self.book.clicked / 1000 > 0) {
-        readerStr = [NSString stringWithFormat:@"%d千人阅读", self.book.clicked/1000];
-    }else {
-        readerStr = [NSString stringWithFormat:@"%u人阅读", self.book.clicked];
-    }
-    readersLab.text = readerStr;
-    CGRect readersFrame = readersLab.frame;
-    CGSize readersSize = [readersLab sizeThatFits:CGSizeMake(999, readersFrame.size.height)];
-    readersLab.frame = CGRectMake(readersFrame.origin.x, readersFrame.origin.y, readersSize.width, readersFrame.size.height);
-    if (readersLab.frame.origin.x + readersLab.frame.size.width > self.view.frame.size.width) {
-        readersLab.hidden = YES;
-    }
-    
-    UILabel* stateLab = [[UILabel alloc]initWithFrame:CGRectMake(typeLab.frame.origin.x, typeLab.frame.origin.y + typeLab.frame.size.height + 5, 50, 20)];
+    UILabel* stateLab = [[UILabel alloc]initWithFrame:CGRectMake(typeLab.frame.origin.x + typeLab.frame.size.width + 5, typeLab.frame.origin.y, 50, 20)];
+    stateLab.backgroundColor = [UIColor colorWithRed:237.f/255 green:237.f/255 blue:237.f/255 alpha:1];
     stateLab.textAlignment = NSTextAlignmentCenter;
-    stateLab.layer.cornerRadius = 3;
-    stateLab.layer.masksToBounds = YES;
-    stateLab.backgroundColor = THEMEORANGECOLOR;
-    stateLab.textColor = [UIColor whiteColor];
-    stateLab.font = [UIFont systemFontOfSize:14];
+    stateLab.textColor = [UIColor colorWithRed:170.f/255 green:170.f/255 blue:170.f/255 alpha:1];
+    stateLab.font = [UIFont systemFontOfSize:12];
     [self.headerView addSubview:stateLab];
     NSString* stateStr = @"未知";
     BookState state = self.book.bookState;
@@ -377,25 +471,58 @@ static CGFloat bookIVHeight = 100;
     CGSize stateSize = [stateLab sizeThatFits:CGSizeMake(9999, stateFrame.size.height)];
     stateLab.frame = CGRectMake(stateFrame.origin.x, stateFrame.origin.y, stateSize.width + 5, stateFrame.size.height);
     
-    CGFloat chapterY = iv.frame.origin.y + iv.frame.size.height + 10;
-    if (stateLab.frame.origin.y + stateLab.frame.size.height > iv.frame.origin.y + iv.frame.size.height) {
-        iv.frame = CGRectMake(headerSpaceY, headerSpaceY, bookIVWidth, stateLab.frame.origin.y + stateLab.frame.size.height - headerSpaceY);
-        chapterY = stateLab.frame.origin.y + stateLab.frame.size.height + 10;
+    UILabel* readersLab = [[UILabel alloc]initWithFrame:CGRectMake(stateLab.frame.origin.x + stateLab.frame.size.width + 5, stateLab.frame.origin.y, 50, 20)];
+    readersLab.backgroundColor = [UIColor colorWithRed:237.f/255 green:237.f/255 blue:237.f/255 alpha:1];
+    readersLab.textAlignment = NSTextAlignmentCenter;
+    readersLab.font = [UIFont systemFontOfSize:12];
+    readersLab.textColor = [UIColor colorWithRed:170.f/255 green:170.f/255 blue:170.f/255 alpha:1];
+    [self.headerView addSubview:readersLab];
+    NSString* readerStr = @"";
+    if (self.book.clicked / 10000 > 0) {
+        readerStr = [NSString stringWithFormat:@"%d万人阅读", self.book.clicked/10000];
+    }else if (self.book.clicked / 1000 > 0) {
+        readerStr = [NSString stringWithFormat:@"%d千人阅读", self.book.clicked/1000];
+    }else {
+        readerStr = [NSString stringWithFormat:@"%u人阅读", self.book.clicked];
+    }
+    readersLab.text = readerStr;
+    CGRect readersFrame = readersLab.frame;
+    CGSize readersSize = [readersLab sizeThatFits:CGSizeMake(999, readersFrame.size.height)];
+    readersLab.frame = CGRectMake(readersFrame.origin.x, readersFrame.origin.y, readersSize.width + 5, readersFrame.size.height);
+    if (readersLab.frame.origin.x + readersLab.frame.size.width > self.view.frame.size.width) {
+        readersLab.hidden = YES;
     }
     
-    UILabel* lab0 = [[UILabel alloc]initWithFrame:CGRectMake(10, chapterY + 10, 5, 20)];
-    lab0.layer.cornerRadius = 2.5;
-    lab0.layer.masksToBounds = YES;
-    lab0.backgroundColor = THEMEORANGECOLOR;
-    [self.headerView addSubview:lab0];
+    LMCommentStarView* starView = [[LMCommentStarView alloc]initWithFrame:CGRectMake(nameLab.frame.origin.x, typeLab.frame.origin.y + typeLab.frame.size.height + tempSpaceY, 80, 15)];
+    starView.cancelStar = YES;
+    [starView setupStarWithFloatCount:self.book.avgScore];
+    [self.headerView addSubview:starView];
     
-    UILabel* lab1 = [[UILabel alloc]initWithFrame:CGRectMake(lab0.frame.origin.x + lab0.frame.size.width + 10, chapterY, 200, labHeight)];
-    lab1.font = [UIFont boldSystemFontOfSize:18];
-    lab1.text = @"小说简介";
-    [self.headerView addSubview:lab1];
+    UILabel* startLab = [[UILabel alloc]initWithFrame:CGRectMake(starView.frame.origin.x + starView.frame.size.width + 5, starView.frame.origin.y, 100, starView.frame.size.height)];
+    startLab.font = [UIFont systemFontOfSize:12];
+    startLab.textColor = [UIColor colorWithRed:150.f/255 green:150.f/255 blue:150.f/255 alpha:1];
+    startLab.text = [NSString stringWithFormat:@"%.1f", self.book.avgScore];
+    [self.headerView addSubview:startLab];
     
-    self.briefLab = [[UILabel alloc]initWithFrame:CGRectMake(10, lab1.frame.origin.y + lab1.frame.size.height, self.headerView.frame.size.width - headerSpaceY * 2, briefHeight)];
-    self.briefLab.font = [UIFont systemFontOfSize:16];
+    UIImageView* authorIV = [[UIImageView alloc]initWithFrame:CGRectMake(nameLab.frame.origin.x, starView.frame.origin.y + starView.frame.size.height + tempSpaceY, 15, 15)];
+    authorIV.image = [UIImage imageNamed:@"bookAuthor"];
+    [self.headerView addSubview:authorIV];
+    
+    UILabel* authorLab = [[UILabel alloc]initWithFrame:CGRectMake(authorIV.frame.origin.x + authorIV.frame.size.width + 5, authorIV.frame.origin.y, 100, 15)];
+    authorLab.font = [UIFont systemFontOfSize:12];
+    authorLab.textColor = THEMEORANGECOLOR;
+    authorLab.text = self.book.author;
+    [self.headerView addSubview:authorLab];
+    CGRect authorFrame = authorLab.frame;
+    CGSize authorSize = [authorLab sizeThatFits:CGSizeMake(9999, authorFrame.size.height)];
+    authorLab.frame = CGRectMake(authorFrame.origin.x, authorFrame.origin.y, authorSize.width, authorFrame.size.height);
+    
+    authorLab.userInteractionEnabled = YES;
+    UITapGestureRecognizer* authorTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(clickedAuthorButton)];
+    [authorLab addGestureRecognizer:authorTap];
+    
+    self.briefLab = [[UILabel alloc]initWithFrame:CGRectMake(20, iv.frame.origin.y + iv.frame.size.height + 20, self.headerView.frame.size.width - 20 * 2, 50)];
+    self.briefLab.font = [UIFont systemFontOfSize:15];
     self.briefLab.numberOfLines = 0;
     self.briefLab.lineBreakMode = NSLineBreakByCharWrapping;
     self.briefLab.text = [self.book.abstract stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -405,19 +532,20 @@ static CGFloat bookIVHeight = 100;
     CGRect briefFrame = self.briefLab.frame;
     CGSize briefSize = [self.briefLab sizeThatFits:CGSizeMake(briefFrame.size.width, CGFLOAT_MAX)];
     CGRect headerViewFrame = self.headerView.frame;
-    if (briefSize.height > briefHeight) {
+    if (briefSize.height > self.briefLab.font.lineHeight * 2) {
         self.briefLab.lineBreakMode = NSLineBreakByTruncatingTail;
-        self.briefLab.frame = CGRectMake(briefFrame.origin.x, briefFrame.origin.y, briefFrame.size.width, briefHeight);
-        self.showMoreBtn = [[UIButton alloc]initWithFrame:CGRectMake((self.headerView.frame.size.width - 20) / 2, self.briefLab.frame.origin.y + self.briefLab.frame.size.height, 20, 20)];
+        self.briefLab.frame = CGRectMake(briefFrame.origin.x, briefFrame.origin.y, briefFrame.size.width, self.briefLab.font.lineHeight * 2);
+        self.showMoreBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.headerView.frame.size.width - 20 * 2, self.briefLab.frame.origin.y + self.briefLab.frame.size.height, 20, 20)];
         self.showMoreBtn.selected = NO;
         [self.showMoreBtn setImage:[UIImage imageNamed:@"bookDetail_Show_Normal"] forState:UIControlStateNormal];
         [self.showMoreBtn setImage:[UIImage imageNamed:@"bookDetail_Show_Selected"] forState:UIControlStateSelected];
+        [self.showMoreBtn setImageEdgeInsets:UIEdgeInsetsMake(5, 10, 5, 0)];
         [self.showMoreBtn addTarget:self action:@selector(clickedShowMoreButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.headerView addSubview:self.showMoreBtn];
-        headerViewFrame.size.height = self.briefLab.frame.origin.y + self.briefLab.frame.size.height + headerSpaceY + 20;
+        headerViewFrame.size.height = self.briefLab.frame.origin.y + self.briefLab.frame.size.height + 10 + 20;
     }else {
         self.briefLab.frame = CGRectMake(briefFrame.origin.x, briefFrame.origin.y, briefFrame.size.width, briefSize.height);
-        headerViewFrame.size.height = self.briefLab.frame.origin.y + self.briefLab.frame.size.height + headerSpaceY;
+        headerViewFrame.size.height = self.briefLab.frame.origin.y + self.briefLab.frame.size.height + 20;
     }
     
     self.headerView.frame = headerViewFrame;
@@ -433,6 +561,7 @@ static CGFloat bookIVHeight = 100;
         toolBarStartY = self.view.frame.size.height - toolBarHeight;
     }
     if (self.toolBarView) {
+        [self.view bringSubviewToFront:self.toolBarView];
         return;
     }else {
         self.toolBarView = [[UIView alloc]initWithFrame:CGRectMake(0, toolBarStartY, self.view.frame.size.width, toolBarHeight)];
@@ -444,7 +573,7 @@ static CGFloat bookIVHeight = 100;
     self.addBtn.titleLabel.font = [UIFont systemFontOfSize:16];
     [self.addBtn setTitle:@"加入书架" forState:UIControlStateNormal];
     [self.addBtn setTitle:@"已加入书架" forState:UIControlStateSelected];
-    [self.addBtn setTitleColor:orangeCo forState:UIControlStateNormal];
+    [self.addBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self.addBtn addTarget:self action:@selector(clickedAddButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.toolBarView addSubview:self.addBtn];
     
@@ -458,14 +587,13 @@ static CGFloat bookIVHeight = 100;
     
     self.downloadBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.readBtn.frame.origin.x + self.readBtn.frame.size.width, self.addBtn.frame.origin.y, self.addBtn.frame.size.width, self.addBtn.frame.size.height)];
     self.downloadBtn.titleLabel.font = [UIFont systemFontOfSize:16];
-    [self.downloadBtn setTitleColor:orangeCo forState:UIControlStateNormal];
-    [self.downloadBtn setTitle:@"下载" forState:UIControlStateNormal];
+    self.downloadBtn.titleLabel.numberOfLines = 0;
+    self.downloadBtn.titleLabel.lineBreakMode = NSLineBreakByCharWrapping;
+    self.downloadBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+    [self.downloadBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [self.downloadBtn setTitle:@"全书缓存" forState:UIControlStateNormal];
     [self.downloadBtn addTarget:self action:@selector(clickedDownloadButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.toolBarView addSubview:self.downloadBtn];
-    
-    UIView* lineView1 = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.toolBarView.frame.size.width, 1)];
-    lineView1.backgroundColor = [UIColor colorWithRed:245 / 255.f green:245 / 255.f blue:245 / 255.f alpha:1];
-    [self.toolBarView addSubview:lineView1];
 }
 
 //点击作者名称
@@ -570,11 +698,17 @@ static CGFloat bookIVHeight = 100;
                                     [bookChapterArr addObject:bookChapter];
                                 }
                                 //下载
-                                [weakSelf.downloadView startDownloadBookWithBookId:weakSelf.bookId catalogList:bookChapterArr block:^(BOOL isFinished, CGFloat progress) {
+                                [weakSelf.downloadView startDownloadOldParseBookWithBookId:weakSelf.bookId catalogList:bookChapterArr block:^(BOOL isFinished, BOOL isFailed, NSInteger totalCount, CGFloat progress) {
                                     
                                     NSString* btnTitleStr = [NSString stringWithFormat:@"%.2f%%", progress * 100];
                                     if (progress == 1) {
                                         btnTitleStr = @"100%完成";
+                                    }else {
+                                        if (isFailed && totalCount < LMDownloadBookViewMaxCount) {
+                                            [weakSelf clickedDownloadButton:weakSelf.downloadBtn];
+                                        }else if (isFailed && totalCount >= LMDownloadBookViewMaxCount) {
+                                            btnTitleStr = @"部分下载失败，请重试";//[NSString stringWithFormat:@"%.2f%% %@", progress * 100, @"部分下载失败，请重试"];
+                                        }
                                     }
                                     [weakSelf.downloadBtn setTitle:btnTitleStr forState:UIControlStateNormal];
                                 }];
@@ -593,11 +727,17 @@ static CGFloat bookIVHeight = 100;
                                     UrlReadParse* parse = [bookParseArr objectAtIndex:parseIndex];
                                     [weakSelf loadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {//获取章节列表
                                         //下载
-                                        [weakSelf.downloadView startDownloadNewParseBookWithBookId:weakSelf.bookId catalogList:listArray parse:parse block:^(BOOL isFinished, CGFloat progress) {
+                                        [weakSelf.downloadView startDownloadNewParseBookWithBookId:weakSelf.bookId catalogList:listArray parse:parse block:^(BOOL isFinished, BOOL isFailed, NSInteger totalCount, CGFloat progress) {
                                             
                                             NSString* btnTitleStr = [NSString stringWithFormat:@"%.2f%%", progress * 100];
                                             if (progress == 1) {
                                                 btnTitleStr = @"100%完成";
+                                            }else {
+                                                if (isFailed && totalCount < LMDownloadBookViewMaxCount) {
+                                                    [weakSelf clickedDownloadButton:weakSelf.downloadBtn];
+                                                }else if (isFailed && totalCount >= LMDownloadBookViewMaxCount) {
+                                                    btnTitleStr = @"部分下载失败，请重试";//[NSString stringWithFormat:@"%.2f%% %@", progress * 100, @"部分下载失败，请重试"];
+                                                }
                                             }
                                             [weakSelf.downloadBtn setTitle:btnTitleStr forState:UIControlStateNormal];
                                         }];
@@ -622,19 +762,6 @@ static CGFloat bookIVHeight = 100;
                 [weakSelf.downloadBtn setTitle:@"下载失败" forState:UIControlStateNormal];
             }];
         }];
-        
-        
-//        [self.downloadBtn setTitle:@"下载中" forState:UIControlStateNormal];
-//
-//        [self.downloadView startDownloadBookWithBookId:self.book.bookId success:^(BOOL isFinished, CGFloat progress) {
-//            if (isFinished) {
-//                [weakSelf.downloadBtn setTitle:@"已下载" forState:UIControlStateNormal];
-//            }
-//        } failure:^(BOOL netFailed) {
-//            if (netFailed) {
-//                [weakSelf.downloadBtn setTitle:@"下载失败" forState:UIControlStateNormal];
-//            }
-//        }];
     }
 }
 
@@ -705,16 +832,6 @@ static CGFloat bookIVHeight = 100;
     [self.navigationController pushViewController:recommandVC animated:YES];
 }
 
-//点击 相关推荐 书籍
--(void)clickedBookImageView:(UITapGestureRecognizer* )tapGR {
-    UIImageView* iv = (UIImageView* )tapGR.view;
-    NSInteger tag = iv.tag;
-    Book* selectedBook = [self.relatedArray objectAtIndex:tag];
-    LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
-    detailVC.bookId = selectedBook.bookId;
-    [self.navigationController pushViewController:detailVC animated:YES];
-}
-
 //展开 收起来
 -(void)clickedShowMoreButton:(UIButton* )sender {
     CGRect briefFrame = self.briefLab.frame;
@@ -724,13 +841,13 @@ static CGFloat bookIVHeight = 100;
         //展开
         self.showMoreBtn.selected = YES;
         self.briefLab.frame = CGRectMake(briefFrame.origin.x, briefFrame.origin.y, briefFrame.size.width, briefSize.height + 10);
-        self.showMoreBtn.frame = CGRectMake((self.headerView.frame.size.width - 20) / 2, self.briefLab.frame.origin.y + self.briefLab.frame.size.height, 20, 20);
+        self.showMoreBtn.frame = CGRectMake(self.headerView.frame.size.width - 20 * 2, self.briefLab.frame.origin.y + self.briefLab.frame.size.height, 20, 20);
         headerViewFrame.size.height = self.showMoreBtn.frame.origin.y + self.showMoreBtn.frame.size.height + 10;//加10裕量
     }else {
         //收起
         self.showMoreBtn.selected = NO;
-        self.briefLab.frame = CGRectMake(briefFrame.origin.x, briefFrame.origin.y, briefFrame.size.width, briefHeight);
-        self.showMoreBtn.frame = CGRectMake((self.headerView.frame.size.width - 20) / 2, self.briefLab.frame.origin.y + self.briefLab.frame.size.height, 20, 20);
+        self.briefLab.frame = CGRectMake(briefFrame.origin.x, briefFrame.origin.y, briefFrame.size.width, self.briefLab.font.lineHeight * 2);
+        self.showMoreBtn.frame = CGRectMake(self.headerView.frame.size.width - 20 * 2, self.briefLab.frame.origin.y + self.briefLab.frame.size.height, 20, 20);
         headerViewFrame.size.height = self.showMoreBtn.frame.origin.y + self.showMoreBtn.frame.size.height + 10;//加10裕量
     }
     
@@ -782,32 +899,40 @@ static CGFloat bookIVHeight = 100;
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     if (section == 0) {
-        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
+        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
         if (self.book != nil) {
             vi.backgroundColor = [UIColor colorWithRed:233/255.f green:233/255.f blue:233/255.f alpha:1];
         }
         return vi;
     }else if (section == 1) {
-        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
+        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 50)];
+        if (self.book == nil) {
+            return vi;
+        }
         
-        UILabel* lab0 = [[UILabel alloc]initWithFrame:CGRectMake(10, 10, 5, 20)];
-        lab0.layer.cornerRadius = 2.5;
-        lab0.layer.masksToBounds = YES;
-        lab0.backgroundColor = THEMEORANGECOLOR;
-        [vi addSubview:lab0];
-        
-        UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(lab0.frame.origin.x + lab0.frame.size.width + 10, 0, 100, 40)];
-        lab.font = [UIFont boldSystemFontOfSize:18];
+        UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(20, 20, 100, 20)];
+        lab.font = [UIFont systemFontOfSize:18];
         lab.text = @"用户评论";
         [vi addSubview:lab];
         
-        UIButton* btn = [[UIButton alloc]initWithFrame:CGRectMake(vi.frame.size.width - 40, lab.frame.origin.y, 40, 40)];
-        btn.tintColor = [UIColor colorWithRed:220.f/255 green:110.f/255 blue:100.f/255 alpha:1];
-        UIImage* btnImg = [[UIImage imageNamed:@"editComment"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        [btn setImage:btnImg forState:UIControlStateNormal];
-        [btn setImageEdgeInsets:UIEdgeInsetsMake(8, 6, 8, 10)];
-        [btn addTarget:self action:@selector(clickedEditCommentButton:) forControlEvents:UIControlEventTouchUpInside];
-        [vi addSubview:btn];
+        if (self.commentArray.count > 0) {
+            UIButton* btn = [[UIButton alloc]initWithFrame:CGRectMake(vi.frame.size.width - 20 - 115, lab.frame.origin.y, 65, 20)];
+            btn.titleLabel.font = [UIFont systemFontOfSize:18];
+            [btn setTitle:@"更多评论" forState:UIControlStateNormal];
+            [btn setTitleColor:THEMEORANGECOLOR forState:UIControlStateNormal];
+            [btn addTarget:self action:@selector(clickedShowMoreCommentButton:) forControlEvents:UIControlEventTouchUpInside];
+            [vi addSubview:btn];
+            
+            UILabel* tempBtnLab = [[UILabel alloc]initWithFrame:CGRectZero];
+            tempBtnLab.numberOfLines = 0;
+            tempBtnLab.lineBreakMode = NSLineBreakByCharWrapping;
+            tempBtnLab.font = [UIFont systemFontOfSize:18];
+            tempBtnLab.text = @"更多评论";
+            CGSize btnLabSize = [tempBtnLab sizeThatFits:CGSizeMake(9999, 20)];
+            
+            btn.frame = CGRectMake(vi.frame.size.width - 20 - btnLabSize.width, lab.frame.origin.y, btnLabSize.width, 20);
+        }
+        
         return vi;
     }
     return nil;
@@ -815,82 +940,32 @@ static CGFloat bookIVHeight = 100;
 
 -(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
     if (section == 0) {
-        CGFloat ivSpaceX = (self.view.frame.size.width - bookIVWidth * self.relatedArray.count) / (self.relatedArray.count + 1);
-        if (ivSpaceX < 15) {
-            ivSpaceX = 15;
+        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10)];
+        if (self.book != nil) {
+            vi.backgroundColor = [UIColor colorWithRed:233/255.f green:233/255.f blue:233/255.f alpha:1];
         }
-        self.footerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 10 + 45 + ivSpaceX + bookIVHeight + 10 + 40 + ivSpaceX)];
-        self.footerView.backgroundColor = [UIColor colorWithRed:233/255.f green:233/255.f blue:233/255.f alpha:1];
-        for (UIView* subvi in self.footerView.subviews) {
-            [subvi removeFromSuperview];
-        }
-        UIView* sectionBgView = [[UIView alloc]initWithFrame:CGRectMake(0, 10, self.footerView.frame.size.width, self.footerView.frame.size.height - 10)];
-        sectionBgView.backgroundColor = [UIColor whiteColor];
-        [self.footerView addSubview:sectionBgView];
-        
-        UILabel* lab0 = [[UILabel alloc]initWithFrame:CGRectMake(10, 15, 5, 20)];
-        lab0.layer.cornerRadius = 2.5;
-        lab0.layer.masksToBounds = YES;
-        lab0.backgroundColor = THEMEORANGECOLOR;
-        [sectionBgView addSubview:lab0];
-        
-        UILabel* lab1 = [[UILabel alloc]initWithFrame:CGRectMake(lab0.frame.origin.x + lab0.frame.size.width + 10, 5, 200, 40)];
-        lab1.font = [UIFont boldSystemFontOfSize:18];
-        lab1.text = @"相关推荐";
-        [sectionBgView addSubview:lab1];
-        
-        UIButton* sectionMoreBtn = [[UIButton alloc]initWithFrame:CGRectMake(sectionBgView.frame.size.width - 60, lab1.frame.origin.y, 60, lab1.frame.size.height)];
-        NSMutableAttributedString* btnStr = [[NSMutableAttributedString alloc]initWithString:@"更多>" attributes:@{NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle), NSForegroundColorAttributeName : [UIColor colorWithRed:100/255.f green:100/255.f blue:100/255.f alpha:1], NSFontAttributeName : [UIFont systemFontOfSize:16]}];
-        [sectionMoreBtn setAttributedTitle:btnStr forState:UIControlStateNormal];
-        [sectionMoreBtn addTarget:self action:@selector(clickedSectionMoreButton:) forControlEvents:UIControlEventTouchUpInside];
-        [sectionBgView addSubview:sectionMoreBtn];
-        
-        UIScrollView* footerScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, lab1.frame.origin.y + lab1.frame.size.height + ivSpaceX, self.view.frame.size.width, bookIVHeight + 10 + 40)];
-        footerScrollView.showsVerticalScrollIndicator = NO;
-        footerScrollView.showsHorizontalScrollIndicator = NO;
-        [sectionBgView addSubview:footerScrollView];
-        
-        for (NSInteger i = 0; i < self.relatedArray.count; i ++) {
-            Book* tempBook = [self.relatedArray objectAtIndex:i];
-            NSString* picStr = [tempBook.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-            UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(ivSpaceX + (ivSpaceX + bookIVWidth)*i, 0, bookIVWidth, bookIVHeight)];
-            iv.tag = i;
-            iv.userInteractionEnabled = YES;
-            iv.layer.shadowColor = [UIColor grayColor].CGColor;
-            iv.layer.shadowOffset = CGSizeMake(-5, 5);
-            iv.layer.shadowOpacity = 0.4;
-            [iv sd_setImageWithURL:[NSURL URLWithString:picStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage"]];
-            [footerScrollView addSubview:iv];
-            
-            UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(clickedBookImageView:)];
-            [iv addGestureRecognizer:tap];
-            
-            UILabel* lab2 = [[UILabel alloc]initWithFrame:CGRectMake(iv.frame.origin.x - ivSpaceX/2, iv.frame.origin.y + bookIVHeight + 10, bookIVWidth + ivSpaceX, 40)];
-            lab2.font = [UIFont systemFontOfSize:14];
-            lab2.textAlignment = NSTextAlignmentCenter;
-            lab2.numberOfLines = 2;
-            lab2.lineBreakMode = NSLineBreakByTruncatingMiddle;
-            lab2.text = tempBook.name;
-            [footerScrollView addSubview:lab2];
-        }
-        footerScrollView.contentSize = CGSizeMake(ivSpaceX * (self.relatedArray.count + 1) + bookIVWidth * self.relatedArray.count, 0);
-        return self.footerView;
-        
+        return vi;
     }else if (section == 1) {
-        NSString* btnTitleStr = @"暂无评论";
-        UIColor* btnTitleColor = [UIColor colorWithRed:150.f/255 green:150.f/255 blue:150.f/255 alpha:1];
-        if (self.commentArray.count > 0) {
-            btnTitleStr = @"更多评论";
-            btnTitleColor = THEMEORANGECOLOR;
-        }
         UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 50)];
+        if (self.book == nil) {
+            return vi;
+        }
+        
         UIButton* btn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, vi.frame.size.width, vi.frame.size.height)];
         btn.backgroundColor = [UIColor whiteColor];
-        btn.titleLabel.font = [UIFont systemFontOfSize:16];
-        [btn setTitleColor:btnTitleColor forState:UIControlStateNormal];
-        [btn setTitle:btnTitleStr forState:UIControlStateNormal];
-        [btn addTarget:self action:@selector(clickedShowMoreCommentButton:) forControlEvents:UIControlEventTouchUpInside];
+        [btn addTarget:self action:@selector(clickedEditCommentButton:) forControlEvents:UIControlEventTouchUpInside];
         [vi addSubview:btn];
+        
+        UIImageView* writeCommentIV = [[UIImageView alloc]initWithFrame:CGRectMake(vi.frame.size.width / 2 - 50, 10, 20, 20)];
+        writeCommentIV.tintColor = THEMEORANGECOLOR;
+        writeCommentIV.image = [[UIImage imageNamed:@"editComment"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        [btn addSubview:writeCommentIV];
+        
+        UILabel* writeCommentLab = [[UILabel alloc]initWithFrame:CGRectMake(writeCommentIV.frame.origin.x + writeCommentIV.frame.size.width + 10, writeCommentIV.frame.origin.y, 80, writeCommentIV.frame.size.height)];
+        writeCommentLab.textColor = THEMEORANGECOLOR;
+        writeCommentLab.font = [UIFont systemFontOfSize:18];
+        writeCommentLab.text = @"撰写评论";
+        [btn addSubview:writeCommentLab];
         
         return vi;
     }
@@ -910,24 +985,20 @@ static CGFloat bookIVHeight = 100;
 
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     if (section == 0) {
-        return 1;
+        return 10;
     }else if (section == 1) {
-        return 40;
+        return 50;
     }
-    return 1;
+    return 0.01;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
     if (section == 0) {
-        CGFloat ivSpaceX = (self.view.frame.size.width - bookIVWidth * self.relatedArray.count) / (self.relatedArray.count + 1);
-        if (ivSpaceX < 15) {
-            ivSpaceX = 15;
-        }
-        return 10 + 45 + ivSpaceX + bookIVHeight + 10 + 40 + ivSpaceX;
+        return 10;
     }else if (section == 1) {
         return 50;
     }
-    return 10;
+    return 0.01;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -940,11 +1011,11 @@ static CGFloat bookIVHeight = 100;
             Comment* comment = [self.commentArray objectAtIndex:row];
             NSString* commentStr = comment.text;
             if (commentStr != nil && commentStr.length > 0) {
-                CGFloat contentHeight = [LMBookCommentTableViewCell caculateLabelHeightWithWidth:self.view.frame.size.width - 10 * 2 text:commentStr font:[UIFont systemFontOfSize:CommentContentFontSize] maxLines:0];
+                CGFloat contentHeight = [LMBookCommentTableViewCell caculateLabelHeightWithWidth:self.view.frame.size.width - CommentAvatorIVWidth - 20 * 3 text:commentStr font:[UIFont systemFontOfSize:CommentContentFontSize] maxLines:0];
                 
-                return CommentAvatorIVWidth + CommentStarViewHeight + contentHeight + 10 * 4;
+                return CommentAvatorIVWidth + 10 + contentHeight + 20 * 2;
             }else {
-                return CommentAvatorIVWidth + CommentStarViewHeight + 10 * 3;
+                return CommentAvatorIVWidth + 20 * 2;
             }
         }else {
             return 0;
@@ -975,11 +1046,7 @@ static CGFloat bookIVHeight = 100;
         if (!cell) {
             cell = [[LMBookCommentTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:commentCellIdentifier];
         }
-        if (row == self.commentArray.count - 1) {
-            [cell showLineView:NO];
-        }else {
-            [cell showLineView:YES];
-        }
+        [cell showLineView:NO];
         cell.delegate = self;
         
         Comment* comment = [self.commentArray objectAtIndex:row];
@@ -997,9 +1064,10 @@ static CGFloat bookIVHeight = 100;
     NSInteger row = indexPath.row;
     if (section == 0) {
         if (row == 0) {
-            LMBookDetailCatalogViewController* catalogVC = [[LMBookDetailCatalogViewController alloc]init];
+            LMBookCatalogViewController* catalogVC = [[LMBookCatalogViewController alloc]init];
             catalogVC.bookId = self.bookId;
-            catalogVC.bookName = self.book.name;
+            catalogVC.bookNameStr = self.book.name;
+            catalogVC.fromWhich = 2;
             [self.navigationController pushViewController:catalogVC animated:YES];
         }
     }else if (section == 1) {
@@ -1091,6 +1159,62 @@ static CGFloat bookIVHeight = 100;
         [self.view addSubview:_downloadView];
     }
     return _downloadView;
+}
+
+#pragma mark -UICollectionViewDataSource
+-(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
+-(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return self.relatedArray.count;
+}
+
+-(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    LMChoiceTableViewCellCollectionViewCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:cvCellIdentifier forIndexPath:indexPath];
+    
+    NSInteger row = indexPath.row;
+    
+    Book* book = [self.relatedArray objectAtIndex:row];
+    
+    CGFloat itemHeight = collectionView.frame.size.height - 20 * 2;
+    [cell setupWithBook:book ivWidth:self.bookCoverWidth ivHeight:self.bookCoverHeight itemWidth:self.bookCoverWidth + 5 * 2 itemHeight:itemHeight nameFontSize:15 briefFontSize:12];
+    
+    return cell;
+}
+
+#pragma mark -UICollectionViewDelegate
+-(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    [collectionView deselectItemAtIndexPath:indexPath animated:NO];
+    
+    NSInteger row = indexPath.row;
+    Book* book = [self.relatedArray objectAtIndex:row];
+    
+    LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
+    detailVC.bookId = book.bookId;
+    [self.navigationController pushViewController:detailVC animated:YES];
+}
+
+#pragma mark -UICollectionViewDelegateFlowLayout
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return CGSizeMake(self.bookCoverWidth + 5 * 2, collectionView.frame.size.height - 20 * 2);
+}
+
+//cell 上下左右相距
+- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
+    CGFloat spaceX = 20 - 5;
+    CGFloat spaceY = 20;
+    return UIEdgeInsetsMake(spaceY, spaceX, spaceY, spaceX);
+}
+
+//行间距
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section {
+    return 20;
+}
+
+//列间距
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
+    return 20 - 5;
 }
 
 -(void)dealloc {

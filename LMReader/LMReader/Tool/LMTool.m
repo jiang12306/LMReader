@@ -209,7 +209,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
 //修改阅读器 配置 字号
 +(void)changeReaderConfigWithFontSize:(CGFloat )fontSize {
     NSNumber* fontNum = @16;
-    if (fontSize) {
+    if (fontSize >= ReaderMinFontSize && fontSize <= ReaderMaxFontSize) {//最小字号
         fontNum = [NSNumber numberWithFloat:fontSize];
     }
     NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
@@ -327,6 +327,27 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
     NSString* notifyKey = [NSString stringWithFormat:@"%@%@", appDelegate.userId, @"notificationState"];
     return [userDefaults boolForKey:notifyKey];
+}
+
+//获取系统设置中 夜间模式
++(BOOL )getSystemNightShift {
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* nightKey = [NSString stringWithFormat:@"%@%@", appDelegate.userId, AppSystemNightShift];
+    return [userDefaults boolForKey:nightKey];
+}
+
+//更改系统设置中 夜间模式
++(void )changeSystemNightShift:(BOOL )nightShift {
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    NSString* nightKey = [NSString stringWithFormat:@"%@%@", appDelegate.userId, AppSystemNightShift];
+    if (nightShift) {
+        [userDefaults setBool:YES forKey:nightKey];
+    }else {
+        [userDefaults removeObjectForKey:nightKey];
+    }
+    [userDefaults synchronize];
 }
 
 //保存txt
@@ -1082,6 +1103,9 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     }else if (month > 0) {
         return [NSString stringWithFormat:@"%d个月前",month];
     }else if (day > 0) {
+        if (day == 1) {
+            return @"昨天";
+        }
         return [NSString stringWithFormat:@"%d天前",day];
     }else if (hour > 0) {
         return [NSString stringWithFormat:@"%d小时前",hour];
@@ -1117,6 +1141,9 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     }else if (month > 0) {
         return [NSString stringWithFormat:@"%d个月前",month];
     }else if (day > 0) {
+        if (day == 1) {
+            return @"昨天";
+        }
         return [NSString stringWithFormat:@"%d天前",day];
     }else if (hour > 0) {
         return [NSString stringWithFormat:@"%d小时前",hour];

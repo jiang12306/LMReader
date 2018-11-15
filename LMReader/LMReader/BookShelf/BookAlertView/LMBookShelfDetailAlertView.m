@@ -9,6 +9,7 @@
 #import "LMBookShelfDetailAlertView.h"
 #import "UIImageView+WebCache.h"
 #import "LMTool.h"
+#import "AppDelegate.h"
 
 @interface LMBookShelfDetailAlertView ()
 
@@ -147,6 +148,9 @@ static CGFloat spaceY = 7;
     } completion:^(BOOL finished) {
         
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate bringSystemNightShiftToFront];
 }
 
 -(void)startHide {
@@ -155,6 +159,9 @@ static CGFloat spaceY = 7;
     } completion:^(BOOL finished) {
         [self removeFromSuperview];
     }];
+    
+    AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
+    [appDelegate sendSystemNightShiftToback];
 }
 
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {

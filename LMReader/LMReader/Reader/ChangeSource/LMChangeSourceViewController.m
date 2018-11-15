@@ -155,6 +155,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (!cell) {
         cell = [[LMChangeSourceTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
+    [cell showArrowImageView:NO];
+    [cell showLineView:NO];
+    
     NSInteger row = indexPath.row;
     BOOL isClicked = NO;
     if (indexPath.row == self.sourceIndex) {
@@ -172,13 +175,13 @@ static NSString* cellIdentifier = @"cellIdentifier";
             lastStr = @"";
         }
         Source* source = parse.source;
-        [cell setupSourceWithSource:source nameStr:lastStr timeStr:nil isClicked:isClicked];
+        [cell setupSourceWithSource:source nameStr:lastStr isClicked:isClicked];
     }else {
         SourceLastChapter* lastChapter = [self.sourceArr objectAtIndex:indexPath.row];
         Chapter* chapter = lastChapter.lastChapter;
         Source* source = lastChapter.source;
         NSString* timeStr = [LMTool convertTimeStampToTime:chapter.updatedAt];
-        [cell setupSourceWithSource:source nameStr:chapter.chapterTitle timeStr:timeStr isClicked:isClicked];
+        [cell setupSourceWithSource:source nameStr:chapter.chapterTitle isClicked:isClicked];
     }
     
     return cell;

@@ -20,4 +20,6 @@
 @property (nonatomic, strong) NSString* dateStr;/**<日期*/
 @property (nonatomic, assign) BOOL isCollected;/**<是否已收藏*/
 
+@property (nonatomic, assign) NSInteger dayInteger;/**<距离今天天数：0.今天；1.昨天；x天前*/
+
 @end

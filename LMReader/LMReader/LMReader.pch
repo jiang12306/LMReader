@@ -28,12 +28,21 @@
 //主题色 橙色
 #define THEMEORANGECOLOR [UIColor colorWithRed:248/255.f green:72/255.f blue:25/255.f alpha:1]
 
-//返回 按钮 颜色 白色
+//返回 按钮 颜色
 #define BACKCOLOR [UIColor blackColor]
 
 #define RGB(r,g,b,a) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a]
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
+//阅读器 最小字号
+#define ReaderMinFontSize 15
+//阅读器 最大字号
+#define ReaderMaxFontSize 25
+
+//APP级 夜览模式
+#define AppSystemNightShift @"nightShift"
+
 
 //微信 相关
 #define  weChatAppId @"wx6e5eb59b9cab5c09"

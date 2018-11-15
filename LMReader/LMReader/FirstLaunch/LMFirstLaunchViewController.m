@@ -41,13 +41,13 @@ static NSString* cellId = @"cellIdentifier";
     
     UILabel* lab1 = [[UILabel alloc]initWithFrame:CGRectMake(0, originalY, self.view.frame.size.width, 40)];
     lab1.textAlignment = NSTextAlignmentCenter;
-    lab1.font = [UIFont systemFontOfSize:20];
-    lab1.text = @"请选择您的性别及阅读偏好";
+    lab1.font = [UIFont systemFontOfSize:18];
+    lab1.text = @"请选择您的读书类型";
     [self.view addSubview:lab1];
     
     UILabel* lab2 = [[UILabel alloc]initWithFrame:CGRectMake(0, lab1.frame.origin.y + lab1.frame.size.height, self.view.frame.size.width, 30)];
     lab2.textAlignment = NSTextAlignmentCenter;
-    lab2.font = [UIFont systemFontOfSize:16];
+    lab2.font = [UIFont systemFontOfSize:15];
     lab2.text = @"以便推荐更适合您的小说";
     [self.view addSubview:lab2];
     
@@ -57,19 +57,13 @@ static NSString* cellId = @"cellIdentifier";
     UITapGestureRecognizer* maleTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedMaleView:)];
     [maleView addGestureRecognizer:maleTap];
     
-    UIImageView* maleAvator = [[UIImageView alloc]initWithFrame:CGRectMake(10, 0, viewWidth - 20, viewWidth - 20)];
-    maleAvator.image = [UIImage imageNamed:@"male"];
-    [maleView addSubview:maleAvator];
-    
-    self.maleIV = [[UIImageView alloc]initWithFrame:CGRectMake(maleAvator.frame.origin.x + maleAvator.frame.size.width / 4, maleAvator.frame.origin.y + maleAvator.frame.size.height / 2, maleAvator.frame.size.width / 2, maleAvator.frame.size.height / 2)];
-    self.maleIV.image = [UIImage imageNamed:@"sex_Selected"];
+    self.maleIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, viewWidth - 20, viewWidth - 20)];
+    self.maleIV.layer.cornerRadius = self.maleIV.frame.size.width / 2;
+    self.maleIV.layer.masksToBounds = YES;
+    self.maleIV.layer.borderWidth = 3;
+    self.maleIV.layer.borderColor = THEMEORANGECOLOR.CGColor;
+    self.maleIV.image = [UIImage imageNamed:@"male"];
     [maleView addSubview:self.maleIV];
-    
-    UILabel* maleLab = [[UILabel alloc]initWithFrame:CGRectMake(maleAvator.frame.origin.x, maleView.frame.size.height - 20, maleAvator.frame.size.width, 20)];
-    maleLab.font = [UIFont systemFontOfSize:15];
-    maleLab.textAlignment = NSTextAlignmentCenter;
-    maleLab.text = @"男生";
-    [maleView addSubview:maleLab];
     
     UIView* femaleView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 + 20, maleView.frame.origin.y, viewWidth, viewWidth)];
     [self.view addSubview:femaleView];
@@ -77,20 +71,11 @@ static NSString* cellId = @"cellIdentifier";
     UITapGestureRecognizer* femaleTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedFemaleView:)];
     [femaleView addGestureRecognizer:femaleTap];
     
-    UIImageView* femaleAvator = [[UIImageView alloc]initWithFrame:CGRectMake(10, 0, viewWidth - 20, viewWidth - 20)];
-    femaleAvator.image = [UIImage imageNamed:@"female"];
-    [femaleView addSubview:femaleAvator];
-    
-    self.femaleIV = [[UIImageView alloc]initWithFrame:CGRectMake(femaleAvator.frame.origin.x + femaleAvator.frame.size.width / 4, femaleAvator.frame.origin.y + femaleAvator.frame.size.height / 2, femaleAvator.frame.size.width / 2, femaleAvator.frame.size.height / 2)];
-    self.femaleIV.image = [UIImage imageNamed:@"sex_Selected"];
-    self.femaleIV.alpha = 0.3f;
+    self.femaleIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, viewWidth - 20, viewWidth - 20)];
+    self.femaleIV.layer.cornerRadius = self.femaleIV.frame.size.width / 2;
+    self.femaleIV.layer.masksToBounds = YES;
+    self.femaleIV.image = [UIImage imageNamed:@"female"];
     [femaleView addSubview:self.femaleIV];
-    
-    UILabel* femaleLab = [[UILabel alloc]initWithFrame:CGRectMake(femaleAvator.frame.origin.x, femaleView.frame.size.height - 20, femaleAvator.frame.size.width, 20)];
-    femaleLab.font = [UIFont systemFontOfSize:15];
-    femaleLab.textAlignment = NSTextAlignmentCenter;
-    femaleLab.text = @"女生";
-    [femaleView addSubview:femaleLab];
     
     CGFloat bottomHeight = 10 + 40 + 30;
     if ([LMTool isBangsScreen]) {
@@ -133,8 +118,10 @@ static NSString* cellId = @"cellIdentifier";
     }
     
     self.genderType = GenderTypeGenderMale;
-    self.maleIV.alpha = 1;
-    self.femaleIV.alpha = 0.3;
+    self.maleIV.layer.borderWidth = 3;
+    self.maleIV.layer.borderColor = THEMEORANGECOLOR.CGColor;
+    self.femaleIV.layer.borderWidth = 0;
+    self.femaleIV.layer.borderColor = [UIColor clearColor].CGColor;
     [self.interestArray removeAllObjects];
     [self.dataArray removeAllObjects];
     
@@ -188,8 +175,10 @@ static NSString* cellId = @"cellIdentifier";
     }
     
     self.genderType = GenderTypeGenderFemale;
-    self.femaleIV.alpha = 1;
-    self.maleIV.alpha = 0.3;
+    self.femaleIV.layer.borderWidth = 3;
+    self.femaleIV.layer.borderColor = THEMEORANGECOLOR.CGColor;
+    self.maleIV.layer.borderWidth = 0;
+    self.maleIV.layer.borderColor = [UIColor clearColor].CGColor;
     [self.interestArray removeAllObjects];
     [self.dataArray removeAllObjects];
     

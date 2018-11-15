@@ -21,24 +21,25 @@
 -(void)setupTextLabel {
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
     if (!self.coverIV) {
-        self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 15, 20, 20)];
-        self.coverIV.image = [UIImage imageNamed:@"search_Author"];
+        self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, 20, 20)];
+        self.coverIV.image = [[UIImage imageNamed:@"search_Author"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        self.coverIV.tintColor = THEMEORANGECOLOR;
         [self.contentView addSubview:self.coverIV];
     }
     if (!self.textLab) {
-        self.textLab = [[UILabel alloc]initWithFrame:CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + 10, 0, screenWidth - 50, 50)];
-        self.textLab.font = [UIFont systemFontOfSize:18];
+        self.textLab = [[UILabel alloc]initWithFrame:CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + 10, 0, screenWidth - 10 * 2 - 20 * 3 - 35, 60)];
+        self.textLab.font = [UIFont systemFontOfSize:15];
         self.textLab.numberOfLines = 1;
         self.textLab.lineBreakMode = NSLineBreakByTruncatingTail;
         [self.contentView addSubview:self.textLab];
     }
     if (!self.markLab) {
-        self.markLab = [[UILabel alloc]initWithFrame:CGRectMake(self.textLab.frame.origin.x + self.textLab.frame.size.width + 10, 15, 35, 20)];
-        self.markLab.layer.cornerRadius = 3;
+        self.markLab = [[UILabel alloc]initWithFrame:CGRectMake(self.textLab.frame.origin.x + self.textLab.frame.size.width + 10, 20, 35, 20)];
+        self.markLab.layer.cornerRadius = 1;
         self.markLab.layer.masksToBounds = YES;
-        self.markLab.backgroundColor = THEMEORANGECOLOR;
-        self.markLab.font = [UIFont systemFontOfSize:14];
-        self.markLab.textColor = [UIColor whiteColor];
+        self.markLab.backgroundColor = [UIColor colorWithRed:237.f/255 green:237.f/255 blue:237.f/255 alpha:1];
+        self.markLab.font = [UIFont systemFontOfSize:12];
+        self.markLab.textColor = THEMEORANGECOLOR;
         self.markLab.textAlignment = NSTextAlignmentCenter;
         self.markLab.text = @"作者";
         [self.contentView addSubview:self.markLab];

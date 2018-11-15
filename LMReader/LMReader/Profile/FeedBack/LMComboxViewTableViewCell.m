@@ -16,7 +16,7 @@
         self.selectionStyle = UITableViewCellSelectionStyleNone;
         
         self.layer.borderWidth = 1;
-        self.layer.borderColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1].CGColor;
+        self.layer.borderColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1].CGColor;
         
         [self setupContentLab];
     }
@@ -26,7 +26,7 @@
 -(void)setupContentLab {
     if (!self.contentLab) {
         self.contentLab = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, self.frame.size.width, 30)];
-        self.contentLab.font = [UIFont systemFontOfSize:16];
+        self.contentLab.font = [UIFont systemFontOfSize:15];
         [self.contentView addSubview:self.contentLab];
     }
     self.backgroundColor = [UIColor whiteColor];
@@ -40,7 +40,7 @@
 
 -(void)setClicked:(BOOL)clicked {
     if (clicked) {
-        self.backgroundColor = [UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1];
+        self.backgroundColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
     }else {
         self.backgroundColor = [UIColor whiteColor];
     }

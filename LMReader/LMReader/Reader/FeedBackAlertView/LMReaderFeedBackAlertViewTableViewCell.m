@@ -13,6 +13,8 @@
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
+        self.selectionStyle = UITableViewCellSelectionStyleNone;
+        
         [self setupSubviews];
     }
     return self;
@@ -20,20 +22,21 @@
 
 -(void)setupSubviews {
     if (!self.selectIV) {
-        self.selectIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, 20, 20)];
-        self.selectIV.image = [UIImage imageNamed:@"readPreferences_Normal"];
+        self.selectIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 10, 20, 20)];
+        self.selectIV.image = [UIImage imageNamed:@"feedBackAlertView_Normal"];
         [self.contentView addSubview:self.selectIV];
     }
     if (!self.textLab) {
-        self.textLab = [[UILabel alloc]initWithFrame:CGRectMake(40, 0, 200, 40)];
-        self.textLab.font = [UIFont systemFontOfSize:16];
+        self.textLab = [[UILabel alloc]initWithFrame:CGRectMake(60, 0, 150, 40)];
+        self.textLab.font = [UIFont systemFontOfSize:15];
+        self.textLab.textColor = [UIColor colorWithRed:50.f/255 green:50.f/255 blue:50.f/255 alpha:1];
         [self.contentView addSubview:self.textLab];
     }
 }
 
 -(void)setupClicked:(BOOL)isClicked {
-    UIImage* normalImg = [UIImage imageNamed:@"readPreferences_Normal"];
-    UIImage* selectedImg = [UIImage imageNamed:@"readPreferences_Selected"];
+    UIImage* normalImg = [UIImage imageNamed:@"feedBackAlertView_Normal"];
+    UIImage* selectedImg = [UIImage imageNamed:@"feedBackAlertView_Selected"];
     if (isClicked) {
         self.selectIV.image = selectedImg;
     }else {

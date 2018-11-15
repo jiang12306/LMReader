@@ -33,10 +33,6 @@
     
     self.title = @"获取验证码";
     
-    CGFloat spaceX = 10;
-    CGFloat spaceY = 20;
-    CGFloat labHeight = 40;
-    
     self.scrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
     if (@available(ios 11.0, *)) {
         self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
@@ -46,55 +42,53 @@
     self.scrollView.showsHorizontalScrollIndicator = NO;
     [self.view addSubview:self.scrollView];
     
-    UIImageView* phoneIV = [[UIImageView alloc]initWithFrame:CGRectMake(5, 5, 30, 30)];
-    phoneIV.image = [UIImage imageNamed:@"register_Avator"];
+    UIView* phoneView = [[UIView alloc]initWithFrame:CGRectMake(0, 20, self.scrollView.frame.size.width, 50)];
+    [self.scrollView addSubview:phoneView];
     
-    UIView* phoneView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, labHeight, labHeight)];
-    [phoneView addSubview:phoneIV];
-    
-    self.phoneTF = [[UITextField alloc]initWithFrame:CGRectMake(spaceX, spaceY, self.view.frame.size.width - spaceX * 2, labHeight)];
-    self.phoneTF.placeholder = @"手机号";
-    self.phoneTF.backgroundColor = [UIColor whiteColor];
-    self.phoneTF.layer.borderColor = [UIColor colorWithRed:200.f/255 green:200.f/255 blue:200.f/255 alpha:1].CGColor;
-    self.phoneTF.layer.borderWidth = 1;
-    self.phoneTF.layer.cornerRadius = 5;
-    self.phoneTF.layer.masksToBounds = YES;
+    self.phoneTF = [[UITextField alloc]initWithFrame:CGRectMake(20, 10, phoneView.frame.size.width - 20 * 2, 30)];
+    self.phoneTF.font = [UIFont systemFontOfSize:15];
+    self.phoneTF.placeholder = @"请输入手机号";
     self.phoneTF.keyboardType = UIKeyboardTypeNumberPad;
     self.phoneTF.clearButtonMode = UITextFieldViewModeWhileEditing;
-    self.phoneTF.leftViewMode = UITextFieldViewModeAlways;
-    self.phoneTF.leftView = phoneView;
-    [self.scrollView addSubview:self.phoneTF];
+    [phoneView addSubview:self.phoneTF];
     
-    self.codeBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width - spaceX - 80, self.phoneTF.frame.origin.y + self.phoneTF.frame.size.height + spaceY, 80, labHeight)];
-    self.codeBtn.layer.cornerRadius = 5;
-    self.codeBtn.layer.masksToBounds = YES;
-    self.codeBtn.layer.borderColor = [UIColor colorWithRed:200.f/255 green:200.f/255 blue:200.f/255 alpha:1].CGColor;
-    self.codeBtn.layer.borderWidth = 1;
-    self.codeBtn.titleLabel.font = [UIFont systemFontOfSize:14];
+    UIView* phoneLineView = [[UIView alloc]initWithFrame:CGRectMake(20, phoneView.frame.size.height - 1, phoneView.frame.size.width - 20 * 2, 1)];
+    phoneLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    [phoneView addSubview:phoneLineView];
+    
+    UIView* codeView = [[UIView alloc]initWithFrame:CGRectMake(0, phoneView.frame.origin.y + phoneView.frame.size.height, self.view.frame.size.width, 50)];
+    [self.scrollView addSubview:codeView];
+    
+    self.codeBtn = [[UIButton alloc]initWithFrame:CGRectMake(codeView.frame.size.width - 20 - 80, 10, 80, 30)];
+    self.codeBtn.titleLabel.font = [UIFont systemFontOfSize:15];
     [self.codeBtn setTitle:@"获取验证码" forState:UIControlStateNormal];
-    [self.codeBtn setTitleColor:[UIColor colorWithRed:140.f/255 green:140.f/255 blue:140.f/255 alpha:1] forState:UIControlStateNormal];
+    [self.codeBtn setTitleColor:THEMEORANGECOLOR forState:UIControlStateNormal];
     [self.codeBtn addTarget:self action:@selector(clickedCodeButton:) forControlEvents:UIControlEventTouchUpInside];
     self.codeBtn.selected = NO;
-    [self.scrollView addSubview:self.codeBtn];
+    [codeView addSubview:self.codeBtn];
     
-    self.codeTF = [[UITextField alloc]initWithFrame:CGRectMake(self.phoneTF.frame.origin.x, self.codeBtn.frame.origin.y, self.view.frame.size.width - self.codeBtn.frame.size.width - spaceX * 3, self.phoneTF.frame.size.height)];
-    self.codeTF.backgroundColor = [UIColor whiteColor];
-    self.codeTF.layer.borderWidth = 1;
-    self.codeTF.layer.cornerRadius = 5;
-    self.codeTF.layer.masksToBounds = YES;
-    self.codeTF.layer.borderColor = [UIColor colorWithRed:200.f/255 green:200.f/255 blue:200.f/255 alpha:1].CGColor;
+    UIView* verticalLineView = [[UIView alloc]initWithFrame:CGRectMake(self.codeBtn.frame.origin.x - 1 - 20, self.codeBtn.frame.origin.y, 1, self.codeBtn.frame.size.height)];
+    verticalLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    [codeView addSubview:verticalLineView];
+    
+    self.codeTF = [[UITextField alloc]initWithFrame:CGRectMake(20, self.codeBtn.frame.origin.y, verticalLineView.frame.origin.x - 20 * 2, self.phoneTF.frame.size.height)];
+    self.codeTF.font = [UIFont systemFontOfSize:15];
     self.codeTF.keyboardType = UIKeyboardTypeNumberPad;
     self.codeTF.clearButtonMode = UITextFieldViewModeWhileEditing;
-    self.codeTF.placeholder = @" 验证码";
-    [self.scrollView addSubview:self.codeTF];
+    self.codeTF.placeholder = @"请输入验证码";
+    [codeView addSubview:self.codeTF];
     
-    CGFloat sendStartY = self.codeTF.frame.origin.y + self.codeTF.frame.size.height + spaceY;
+    UIView* codeLineView = [[UIView alloc]initWithFrame:CGRectMake(20, codeView.frame.size.height - 1, codeView.frame.size.width - 20 * 2, 1)];
+    codeLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+    [codeView addSubview:codeLineView];
+    
+    CGFloat sendStartY = codeView.frame.origin.y + codeView.frame.size.height + 20;
     if (self.type == SmsTypeSmsReg) {
         
         self.agreeResult = YES;
         __weak LMCheckVerifyCodeViewController* weakSelf = self;
         
-        self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake(10, self.codeTF.frame.origin.y + self.codeTF.frame.size.height + spaceY, 190, 15)];
+        self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake(20, codeView.frame.origin.y + codeView.frame.size.height + 20, 170, 15)];
         self.agreementView.agreeBlock = ^(BOOL didAgree) {
             weakSelf.agreeResult = didAgree;
         };
@@ -104,14 +98,14 @@
         };
         [self.scrollView addSubview:self.agreementView];
         
-        sendStartY = self.agreementView.frame.origin.y + self.agreementView.frame.size.height + spaceY;
+        sendStartY = self.agreementView.frame.origin.y + self.agreementView.frame.size.height + 20;
     }
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(spaceX, sendStartY, self.view.frame.size.width - spaceX * 2, labHeight)];
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, sendStartY, self.view.frame.size.width - 60 * 2, 50)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 5;
+    self.sendBtn.layer.cornerRadius = 25;
     self.sendBtn.layer.masksToBounds = YES;
-    [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
+    [self.sendBtn setTitle:@"下一步" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.scrollView addSubview:self.sendBtn];
     
@@ -230,6 +224,13 @@
 
 //注册/提交 按钮
 -(void)clickedSendButton:(UIButton* )sender {
+//    LMSetPasswordViewController* setPwdVC = [[LMSetPasswordViewController alloc]init];
+//    setPwdVC.phoneStr = self.phoneTF.text;
+//    setPwdVC.verifyStr = @"";
+//    setPwdVC.type = self.type;
+//    [self.navigationController pushViewController:setPwdVC animated:YES];
+//    return;
+    
     if (self.agreeResult == NO) {
         [self showMBProgressHUDWithText:@"尚未同意《用户隐私协议》"];
         return;

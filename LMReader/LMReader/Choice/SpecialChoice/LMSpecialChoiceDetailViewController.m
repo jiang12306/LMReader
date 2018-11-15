@@ -7,7 +7,7 @@
 //
 
 #import "LMSpecialChoiceDetailViewController.h"
-#import "LMBaseBookTableViewCell.h"
+#import "LMTypeBookStoreTableViewCell.h"
 #import "LMBookDetailViewController.h"
 #import "LMBaseRefreshTableView.h"
 #import "UIImageView+WebCache.h"
@@ -26,6 +26,12 @@
 @property (nonatomic, assign) BOOL isEnd;//是否最后一页
 @property (nonatomic, assign) BOOL isRefreshing;//是否正在刷新中
 
+@property (nonatomic, assign) CGFloat bookCoverWidth;//
+@property (nonatomic, assign) CGFloat bookCoverHeight;//
+@property (nonatomic, assign) CGFloat bookFontScale;//
+@property (nonatomic, assign) CGFloat bookNameFontSize;//
+@property (nonatomic, assign) CGFloat bookBriefFontSize;//
+
 @end
 
 @implementation LMSpecialChoiceDetailViewController
@@ -34,6 +40,22 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.bookCoverWidth = 105.f;
+    self.bookCoverHeight = 145.f;
+    self.bookNameFontSize = 15.f;
+    self.bookBriefFontSize = 12.f;
+    
+    CGFloat maxBookWidth = (self.view.frame.size.width - 20 * 4 - 10 * 3) / 3.f;
+    self.bookFontScale = (self.view.frame.size.width / 414.f);
+    if (self.bookFontScale > 1) {
+        self.bookFontScale = 1;
+    }
+    if (self.bookCoverWidth * self.bookFontScale > maxBookWidth) {
+        self.bookFontScale = maxBookWidth / self.bookCoverWidth;
+    }
+    self.bookCoverWidth *= self.bookFontScale;
+    self.bookCoverHeight *= self.bookFontScale;
     
     NSString* titleStr = self.chart.name;
     if (titleStr != nil && ![titleStr isKindOfClass:[NSNull class]]) {
@@ -54,11 +76,11 @@ static NSString* cellIdentifier = @"cellIdentifier";
     self.tableView.dataSource = self;
     self.tableView.refreshDelegate = self;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    [self.tableView registerClass:[LMBaseBookTableViewCell class] forCellReuseIdentifier:cellIdentifier];
+    [self.tableView registerClass:[LMTypeBookStoreTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.view addSubview:self.tableView];
     
     self.headerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 160)];
-    self.headerIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, self.headerView.frame.size.width - 10 * 2, 80)];
+    self.headerIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, self.headerView.frame.size.width - 20 * 2, 80)];
     self.headerIV.layer.cornerRadius = 5;
     self.headerIV.layer.masksToBounds = YES;
     NSString* coverStr = [self.chart.converUrl stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
@@ -69,9 +91,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
             CGFloat imgHeight = image.size.height;
             CGFloat headerIVHeight = imgHeight * self.headerIV.frame.size.width / imgWidth;
             
-            self.headerIV.frame = CGRectMake(10, 10, self.headerView.frame.size.width - 10 * 2, headerIVHeight);
+            self.headerIV.frame = CGRectMake(20, 20, self.headerView.frame.size.width - 20 * 2, headerIVHeight);
             CGRect tempFrame = self.otherHeaderView.frame;
-            self.otherHeaderView.frame = CGRectMake(0, self.headerIV.frame.origin.y + self.headerIV.frame.size.height + 10, self.headerView.frame.size.width, tempFrame.size.height);
+            self.otherHeaderView.frame = CGRectMake(0, self.headerIV.frame.origin.y + self.headerIV.frame.size.height + 20, self.headerView.frame.size.width, tempFrame.size.height);
             self.headerView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.origin.y + self.otherHeaderView.frame.size.height);
             self.tableView.tableHeaderView = self.headerView;
         }
@@ -83,24 +105,25 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [self.headerView addSubview:self.otherHeaderView];
     
     UILabel* colorLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 10, self.headerView.frame.size.width, 10)];
-    colorLab.backgroundColor = [UIColor colorWithRed:245.f/255 green:245.f/255 blue:245.f/255 alpha:1];
+    colorLab.backgroundColor = [UIColor colorWithRed:235.f/255 green:235.f/255 blue:235.f/255 alpha:1];
     [self.otherHeaderView addSubview:colorLab];
     
-    self.briefLab = [[UILabel alloc]initWithFrame:CGRectMake(10, colorLab.frame.origin.y + colorLab.frame.size.height, self.headerIV.frame.size.width - 10 * 2, 40)];
+    self.briefLab = [[UILabel alloc]initWithFrame:CGRectMake(20, colorLab.frame.origin.y + colorLab.frame.size.height + 20, self.headerIV.frame.size.width, 20)];
     self.briefLab.font = [UIFont systemFontOfSize:18];
     self.briefLab.text = self.chart.name;
     [self.otherHeaderView addSubview:self.briefLab];
     
-    self.detailLab = [[UILabel alloc]initWithFrame:CGRectMake(10, self.briefLab.frame.origin.y + self.briefLab.frame.size.height, self.briefLab.frame.size.width, 40)];
+    self.detailLab = [[UILabel alloc]initWithFrame:CGRectMake(20, self.briefLab.frame.origin.y + self.briefLab.frame.size.height + 10, self.briefLab.frame.size.width, 40)];
     self.detailLab.font = [UIFont systemFontOfSize:15];
     self.detailLab.text = self.chart.abstract;
+    self.detailLab.textColor = [UIColor colorWithRed:65.f/255 green:65.f/255 blue:65.f/255 alpha:1];
     self.detailLab.numberOfLines = 0;
     self.detailLab.lineBreakMode = NSLineBreakByCharWrapping;
     [self.otherHeaderView addSubview:self.detailLab];
     
     CGRect detailFrame = self.detailLab.frame;
     CGSize detailSize = [self.detailLab sizeThatFits:CGSizeMake(self.briefLab.frame.size.width, CGFLOAT_MAX)];
-    self.detailLab.frame = CGRectMake(detailFrame.origin.x, detailFrame.origin.y, detailFrame.size.width, detailSize.height + 10);
+    self.detailLab.frame = CGRectMake(detailFrame.origin.x, detailFrame.origin.y, detailFrame.size.width, detailSize.height + 20);
     
     self.otherHeaderView.frame = CGRectMake(0, self.headerIV.frame.origin.y + self.headerIV.frame.size.height, self.headerView.frame.size.width, self.detailLab.frame.origin.y + self.detailLab.frame.size.height);
     self.headerView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.otherHeaderView.frame.origin.y + self.otherHeaderView.frame.size.height);
@@ -142,18 +165,17 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return baseBookCellHeight;
+    return self.bookCoverHeight + 20 * 2;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    LMBaseBookTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
+    LMTypeBookStoreTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     if (!cell) {
-        cell = [[LMBaseBookTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        cell = [[LMTypeBookStoreTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
     
     Book* book = [self.dataArray objectAtIndex:indexPath.row];
-    
-    [cell setupContentBook:book];
+    [cell setupContentBook:book cellHeight:self.bookCoverHeight + 20 * 2 ivWidth:self.bookCoverWidth nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
     
     return cell;
 }

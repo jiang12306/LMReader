@@ -21,12 +21,12 @@
 -(void)setupTextLabel {
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
     if (!self.coverIV) {
-        self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 15, 20, 20)];
+        self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, 20, 20)];
         [self.contentView addSubview:self.coverIV];
     }
     if (!self.textLab) {
-        self.textLab = [[UILabel alloc]initWithFrame:CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + 10, 0, screenWidth - 50, 50)];
-        self.textLab.font = [UIFont systemFontOfSize:16];
+        self.textLab = [[UILabel alloc]initWithFrame:CGRectMake(self.coverIV.frame.origin.x + self.coverIV.frame.size.width + 10, 0, screenWidth - 20 * 3 - 10, 60)];
+        self.textLab.font = [UIFont systemFontOfSize:18];
         self.textLab.numberOfLines = 1;
         self.textLab.lineBreakMode = NSLineBreakByTruncatingTail;
         self.textLab.textColor = [UIColor colorWithRed:100 / 255.f green:100 / 255.f blue:100 / 255.f alpha:1];

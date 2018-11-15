@@ -14,10 +14,9 @@
     self = [super initWithFrame:frame];
     if (self) {
         UIButton* leftItemButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
-        leftItemButton.titleLabel.font = [UIFont systemFontOfSize:18];
+        leftItemButton.titleLabel.font = [UIFont boldSystemFontOfSize:20];
         [leftItemButton setTitle:APPNAME forState:UIControlStateNormal];
         [leftItemButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [leftItemButton setTitleEdgeInsets:UIEdgeInsetsMake(0, 5, 0, 0)];
         [self addSubview:leftItemButton];
     }
     return self;
