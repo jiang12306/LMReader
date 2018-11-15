@@ -1,0 +1,807 @@
+package ftbook;
+
+///*
+//1. 根据所选性别 返回 小说类型 推荐列表。 (首次打开)
+//2. 根据所选小说类型 返回推荐的5本小说。//服务端存储一下用户已选小说类型，以设备ID为主键 (首次打开)
+//3. 根据设备ID，返回已加入书架的书本的列表，有置顶。 (书架)
+//4. 操作 添加图书到书架、删除书架图书、置顶书架图书、取消置顶书架图书。(书架)
+//5. 根据 所选小说类型 的组合，返回书本列表。 (书城)
+//6. 根据“关键词”，返回书本列表。 (搜索)
+//7. 根据书本ID， 返回章节列表。(阅读器)
+//8. 根据书本ID、章节号、章节名称、源ID(可选)，返回该章节内容  并 可供阅读的 源 列表。 (阅读器)
+//9. 根据书本ID，返回相关书本。(书籍详情)
+//10. 根据“类别”(兴趣推荐、经典完结)，返回对应书本列表。(精选首页)
+//11. 返回各家排行榜列表 或 专题列表。(精选)
+//12. 根据 排行榜ID 或 专题ID，返回书本列表。(精选)
+//13. 发送手机验证码请求
+//14. 检测验证码是否正确
+//15. 获取省份城市列表
+//16. 用户反馈 //包括阅读时反馈
+//17. 手机快速注册 & 忘记密码重新设置
+//18. 修改密码
+//19. 注册用户登录
+//20. 修改注册用户信息
+//21. 上报用户阅读进度 //退出阅读器时
+//22. 更新控制
+//23. 请求封面
+//24. 请求偏好设置
+//25. 发送偏好设置
+//26. 安卓是否需要开启百度接口
+//27. 通过百度接口获取对应他们用户TOKEN
+//28. 上传小说章节列表数组 TODO
+//29. 上报推送的id NOTNEED
+//30. 换源上报
+//31. 作者为"某某"的所有书本
+//32. 搜索奇起始页 //大家都在搜、热门推荐
+//33. 章节列表 或 章节内容 加载出错上报
+//34. 第三方注册登录//微信 QQ
+//35. 检测账号/手机号是否存在
+//36. 发表评论
+//37. 文章的评论列表
+//38. 对评论的赞、删
+//39. 我的评论列表
+//40. 初始化开关量
+//41. 自家的具体广告
+//42. 广告展示上报
+//43. 自定义精选(精选首页)
+//44. 自定义精选(查看更多)
+// 调试地址 http://book.tkmob.com/api/index
+//*/
+
+// 小说类型
+/*
+enum BookType {
+    BOOK_UNKNOWN = 0; // 未知
+    BOOK_BOY = 1; // 男生
+    BOOK_GIRL = 2; // 女生
+
+    BOOK_OTHER = 9999; // 其他
+};
+*/
+
+// 小说进度
+enum BookState {
+    STATE_UNKNOWN = 0; // 未知
+    STATE_WRITING = 1; // 写作中
+    STATE_FINISHED = 2; // 完结
+    STATE_PAUSE = 3; // 暂停中 //可能作者退隐一段时间
+};
+
+message JsonParse{
+    required string json_key = 1;
+    required uint32 json_type = 2; // 0:键值对 1:数组
+}
+message KanapiJiaston{
+    required uint32 bid = 1; // 书本ID
+    repeated JsonParse list_parse = 2; // [ {k:data,t:0}, {k:list, t:1}, {k:list, t:1} ]
+    optional string cid_key = 3; // 章节ID的json索引 'id'
+    optional string ctitle_key = 4; // 章节标题的json索引 'name'
+    optional string curl_str = 5; // 'https://kanapi.jiaston.com/book/{bid}/[cid].html'
+    repeated JsonParse content_parse = 6; // [ {k:data, t:0} ]
+    optional string content_key = 7; // 章节内容的json索引 'content'
+}
+
+message UrlReadParse{
+    required string list_url = 1; //列表页URL
+    optional string list_parse = 2; //列表解释 , 逗号分隔
+    optional string content_url = 3; //章节页URL, 用于单独进行章节页的解释时
+    optional string content_parse = 4; //文章正文解释 , 逗号分隔
+    optional Source source = 5; //源
+    optional uint32 ioffset = 6; // 跳过列表开头的几个章节
+    optional KanapiJiaston api = 7; // json方式的api
+}
+
+// 书本 //好些optional是因为有些地方只需要book_id之类的简单信息
+message Book {
+    required uint32 book_id = 1; // 书本ID
+    required string name = 2; // 小说名称
+    repeated string book_type = 3; // 小说类型、分类
+    optional uint32 book_length = 4; // 小说字数、长度
+    required string author = 5; // 小说作者
+    repeated string key_word = 7; // 小说关键词
+    optional string abstract = 9; // 小说简介
+    optional uint32 clicked = 11; // 被点击次数
+    optional string pic = 13; // 小说封面图片
+    required BookState book_state = 15; // 小说状态
+    optional Chapter last_chapter = 17; // 最新的一章的信息
+    repeated UrlReadParse parses = 19; // URL解释器
+    repeated Comment comments = 20; // 评论列表 //3条
+    optional uint32 comments_count = 21; // 评论数
+    optional string mark_url = 22; // 1精选 2推荐 3热门 的标签图片URL
+    optional float avg_score = 24 [ default = 5.0 ]; // 平均分 小数点后1位
+};
+
+// 卷
+message BookNo{
+    optional uint32 no = 1; // 第几卷
+    optional string name = 3; // 卷名                                  
+}
+
+
+// 采集来源状态
+enum SourceState {
+    SOURCESTATE_UNKNOWN = 0; // 未知
+    SOURCESTATE_WORKING = 1; // 爬取中
+    SOURCESTATE_STOP = 2; // 停止
+    SOURCESTATE_PAUSE = 3; // 暂停中
+};
+
+// 版权状态
+enum CopyrightState {
+    COPYRIGHTSTATE_HAVE = 0; // 有版权
+    COPYRIGHTSTATE_NO = 1; // 无版权
+}
+
+// 采集来源
+message Source {
+    required uint32 id = 1; // ID
+    optional string name = 2; // 名称
+    optional string url = 3; // 首页
+    optional SourceState source_state = 4; // 状态
+    optional CopyrightState copyright_state = 5; // 是否有版权
+    optional string htmlcharset = 6; // html编码
+    repeated string filter = 7; // 过滤掉的字符串
+}
+
+// 章节
+message Chapter {
+    optional Book book = 1; // 书本
+    optional BookNo book_no = 2; // 卷
+    required uint32 chapter_no = 3; // 章节
+    optional string chapter_title = 5; // 标题
+    optional string chapter_content = 7; // 章节内容 //请求列表时 不返回
+    optional Source source = 9; // 来源
+    optional uint64 updated_at = 11; // 更新时间戳
+    required uint32 id = 13; // 唯一ID
+    optional UrlReadParse parse = 15; // 解释器
+}
+
+// 章节内容 文件存储规则
+// BASE_DIR .'/'. [Source] .'/'. [Book] .'/'. [BookNo] .'/'. [Chapter]
+// 上述几个 [] 都是对应的id
+
+//位置信息
+message Gps {
+    // GPS坐标类型
+    enum CoordinateType {
+        WGS84 = 1;  // 全球卫星定位系统坐标系
+        GCJ02 = 2;  // 国家测绘局坐标系
+        BD09 = 3;  // 百度坐标系
+    };
+    optional CoordinateType coordinate_type = 1;  // 坐标类型
+    optional double longitude = 2;  // 经度
+    optional double latitude = 3;  // 纬度
+    optional uint32 timestamp = 4;  // 时间戳，单位秒
+};
+
+enum GenderType{
+    GENDER_UNKNOWN = 0; //未知
+    GENDER_MALE = 1; //男
+    GENDER_FEMALE = 2; //女
+    GENDER_OTHER = 3; //其他
+}
+
+//设备信息
+message Device{
+    // 设备类型
+    enum DeviceType {
+        DEVICE_UNKNOWN = 0; // 未知
+        DEVICE_PHONE = 1;  // 手机，含iTouch
+        DEVICE_TABLET = 2;  // 平板
+        DEVICE_WEAR  = 3; // 可穿戴设备
+        DEVICE_PC = 4; // PC
+        DEVICE_OTHER = 99; // 其他设备
+    };
+    // 操作系统类型
+    enum OsType {
+        WIN = 0;  // Windows
+        ANDROID = 1;  // Android
+        IOS = 2;  // iOS
+        WP = 3;  // Windows Phone
+    };
+    // 二维尺寸信息
+    message Size {
+        optional uint32 width = 1[default = 0];  // 选填！宽度
+        optional uint32 height = 2[default = 0];  // 选填！高度
+    };
+    // 唯一用户标识，优先使用明文，必需按要求填写
+    message UdId {
+        optional string uuid = 1[default = ""];  // 必填！iOS设备的uuid
+        optional string imei = 2[default = ""];  // 必填！Android手机设备的IMEI，格式要求[0-9a-fA-F]{14,15}
+        optional string mac = 3[default = ""];  // 可选，Android非手机设备的WiFi网卡MAC地址，格式要求[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}
+        optional string android_id = 5[default = ""]; // 可选，Android手机设备系统ID，格式要求[0-9A-Za-z]{16}
+        optional string custom_id = 6[default = ""]; //可选，Android手机用，前端同事自定义
+    };
+    optional DeviceType device_type = 1;  // 必填！设备类型
+    optional OsType os_type = 2;  // 必填！操作系统类型
+    optional string os_version = 3;  // 必填！操作系统版本
+    optional bytes vendor = 4;  // 必填！设备厂商名称，中文需要UTF-8编码
+    optional bytes model = 5;  // 必填！设备型号，中文需要UTF-8编码
+    optional UdId udid = 6;  // 必填！唯一设备标识，必需按要求填写
+    optional Size screen_size = 7; // 必填！设备屏幕宽高
+}
+
+enum ErrCode{
+    ERR_NONE = 0; // 无错误
+    ERR_CANNOTDECODE = 1; // 无法进行外层protobuf解码
+    ERR_CANNOTDECODEIN = 3; // 无法进行里层protobuf解码
+    ERR_CANNOTADDDELMODIFY = 5; // 无法增删改
+    ERR_BOOKNOTEXIST = 7; // 书本不存在
+    // sms相关
+    ERR_CANNOTSENDSMS = 8; // sms发送失败
+    ERR_TIMELIMIT = 9; // 时间受限 比如在上次发送后在2分钟内
+    ERR_COUNTLIMIT = 10; // 数量受限 比如该手机号该天已经发送了6条短信
+    // 手机快速注册相关
+    ERR_PHONECANNOTREG = 11; // 注册失败
+    ERR_PHONESMSNOTEQUAL = 12; // 验证未经过验证
+    // 设置密码相关
+    ERR_OLDPWDNOTEQUAL = 13; // 原密码不对
+    ERR_PWDSETFAIL = 14; // 设置密码失败
+    // 登录态相关
+    ERR_NOTLOGINED = 15; // 登录态有误
+    //用户相关
+    ERR_PHONENUMNOTREG = 16; // 手机号未注册
+    ERR_PHONENUMHAVEREG = 17; // 手机号已注册
+    ERR_UIDNOTEXIST = 18; // uid未存在
+    ERR_WXEXIST = 21; // 微信用户已存在
+    ERR_QQEXIST = 22; // QQ用户已存在
+    //...
+    ERR_PARAMINVALIEFORMAT = 9998; // 参数格式错误
+    ERR_UNKNOW = 9999; // 未知错误
+}
+
+//注册用户信息
+message RegUser{
+    enum SetPw {
+        No = 0;  // 没有设置过密码
+        Yes = 1;  // 设置了密码
+    };
+    optional string uid = 1; // 用户ID
+    optional string phone_num = 2; // 手机号
+    optional string email = 3; // 电子邮箱地址
+    optional string wx = 4; // 微信
+    optional GenderType gender = 5; // 性别
+    optional string qq = 6; // QQ
+    optional string birthday = 7; // 生日
+    optional string nickname = 8; // 昵称
+    optional string local_area = 9; // 所在地区
+    optional uint32 register_time = 11; //注册时间
+    optional string icon = 12; //头像
+    optional SetPw  setpw = 13; //是否设置了密码
+    optional bytes icon_b = 15; //头像 二进制,上传头像时用
+    optional string wx_nickname = 17; // 微信昵称
+    optional string qq_nickname = 18; // QQ昵称
+}
+//已"登录"用户信息 注:非登录用户也可用该结构
+message LoginedRegUser{
+    optional RegUser user = 1;
+    optional string token = 3; // 服务端存redis里的信息 跟 uid,device_id,时间 有关; 需要登录态的地方都用到
+}
+
+message FtBookApiReq{
+    required uint32 cmd = 1; // 命令字 上述的 1 2 3 4 5 6 7 8... ， 便于后续无缝扩展不用枚举
+    required Device device = 2; // 设备信息
+    optional bytes body = 3; // 命令字相应的message序列化后塞这里
+    optional LoginedRegUser logined_user = 4; // 注册用户信息，不一定已登录
+    optional Gps gps = 5; // GPS信息
+    optional string ver_name = 7; //当前版本号 eg: 1.0.3
+    optional string pkg_name = 9; //包名 eg: com.fengteng.reader
+}
+
+message FtBookApiRes{
+    required uint32 cmd = 1 [ default = 0 ]; //无法proto解码外层时 返回的命令字为0
+    required ErrCode err = 2; // 状态码
+    optional bytes body = 3; // 相应返回的message序列化后塞这里相应返回的message序列化后塞这里
+}
+
+//1. 根据所选性别 返回 小说类型 推荐列表。 (首次打开)
+message FirstBookTypeReq{
+    required GenderType gender = 1; // 性别
+}
+message FirstBookTypeRes{
+    repeated string book_type = 1; // 小说类型
+}
+
+//2. 根据所选小说类型 返回推荐的5本小说。//服务端存储一下用户已选小说类型，以设备ID为主键 (首次打开)
+message FirstBookReq{
+    optional GenderType gender = 1; // 性别
+    repeated string book_type = 2; // 小说类型
+}
+message FirstBookRes{
+    repeated Book books = 1;// 5本
+}
+
+//3. 根据设备ID，返回已加入书架的书本的列表，有置顶。 (书架)
+message UserBookStoreReq{
+    required uint32 page = 1 [ default = 0 ]; // 第几页 以0页为起点
+}
+message NewestChapter{//一个书本有更新一个设备只返回一次
+    repeated Source sources = 1;
+    optional string newest_chapter_title = 2;
+}
+message UserBook{
+    required Book book = 1; // 一本书
+    required uint32 is_top = 2; // 是否置顶
+    optional NewestChapter newest_chapter= 3;
+}
+message UserBookStoreRes{
+    required uint32 psize = 1; // 一页多少条 //如果数组user_books元素个数小于psize则没有下一页了
+    required uint32 page = 2; // 第几页 以0页为起点
+    repeated UserBook user_books = 3; //
+}
+
+//4. 操作 添加图书到书架、删除书架图书、置顶书架图书、取消置顶书架图书。(书架)
+enum UserBookStoreOperateType{
+    OPERATE_ADD = 0; // 添加
+    OPERATE_DEL = 1; // 删除
+    OPERATE_TOP = 2; // 置顶
+    OPERATE_UNTOP = 3; // 取消置顶
+}
+message UserBookStoreOperateReq{
+    required UserBookStoreOperateType type = 1; // 操作类型
+    required uint32 book_id = 2; // 书本ID 根据之前返回的数值 批量删除时=0
+    repeated uint32 book_ids = 3; // 批量删除时使用
+}
+//外层状态码判断是否操作成功
+
+//5. 根据 所选小说类型 的组合，返回书本列表。 (书城)
+message BookStoreReq{
+    repeated string book_type = 1; // 小说类型
+    required uint32 page = 2 [ default = 0 ]; // 第几页 以0页为起点
+    optional uint32 is_finished = 3; // 是否完结  1连载中 2完结 不填该字段则是全部
+    optional uint32 is_new = 4; // 1人气 2最新上架 3按上升度
+}
+message BookStoreRes{
+    required uint32 psize = 1; // 一页多少条 //如果数组books元素个数小于psize则没有下一页了
+    required uint32 page = 2; // 第几页 以0页为起点
+    repeated Book books = 3; //   
+}
+
+//6. 根据“关键词”，返回书本列表。 (搜索)
+message BookSearchReq{
+    required string kw = 1; // 关键词
+    required uint32 page = 2 [ default = 0 ]; // 第几页 以0页为起点
+}
+message BookSearchRes{
+    required uint32 psize = 1; // 一页多少条 //如果数组books元素个数小于psize则没有下一页了
+    required uint32 page = 2; // 第几页 以0页为起点
+    repeated Book books = 3; //
+    repeated Book relate_books = 4; // 3本
+    repeated string authors = 5; // 作者列表
+}
+
+//7. 根据书本ID， 返回章节列表。(阅读器)
+message BookChapterReq{
+    required uint32 book_id = 1; // 书本ID 根据之前返回的数值
+}
+message BookChapterRes{
+    repeated Chapter chapters = 1; // 一次性全部返回 客户端做逐步显示的逻辑
+    optional Book book = 2; // 书本内容 主要是解释器 UrlReadParse
+}
+
+//8. 根据书本ID、章节号、章节名称、源ID(可选)，返回该章节内容  并 可供阅读的 源 列表。 (阅读器)
+message BookChapterSourceReq{
+    required uint32 book_id = 1; // 书本ID 根据之前返回的数值
+    required uint32 chapter_no = 3; // 章节号 根据之前返回的数值
+    required string chapter_title = 5; // 章节标题
+    optional uint32 source_id = 7; // 源头ID
+}
+message SourceLastChapter{
+    optional Source source = 1; // 源
+    optional Chapter last_chapter = 2; //最新章节
+}
+message BookChapterSourceRes{
+    optional Chapter chapter = 1; // 字段chapter_content必有内容
+    repeated SourceLastChapter sources = 3; // 列出有该书的所有源
+}
+
+//9. 根据书本ID，返回相关书本。
+message BookRelateReq{
+    required uint32 book_id = 1; // 书本ID
+}
+message BookRelateRes{
+    optional uint32 have_add = 1 [ default = 0 ]; // 是否已加入书架 0未 1已加入
+    repeated Book relate_books = 2; // 4本 推荐规则为书籍详情相同的类别2本+用户所有喜欢阅读类目下TOP100中选择2本（没有读过的）
+    optional Book book = 3; // 原书本信息
+}
+
+//10. 根据“类别”(兴趣推荐、经典完结、热门新书、出版图书)，返回对应书本列表。(精选首页)
+message TopicHomeReq{
+    optional uint32 type = 1 [ default = 0 ]; // 默认0 是表示返回2个分类(此时page=0)， 1兴趣推荐，2经典完结，3热门新书，4出版图书, 5编辑推荐
+    optional uint32 page = 2 [ default = 0 ]; // 第几页 以0页为起点
+}
+message Ad{
+    required uint32 id = 1; // ID
+    required string pic = 3; // 图片链接
+    optional string to = 4; // 跳转到
+    optional uint32 l_t = 5; // 持续时长 秒
+    optional uint32 pos = 7; // 广告标识位置 1右上 2右下 3左上 4左下
+    optional Book book = 8; //
+    optional string t_s = 9; //起始时间 e.g: 2018-10-08 15:29:33
+    optional string t_e = 10; //结束时间 e.g: 2018-10-18 15:29:33
+    optional string z_title = 11; // 图文广告正标题
+    optional string f_title = 12; // 图文广告副标题
+}
+message TopicAd{ // 这2个 二选一
+    optional Ad book = 1; //
+    optional Ad ad = 2; //
+}
+message TopicHomeRes{
+    repeated Book interest_books = 1; // 兴趣推荐书本
+    repeated Book finish_books = 2; // 经典完结书本
+    required uint32 psize = 3; // 一页多少条 //如果数组*_books元素个数小于psize则没有下一页了 //请求type的值是0时psize=3
+    required uint32 page = 5; // 第几页 以0页为起点
+    repeated Book hotnew_books = 7; // 热门新书书本
+    repeated Book publiced_books = 9; // 出版图书书本
+    repeated TopicAd ads = 10; // 顶栏广告
+    repeated Book editor_books = 12; // 编辑推荐书本
+}
+
+
+message Topic2{//各大网站排行榜
+    required uint32 id = 1;
+    required string name = 2; // 名称
+}
+message TopicChart{
+    required uint32 id = 1; // 专题ID 或 排行榜ID
+    required string name = 2; // 名称
+    optional string abstract = 3; // 简介
+    optional string conver_url = 4; // 封面
+    optional uint32 books_num = 5; // 书本数量
+    optional uint32 view_num = 7; // 专题访问量
+    repeated Topic2 topic2s = 9;// 各大网站排行榜
+    optional GenderType gender = 10; // 性别
+}
+//11. 返回各家排行榜列表 或 专题列表。(精选)
+message TopicChartReq{
+    required uint32 type = 1; // 1排行榜 2专题 3新版排行榜
+}
+message TopicChartRes{
+    repeated TopicChart tcs = 1; // 列表
+}
+
+//12. 根据 排行榜ID 或 专题ID，返回书本列表。(精选)
+message TopicChartBookReq{
+    required uint32 tcid = 1; // 专题ID 或 排行榜ID
+    optional uint32 page = 2 [ default = 0 ]; // 第几页 以0页为起点
+    optional uint32 t2_id = 3; // 各大网站排行榜id //各名家合并的排行榜这里传定值0
+}
+message TopicChartBookRes{
+    repeated Book books = 1; // 书本
+    required uint32 psize = 3; // 一页多少条 //如果数组*_books元素个数小于psize则没有下一页了
+    required uint32 page = 5; // 第几页 以0页为起点
+}
+
+enum SmsType{
+    SMS_REG = 0; //注册
+    SMS_FORGOTPWD = 1; //忘记密码
+    SMS_BIND = 2; //微信、QQ用户绑定手机号
+    SMS_LOGIN = 3; //登录
+}
+//13. 发送手机验证码请求
+message VerifyCodeReq{
+    required string phone_num = 1; // 手机号码
+    required SmsType sms_type = 2; // 类型
+}
+// 以外层状态码判断之
+
+//14. 检测验证码是否正确    注册||登录||修改
+message CheckVerifyCodeReq{
+    required string phone_num = 1; // 手机号码
+    required string vcode = 2; // 验证码
+    required SmsType sms_type = 3; // 类型
+}
+message CheckVerifyCodeRes{
+    optional LoginedRegUser logined_user = 2;
+}
+// 以外层状态码判断之
+
+message Province{
+    required uint32 id = 1; // id
+    required string name = 2; // 名称
+}
+message City{
+    required uint32 province_id = 1; // 对应省份id
+    required uint32 id = 3; // id
+    required string name = 5; // 名称
+}
+//15. 获取省份城市列表
+message ProvinceCityReq{
+    optional uint32 province_id = 1; // 省份ID 作废，不用填，一次性全部返回
+}
+message ProvinceCityRes{
+    repeated Province provinces = 1; // 省份列表
+    repeated City citys = 2; // 城市列表
+}
+
+//16. 用户反馈 //包括阅读时反馈
+message FeedbackReq{
+    required uint32 type = 1; // 0体验问题 1版权问题
+    required string words = 2; // 描述
+    optional string phone_num = 3; // 电话
+    optional string email = 4; // email
+}
+// 以外层状态码判断之
+
+//17. 手机快速注册 & 忘记密码重新设置
+message PhoneNumRegAndResetPwdReq{
+    required uint32 req_type = 1; // 请求类型 0注册 1重新设置密码 2绑定
+    required string phone_num = 2; // 手机号码
+    required string vcode = 3; // 手机验证码 //可以是字母的 //二次验证
+    required string md5_pwd = 4; // 密码的md5值
+}
+message PhoneNumRegAndResetPwdRes{
+    optional LoginedRegUser logined_user = 1; // 已登录用户 主要是有 uid,token 字段
+}
+
+//18. 修改密码
+message ResetPwdReq{
+    required string old_md5_pwd = 1; // 旧密码的md5值
+    required string new_md5_pwd = 3; // 新密码的md5值
+}
+// 以外层状态码判断之
+
+//19. 注册用户登录
+message RegUserLoginReq{
+    required string u = 1; // 手机号或email或帐号
+    required string md5_pwd = 3; // 密码的md5值
+}
+message RegUserLoginRes{
+    optional LoginedRegUser logined_user = 1; // 已登录用户 主要是有 uid,token 字段
+}
+
+//20. 修改注册用户信息
+// 所有信息都在外层的 LoginedRegUser 里的 RegUser 里了
+// 以外层状态码判断之
+// 错误状态码主要有 ERR_CANNOTADDDELMODIFY ERR_NOTLOGINED
+
+//21. 上报用户阅读进度 //退出阅读器时
+message ReadLogReq{
+    required uint32 book_id = 1; // 书本
+    required uint32 chapter_id = 3; // 章节唯一ID
+    required uint32 ioffset = 5; // 偏移量 字数
+    optional uint32 source_id = 7; // 源ID
+}
+// 以外层状态码判断之
+
+//22. 更新控制
+// 当前版本在外层信息里了 所以无需单独定义message
+message UpdateRes{
+    required uint32 up = 1; // 0无更新 1有更新
+    optional string ver_name = 3; // 更新的版本号
+    optional uint32 up_t = 5; // 0普通更新 1强制更新 2静默更新
+    optional string url = 7; // 包地址
+}
+
+//23. 请求封面
+// 请求无需单独定义message
+message Conver{
+    required uint32 id = 1;
+    required string name = 3;
+    required string pic = 5;
+    optional uint32 width = 7;
+    optional uint32 height = 9;
+    optional string abstract = 11;
+    optional string begin_date = 13;
+    optional string end_date = 15;
+    optional string in_hour = 17;
+    optional uint32 pos = 19; // 跳过按钮位置 1右上 2底部居中 3右下
+    optional string url = 21;
+    optional uint32 is_ad = 23;
+    optional uint32 show_time = 25; // 展示时长
+}
+message ConverRes{
+    repeated Conver conver = 1;
+}
+
+//24. 请求偏好设置
+// 请求无需单独定义message
+message UserLikeRes{
+    optional GenderType gender = 1; // 性别
+    repeated string book_type = 2; // 小说类型
+}
+
+//25. 发送偏好设置
+message SetUserLikeReq{
+    optional GenderType gender = 1; // 性别
+    repeated string book_type = 2; // 小说类型
+}
+// 以外层状态码判断之
+
+//26. 安卓是否需要开启百度接口
+message BaiduSwitchRes{
+    required uint32 is_open = 1;
+    optional uint32 ios_wxqq_open = 2;
+}
+
+//27. 通过百度接口获取对应他们用户TOKEN
+// https://openapi.xmkanshu.com/xmsdk/get_user_authkey?appid=50007&uid=xx
+message BaiduUserTokenRes{
+    required string bd_token = 1;
+}
+
+//28. 上传小说章节列表数组 TODO
+message UrlParseBookListUploadReq{
+    repeated Chapter chapters = 1; // 主要有 Book->id UrlReadParse->content_url Source->id 等
+}
+// 以外层状态码判断之
+
+//29. 上报推送的id NOTNEED
+message TsUpReq{
+    required string ts_id = 1; // 配同设备ID一起存储在服务端
+}
+// 以外层状态码判断之
+
+//30. 换源上报
+message ChangeSourceReq{
+    required uint32 book_id = 1;
+    required uint32 source_id = 2;
+}
+// 以外层状态码判断之
+
+//31. 作者为"某某"的所有书本
+message AuthorBookReq{
+    required string author = 1;
+    optional uint32 page = 2 [ default = 0 ]; // 第几页 以0页为起点
+    optional uint32 is_new = 4; // 1人气 2最新上架 3按上升度
+    optional uint32 book_state = 5; // 0不限 1连载 2完结
+}
+message AuthorBookRes{
+    repeated Book books = 1;
+    required uint32 psize = 3; // 一页多少条
+    required uint32 page = 5; // 第几页 以0页为起点
+}
+
+//32. 搜索奇起始页 //大家都在搜、热门推荐
+//请求只需标明命令字
+message SearchInitRes{
+    repeated string s_kw = 1;
+    repeated Book interest_books = 2;
+}
+
+//33. 章节列表 或 章节内容 加载出错上报
+message ReadErrReq{
+    required uint32 book_id = 1;
+    required uint32 source_id = 2; // 
+    optional string chapter_name = 3; // 
+}
+// 以外层状态码判断之
+
+//34. 第三方注册登录//微信 QQ
+message ThirdRegUserLoginReq {
+    optional RegUser user = 2; // 对象里面的qq,wx字段值的设置,表示请求的类型(使用的是qq登录||微信登录)
+    optional string code = 3; // code access_token 之类的 //微信只有code字段上传
+}
+
+message ThirdRegUserLoginRes {
+    optional LoginedRegUser loginedUser = 1;//
+}
+
+//35. 检测账号/手机号是否存在
+message ThirdRegUserExistReq {
+    optional RegUser user = 2; // 只填写 phone_num 字段
+}
+// 以外层状态码判断之 用16或17。
+
+message Comment{//发表评论也用这个结构体
+    optional uint32 id = 1; //ID //发表的时候还没有产生id
+    required uint32 book_id = 3; //书本ID
+    required uint32 star_c = 4; //评分 5 4 3 2 1
+    optional string text = 5; //评论内容
+    optional RegUser user = 7; // 评论者 uid uname 头像 //发表评论的时候用外层的
+    optional uint32 prev_id = 9; // 针对的 评论的ID
+    optional uint32 prev_uid = 11; // 针对的 评论的 发表者uid
+    optional RegUser prev_user = 12; // 针对的 评论的 发表者user对象 uid uname
+    optional uint32 up_count = 13; // 赞的数目
+    optional uint32 down_count = 14; // 踩的数目
+    optional string c_t = 15; // 评论发生时间
+    optional uint32 is_up = 16; // 当前的客户端uid是否已 赞
+    optional uint32 is_down = 17; // 当前的客户端uid是否已 踩
+}
+
+//36. 发表评论
+message PubCommentReq{
+    required Comment comment = 1;//评论内容
+}
+// 以外层状态码判断之
+
+//37. 文章的评论列表
+message BookCommentsReq{
+    required uint32 page = 1; //第几页
+    required uint32 sort = 3; //排序方式 0最新 1最热
+    required uint32 book_id = 5; //书本ID
+}
+message BookCommentsRes{
+    required uint32 psize = 1; // 一页多少条 //每页20条
+    required uint32 page = 3; // 第几页 以0页为起点
+    repeated Comment comment_list = 5; //列表
+    optional Book book = 7; // 书本 主要是评论数目
+}
+
+//38. 对评论的赞、踩、删
+enum CommentDoType{
+    COMMENT_UP = 0; // 赞
+    COMMENT_DOWN = 1; // 踩
+    COMMENT_DEL = 2; // 删
+}
+message CommentDoReq{
+    required uint32 comment_id = 1; // 评论ID
+    required CommentDoType type = 3; // 类型
+}
+// 以外层状态码判断之
+
+//39. 我的评论列表
+message AboutMyCommentReq{
+    required uint32 page = 1; //
+}
+message CommentBook{
+    required Comment comment = 1;
+    optional Book book = 3;
+}
+message AboutMyCommentRes{
+    repeated CommentBook comment_book = 1; //
+    required uint32 psize = 3; // 一页多少条
+    required uint32 page = 5; // 第几页 以0页为起点
+}
+
+//40. 初始化开关量
+message AdControl{
+    required uint32 adl_id = 1; // 1开屏 2书架列表 3阅读页章末内嵌 4阅读器换章全屏
+    required uint32 state = 3; // 0关闭 1开 默认是开
+    required uint32 ad_pt = 5; // 0腾讯广告联盟 1自家 默认是0用腾讯广告
+}
+message InitSwitchRes{
+    repeated AdControl ad_control = 1 ;
+    optional uint32 skip_n = 2 ; // 广告跳过开头N个章节
+    optional uint32 less_m = 3 ; // 章内容小于m页不显示
+}
+
+//41. 自家的具体广告
+message FtAdReq{
+    required uint32 adl_id = 1; // 0所有包括后边的1,2,3,4. 1开屏 2书架列表 3阅读页章末内嵌 4阅读器换章全屏
+}
+message FtAd{
+    required uint32 adl_id = 1; // 1开屏 2书架列表 3阅读页章末内嵌 4阅读器换章全屏
+    repeated TopicAd topic_ad = 2; // 具体的自家广告
+}
+message FtAdRes{
+    repeated FtAd ft_ad = 1; // 具体的自家广告
+}
+
+//42. 广告展示上报
+message AdShowedLogReq{
+    required uint32 adl_id = 1; // 1开屏 2书架列表 3阅读页章末内嵌 4阅读器换章全屏
+    required uint32 ad_pt = 2; // 0腾讯广告联盟 1自家 2百度
+    optional uint32 ad_id = 3; // 自家的广告id
+}
+/* 返回
+message InitSwitchRes{//返回开关量 及时更新
+    repeated AdControl ad_control = 1 ;
+}
+*/
+
+//43. 自定义精选(精选首页)
+message SelfDefinedHomeReq{
+    optional uint32 page = 1 [ default = 0 ]; // 第几页 以0页为起点
+}
+message SelfDefinedTopic{
+    required uint32 id = 1;
+    required string name = 2;
+    required uint32 style = 3; // 样式 1列表 2图标icon九宫格 3一图文+九宫格
+    repeated Book books = 5; // 具体书本 由样式确定多少本 1列表:5本 2图标icon九宫格:9本 3一图文+九宫格:7本
+}
+message SelfDefinedHomeRes{
+    repeated TopicAd ads = 1; // 顶栏广告 req里的 page=0 时才有
+    repeated SelfDefinedTopic self_defined_topics = 2; // 自定义的精选子类别 如 热门新书，火热推荐，热门连载，重磅推荐 等等
+}
+
+//44. 自定义精选(查看更多)
+message SelfDefinedMoreReq{
+    required uint32 self_id = 1;
+    optional uint32 page = 2 [ default = 1 ]; // 以 1 为起点，因为0页在精选首页时已用
+}
+message SelfDefinedMoreRes{
+    repeated Book books = 1;
+    required uint32 psize = 3; // 一页多少条
+    required uint32 page = 5; // 
+}

@@ -364,6 +364,7 @@
 		F291FDDD20F3118400157339 /* readerSetting_Light_High@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F291FDD420F3118300157339 /* readerSetting_Light_High@2x.png */; };
 		F291FDDE20F3118400157339 /* toolBarItem_FeedBack@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F291FDD520F3118400157339 /* toolBarItem_FeedBack@2x.png */; };
 		F291FDDF20F3118400157339 /* readerSetting_Light_Low@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F291FDD620F3118400157339 /* readerSetting_Light_Low@2x.png */; };
+		F2979D08219D8CEF0086CCCA /* ftbook.proto in Sources */ = {isa = PBXBuildFile; fileRef = F2979D07219D8CEF0086CCCA /* ftbook.proto */; };
 		F29C8089205A5A5D00AD121B /* LMLeftItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = F29C8088205A5A5D00AD121B /* LMLeftItemView.m */; };
 		F29C808D205A5ACD00AD121B /* LMRightItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = F29C808C205A5ACD00AD121B /* LMRightItemView.m */; };
 		F2B0D3F921940D3800596E33 /* settingView_Font_Big@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2B0D3F721940D3700596E33 /* settingView_Font_Big@2x.png */; };
@@ -1039,6 +1040,7 @@
 		F291FDD420F3118300157339 /* readerSetting_Light_High@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "readerSetting_Light_High@2x.png"; sourceTree = "<group>"; };
 		F291FDD520F3118400157339 /* toolBarItem_FeedBack@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolBarItem_FeedBack@2x.png"; sourceTree = "<group>"; };
 		F291FDD620F3118400157339 /* readerSetting_Light_Low@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "readerSetting_Light_Low@2x.png"; sourceTree = "<group>"; };
+		F2979D07219D8CEF0086CCCA /* ftbook.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = ftbook.proto; sourceTree = "<group>"; };
 		F29C8087205A5A5D00AD121B /* LMLeftItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMLeftItemView.h; sourceTree = "<group>"; };
 		F29C8088205A5A5D00AD121B /* LMLeftItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMLeftItemView.m; sourceTree = "<group>"; };
 		F29C808B205A5ACD00AD121B /* LMRightItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMRightItemView.h; sourceTree = "<group>"; };
@@ -1735,6 +1737,7 @@
 		F259E8C82029976100C327A1 /* DataModel */ = {
 			isa = PBXGroup;
 			children = (
+				F2979D07219D8CEF0086CCCA /* ftbook.proto */,
 				F259E8CD202999D300C327A1 /* Ftbook.pb.h */,
 				F259E8CE202999D300C327A1 /* Ftbook.pb.m */,
 			);
@@ -2954,6 +2957,7 @@
 				F2B69F012043AD8500A7921B /* LMSystemSettingViewController.m in Sources */,
 				F2B69F172043F23600A7921B /* LMProfileCenterTableViewCell.m in Sources */,
 				F24FA624212CFB26002BE63A /* LMBookStoreTitleCollectionViewCell.m in Sources */,
+				F2979D08219D8CEF0086CCCA /* ftbook.proto in Sources */,
 				F259E8D320299EB700C327A1 /* LMNetworkTool.m in Sources */,
 				F2B69F142043EC9300A7921B /* LMProfileCenterViewController.m in Sources */,
 				F22D978C20280C15007958D4 /* LMInterestOrEndViewController.m in Sources */,
