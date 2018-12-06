@@ -250,10 +250,17 @@ static NSString* cellIdentifier = @"cellIdentifier";
                         weakSelf.isEnd = YES;
                         [weakSelf.tableView setupNoMoreData];
                     }
+                    if (weakSelf.dataArray.count == 0) {
+                        LMRootViewController* rootVC = [LMRootViewController sharedRootViewController];
+                        [rootVC setupShowRedDot:NO index:3];
+                    }
                 }
             }
         } @catch (NSException *exception) {
             [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+            if (weakSelf.page == 0) {
+                [weakSelf showReloadButton];
+            }
         } @finally {
             if (loadMore) {
                 [weakSelf.tableView stopLoadMoreData];
@@ -263,8 +270,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
             [weakSelf.tableView reloadData];
             [weakSelf hideNetworkLoadingView];
             if (weakSelf.page == 0 && weakSelf.dataArray.count == 0) {
-                [weakSelf showReloadButton];
-                [weakSelf showMBProgressHUDWithText:@"暂无数据"];
+                [weakSelf showMBProgressHUDWithText:@"暂无消息"];
             }
         }
     } failureBlock:^(NSError *failureError) {

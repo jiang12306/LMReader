@@ -84,6 +84,8 @@
         [self.pageVC removeFromParentViewController];
         [self.pageVC.view removeFromSuperview];
         self.pageVC = nil;
+        //
+        [self saveReaderRecorder];
     }
     
 //    self.changeSourceBtn.hidden = YES;

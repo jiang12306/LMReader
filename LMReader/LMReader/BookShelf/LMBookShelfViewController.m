@@ -883,12 +883,17 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
             //显示书架页用户指引
             if (row == 1 && self.dataArray.count > 1) {
                 if ([LMTool shouldShowBookShelfUserInstructionsView]) {
-                    CGFloat naviHeight = 20 + 44;
+                    CGFloat topHeight = 20 + 44;
                     if ([LMTool isBangsScreen]) {
-                        naviHeight = 44 + 44;
+                        topHeight = 44 + 44;
+                    }
+                    if (self.lastReadBook != nil) {
+                        topHeight += 60;
+                    }else {
+                        topHeight += 20;
                     }
                     LMBookShelfUserInstructionsView* shelfUIV = [[LMBookShelfUserInstructionsView alloc]init];
-                    [shelfUIV startShowWithBookPoint:CGPointMake(self.view.frame.size.width / 2, naviHeight + 20 + self.bookCoverHeight / 2)];
+                    [shelfUIV startShowWithBookPoint:CGPointMake(20 +  self.bookCoverWidth / 2, topHeight + self.bookCoverHeight / 2)];
                 }
             }
             

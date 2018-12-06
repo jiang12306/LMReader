@@ -54,12 +54,19 @@
     //
     [LMTool updateSetShowBookShelfUserInstructionsView];
     
-    UIImageView* pressIV = [[UIImageView alloc]initWithFrame:CGRectMake(bookPoint.x - 70, bookPoint.y - 140 *0.15, 140, 140)];
+    UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
+    
+    CGFloat pressIVWidth = 140;
+    if (keyWindow.bounds.size.width == 320) {
+        pressIVWidth = 110;
+    }else if (keyWindow.bounds.size.width == 375) {
+        pressIVWidth = 120;
+    }
+    UIImageView* pressIV = [[UIImageView alloc]initWithFrame:CGRectMake(bookPoint.x - pressIVWidth / 2, bookPoint.y - pressIVWidth * 0.2, pressIVWidth, pressIVWidth)];
     pressIV.image = [UIImage imageNamed:@"userInstructions_BookShelf"];
     [self addSubview:pressIV];
     
     self.alpha = 0;
-    UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
     [keyWindow addSubview:self];
     [UIView animateWithDuration:0.1 animations:^{
         self.alpha = 1;
