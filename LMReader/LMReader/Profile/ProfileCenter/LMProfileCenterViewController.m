@@ -169,9 +169,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (self.avatorImage != nil) {
         self.avatorIV.image = self.avatorImage;
     }else if (self.avatorUrlStr != nil && self.avatorUrlStr.length > 0) {
-        [self.avatorIV sd_setImageWithURL:[NSURL URLWithString:self.avatorUrlStr] placeholderImage:[UIImage imageNamed:@"avator_LoginOut"]];
+        [self.avatorIV sd_setImageWithURL:[NSURL URLWithString:self.avatorUrlStr] placeholderImage:[UIImage imageNamed:@"avator_LoginIn"]];
     }else {
-        self.avatorIV.image = [UIImage imageNamed:@"avator_LoginOut"];
+        self.avatorIV.image = [UIImage imageNamed:@"avator_LoginIn"];
     }
     self.phoneNumber = regUser.phoneNum;
     self.centerType = regUser.gender;

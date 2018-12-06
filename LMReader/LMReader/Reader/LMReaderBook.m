@@ -20,7 +20,7 @@
     LMReaderBookChapter* bookChapter = [[LMReaderBookChapter alloc]init];
     bookChapter.updateTime = chapter.updatedAt;
     bookChapter.chapterNo = chapter.chapterNo;
-    bookChapter.chapterId = chapter.id;
+    bookChapter.chapterId = [NSString stringWithFormat:@"%d", chapter.id];
     bookChapter.title = chapter.chapterTitle;
     bookChapter.sourceId = chapter.source.id;
     return bookChapter;

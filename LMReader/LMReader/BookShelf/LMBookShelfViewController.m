@@ -30,35 +30,45 @@
 #import "LMBookShelfRightOperationView.h"
 #import "LMBookShelfBottomOperationView.h"
 #import "LMBookShelfEditViewController.h"
+#import "LMBookShelfLastestReadBook.h"
+#import "LMBookShelfCollectionReusableView.h"
+#import "UIImageView+WebCache.h"
+#import "LMBookShelfUserInstructionsView.h"
 
 @interface LMBookShelfViewController () <GDTNativeExpressAdDelegete, BaiduMobAdViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, LMBaseRefreshCollectionViewDelegate, LMBookShelfSquareCollectionViewCellDelegate, LMBookShelfSquareAddCollectionViewCellDelegate, LMBookShelfListCollectionViewCellDelegate, LMBookShelfListAddCollectionViewCellDelegate>
 
+//获取系统消息部分
+@property (nonatomic, weak) NSTimer* timer;/**<定时器 取系统消息*/
+@property (nonatomic, assign) NSInteger timeCount;/**<时间间隔 取系统消息*/
+@property (nonatomic, assign) NSInteger currentCount;/**<当前时间 取系统消息*/
+
 @property (nonatomic, strong) LMBaseRefreshCollectionView* collectionView;
+@property (nonatomic, strong) NSMutableArray* dataArray;/**<collectionView的数据源*/
+@property (nonatomic, strong) UIButton* cycleAddBtn;/**<圆形+按钮*/
+@property (nonatomic, assign) NSInteger page;/**<第几页*/
+@property (nonatomic, assign) BOOL isEnd;/**<是否最后一页*/
+@property (nonatomic, assign) BOOL isRefreshing;/**<是否正在刷新中*/
+@property (nonatomic, assign) CGFloat bookCoverWidth;/**<封面 宽*/
+@property (nonatomic, assign) CGFloat bookCoverHeight;/**<封面 高*/
+@property (nonatomic, assign) CGFloat bookFontScale;/**<封面 缩放比例*/
+@property (nonatomic, assign) LMBookShelfType type;/**<九宫格模式、列表模式*/
 
-@property (nonatomic, assign) CGFloat bookCoverWidth;//
-@property (nonatomic, assign) CGFloat bookCoverHeight;//
-@property (nonatomic, assign) CGFloat bookFontScale;//
-@property (nonatomic, assign) LMBookShelfType type;
+@property (nonatomic, strong) LMBookShelfLastestReadBook* lastReadBook;/**<最近读的一本书*/
 
-@property (nonatomic, strong) NSMutableArray* dataArray;
-@property (nonatomic, strong) UIButton* cycleAddBtn;//圆形+按钮
-@property (nonatomic, assign) NSInteger page;
-@property (nonatomic, assign) BOOL isEnd;//是否最后一页
-@property (nonatomic, assign) BOOL isRefreshing;//是否正在刷新中
-
-@property (nonatomic, strong) GDTNativeExpressAd *nativeExpressAd;//
-@property (nonatomic, strong) GDTNativeExpressAdView* adView;//
-
+@property (nonatomic, strong) GDTNativeExpressAd *nativeExpressAd;/**<腾讯广告*/
+@property (nonatomic, strong) GDTNativeExpressAdView* adView;/**<腾讯广告视图*/
 @property (nonatomic, strong) BaiduMobAdView* sharedAdView;/**<百度广告*/
 
 @end
 
 @implementation LMBookShelfViewController
 
+static NSString* headerCellIdentifier = @"headerCellIdentifier";
 static NSString* squareCellIdentifier = @"squareCellIdentifier";
 static NSString* squareAddCellIdentifier = @"squareAddCellIdentifier";
 static NSString* listCellIdentifier = @"listCellIdentifier";
 static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
+
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
@@ -73,6 +83,10 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
         }
         tabBarController.tabBar.frame = CGRectMake(0, screenRect.size.height - tabBarHeight, screenRect.size.width, tabBarHeight);
     }
+    
+    //取最新阅读记录的一本书
+    [self queryBookShelfLastestReadRecord];
+    [self.collectionView reloadData];
 }
 
 - (void)viewDidLoad {
@@ -120,13 +134,15 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     self.navigationItem.rightBarButtonItems = @[exchangeItem, searchItem];
     
     CGFloat naviHeight = 20 + 44;
+    CGFloat tabBarHeight = 49;
     if ([LMTool isBangsScreen]) {
         naviHeight = 44 + 44;
+        tabBarHeight = 83;
     }
     
     UICollectionViewFlowLayout* layout = [[UICollectionViewFlowLayout alloc]init];
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
-    self.collectionView = [[LMBaseRefreshCollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) collectionViewLayout:layout];
+    self.collectionView = [[LMBaseRefreshCollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight - tabBarHeight) collectionViewLayout:layout];
     if (@available(iOS 11.0, *)) {
         self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
@@ -141,6 +157,14 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     [self.collectionView registerClass:[LMBookShelfListCollectionViewCell class] forCellWithReuseIdentifier:listCellIdentifier];
     [self.collectionView registerClass:[LMBookShelfListAddCollectionViewCell class] forCellWithReuseIdentifier:listAddCellIdentifier];
     [self.view addSubview:self.collectionView];
+    if (@available(iOS 11.0, *)) {
+        [self.collectionView registerClass:[LMBookShelfCollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:headerCellIdentifier];
+    }else {
+        [self.collectionView registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:headerCellIdentifier];
+    }
+    
+    //KVO
+    [self.collectionView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
     
     
     self.page = 0;
@@ -151,8 +175,35 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     //初始化数据
     [self loadDataWithPage:self.page isRefreshingOrLoadMoreData:NO];
     
+    //取是否有未读消息
+    [self loadSystemMessageData];
+    
     //其它地方加书之后通知刷新界面
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshBookShelfViewController:) name:@"refreshBookShelfViewController" object:nil];
+}
+
+//KVO
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if (object == self.collectionView && [keyPath isEqualToString:@"contentOffset"]) {
+        if (self.collectionView.contentSize.height <= self.collectionView.frame.size.height) {
+            self.cycleAddBtn.hidden = YES;
+            return;
+        }
+        CGFloat height = self.collectionView.frame.size.height;
+        CGFloat contentOffsetY = self.collectionView.contentOffset.y;
+        if (self.type == LMBookShelfTypeBatch) {
+            contentOffsetY += (5 + self.bookCoverHeight + 10 + 20 + 10 + 15);
+        }else {
+            contentOffsetY += 60;
+        }
+        CGFloat bottomOffset = self.collectionView.contentSize.height - contentOffsetY;//1个距离的裕量
+        //添加图书 按钮 显示或隐藏
+        if (bottomOffset <= height) {//滑至底部
+            self.cycleAddBtn.hidden = YES;
+        }else {
+            self.cycleAddBtn.hidden = NO;
+        }
+    }
 }
 
 //刷新书架 通知
@@ -166,7 +217,7 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     if (self.type == LMBookShelfTypeList) {
         typeStr = @"书封模式";
     }
-    LMBookShelfRightOperationView* operationView = [[LMBookShelfRightOperationView alloc]initWithFrame:CGRectMake(0, 0, 150, 130)];
+    LMBookShelfRightOperationView* operationView = [[LMBookShelfRightOperationView alloc]initWithFrame:CGRectMake(0, 0, 150, 120)];
     operationView.labText = typeStr;
     operationView.batchBlock = ^(BOOL didClick) {//批量管理
         
@@ -191,26 +242,6 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
             self.type = LMBookShelfTypeList;
         }
         [self.collectionView reloadData];
-        
-        //设置 添加图书 按钮
-        CGFloat cellItemHeight = 0;
-        CGFloat contentHeight = 0;
-        if (self.type == LMBookShelfTypeList) {
-            cellItemHeight = self.bookCoverHeight + 20 * 2;
-            contentHeight = cellItemHeight * self.dataArray.count;
-        }else {
-            cellItemHeight = 5 + self.bookCoverHeight + 10 + 20 + 10 + 15;
-            NSInteger cellCounts = self.dataArray.count / 3;
-            if (self.dataArray.count % 3 == 0) {
-                cellCounts += 1;
-            }
-            contentHeight = cellItemHeight * cellCounts;
-        }
-        if (contentHeight <= self.collectionView.frame.size.height) {
-            self.cycleAddBtn.hidden = YES;
-        }else {
-            self.cycleAddBtn.hidden = NO;
-        }
     };
     [operationView showToView:sender];
 }
@@ -363,7 +394,7 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
                         [tool saveUserBooksWithArray:arr];
                         for (NSInteger i = 0; i < arr.count; i ++) {
                             UserBook* tempUserBook = [arr objectAtIndex:i];
-                            LMBookShelfModel* tempModel = [tool queryBookShelfUserBooksWithBookId:tempUserBook.book.bookId];
+                            LMBookShelfModel* tempModel = [tool queryBookShelfUserBookWithBookId:tempUserBook.book.bookId];
                             NSString* progressStr = [tool queryBookReadRecordProgressWithBookId:tempUserBook.book.bookId];
                             tempModel.progressStr = progressStr;
                             tempModel.isLastestRecord = NO;
@@ -389,7 +420,6 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
                         [tool deleteLocalSurplusBooksWithArray:deleteArr];
                     }
                     weakSelf.page ++;
-                    [weakSelf.collectionView reloadData];
                 }
             }
         } @catch (NSException *exception) {
@@ -400,8 +430,14 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
                 if (arr != nil && arr.count > 0) {
                     [weakSelf.dataArray removeAllObjects];
                     [weakSelf.dataArray addObjectsFromArray:arr];
-                    
-                    [weakSelf.collectionView reloadData];
+                    for (NSInteger i = 0; i < weakSelf.dataArray.count; i ++) {
+                        LMBookShelfModel* tempModel = [weakSelf.dataArray objectAtIndex:i];
+                        NSString* progressStr = tempModel.progressStr;
+                        if (progressStr != nil && ![progressStr isKindOfClass:[NSNull class]] && progressStr.length > 0) {
+                            tempModel.isLastestRecord = YES;
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -415,25 +451,10 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
             }
             [weakSelf hideNetworkLoadingView];
             
-            //设置 添加图书 按钮
-            CGFloat cellItemHeight = 0;
-            CGFloat contentHeight = 0;
-            if (weakSelf.type == LMBookShelfTypeList) {
-                cellItemHeight = self.bookCoverHeight + 20 * 2;
-                contentHeight = cellItemHeight * weakSelf.dataArray.count;
-            }else {
-                cellItemHeight = 5 + self.bookCoverHeight + 10 + 20 + 10 + 15;
-                NSInteger cellCounts = weakSelf.dataArray.count / 3;
-                if (weakSelf.dataArray.count % 3 == 0) {
-                    cellCounts += 1;
-                }
-                contentHeight = cellItemHeight * cellCounts;
-            }
-            if (contentHeight <= self.collectionView.frame.size.height) {
-                weakSelf.cycleAddBtn.hidden = YES;
-            }else {
-                weakSelf.cycleAddBtn.hidden = NO;
-            }
+            //取最新阅读记录的一本书
+            [self queryBookShelfLastestReadRecord];
+            
+            [weakSelf.collectionView reloadData];
         }
     } failureBlock:^(NSError *failureError) {
         
@@ -444,6 +465,17 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
             if (arr != nil && arr.count > 0) {
                 [weakSelf.dataArray removeAllObjects];
                 [weakSelf.dataArray addObjectsFromArray:arr];
+                for (NSInteger i = 0; i < weakSelf.dataArray.count; i ++) {
+                    LMBookShelfModel* tempModel = [weakSelf.dataArray objectAtIndex:i];
+                    NSString* progressStr = tempModel.progressStr;
+                    if (progressStr != nil && ![progressStr isKindOfClass:[NSNull class]] && progressStr.length > 0) {
+                        tempModel.isLastestRecord = YES;
+                        break;
+                    }
+                }
+                
+                //取最新阅读记录的一本书
+                [self queryBookShelfLastestReadRecord];
                 
                 [weakSelf.collectionView reloadData];
             }
@@ -462,6 +494,111 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     }];
 }
 
+//长按打开 最近阅读书籍详情
+-(void)longPressedLastestReadRecord:(UILongPressGestureRecognizer* )pressGR {
+    UIGestureRecognizerState grState = pressGR.state;
+    if (grState == UIGestureRecognizerStateBegan) {
+        LMBookShelfBottomOperationView* bottomOperationView = [[LMBookShelfBottomOperationView alloc]initWithFrame:CGRectZero imgsArr:@[@"bookShelf_Operation_Detail", @"bookShelf_Operation_Delete"] titleArr:@[@"书籍详情", @"删除"]];
+        bottomOperationView.clickBlock = ^(NSInteger index) {
+            if (index == 0) {//查看详情
+                LMBookDetailViewController* bookDetailVC = [[LMBookDetailViewController alloc]init];
+                bookDetailVC.bookId = self.lastReadBook.bookId;
+                [self.navigationController pushViewController:bookDetailVC animated:YES];
+            }else if (index == 1) {//删除
+                LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+                [tool deleteBookReadRecordWithBookId:self.lastReadBook.bookId];
+                self.lastReadBook = nil;
+                [self.collectionView reloadData];
+            }
+        };
+        /*
+        LMBookShelfBottomOperationView* bottomOperationView = [[LMBookShelfBottomOperationView alloc]initWithFrame:CGRectZero imgsArr:@[@"bookShelf_Operation_Add", @"bookShelf_Operation_Detail", @"bookShelf_Operation_Delete"] titleArr:@[@"加入书架", @"书籍详情", @"删除"]];
+        bottomOperationView.clickBlock = ^(NSInteger index) {
+            if (index == 0) {//加入书架
+                UserBookStoreOperateReqBuilder* builder = [UserBookStoreOperateReq builder];
+                [builder setBookId:self.lastReadBook.bookId];
+                [builder setType:UserBookStoreOperateTypeOperateAdd];
+                UserBookStoreOperateReq* req = [builder build];
+                NSData* reqData = [req data];
+                
+                [self showNetworkLoadingView];
+                __weak LMBookShelfViewController* weakSelf = self;
+                
+                LMNetworkTool* tool = [LMNetworkTool sharedNetworkTool];
+                [tool postWithCmd:4 ReqData:reqData successBlock:^(NSData *successData) {
+                    @try {
+                        [weakSelf hideNetworkLoadingView];
+                        
+                        FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+                        if (apiRes.cmd == 4) {
+                            ErrCode err = apiRes.err;
+                            if (err == ErrCodeErrNone) {//成功
+                                [weakSelf showMBProgressHUDWithText:@"添加成功"];
+                                
+                                //通知书架界面刷新
+                                [[NSNotificationCenter defaultCenter] postNotificationName:@"refreshBookShelfViewController" object:nil];
+                                
+                            }else {
+                                [weakSelf showMBProgressHUDWithText:@"添加失败"];
+                            }
+                        }
+                        
+                    } @catch (NSException *exception) {
+                        [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+                    } @finally {
+                        
+                    }
+                } failureBlock:^(NSError *failureError) {
+                    [weakSelf hideNetworkLoadingView];
+                    [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
+                }];
+            }else if (index == 1) {//查看详情
+                LMBookDetailViewController* bookDetailVC = [[LMBookDetailViewController alloc]init];
+                bookDetailVC.bookId = self.lastReadBook.bookId;
+                [self.navigationController pushViewController:bookDetailVC animated:YES];
+            }else if (index == 2) {//删除
+                LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+                [tool deleteBookReadRecordWithBookId:self.lastReadBook.bookId];
+                self.lastReadBook = nil;
+                [self.collectionView reloadData];
+            }
+        };
+         */
+        [bottomOperationView startShow];
+    }
+}
+
+//取最近一条非书架书本阅读记录
+-(void)queryBookShelfLastestReadRecord {
+    //解压阅读记录开关
+    NSData* adData = [LMTool unArchiveAdvertisementSwitchData];
+    if (adData != nil && ![adData isKindOfClass:[NSNull class]] && adData.length > 0) {
+        InitSwitchRes* res = [InitSwitchRes parseFromData:adData];
+        if ([res hasShowH] && res.showH) {
+            LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+            NSString* exitIdStr = nil;//[self componentsBookShelfExistIdString];
+            self.lastReadBook = [tool queryLastestBookReadRecordWithBookShelfExistIdStr:exitIdStr];
+        }
+    }
+}
+
+//将dataArray中model的书本id拼成(1,2,3)格式，取最近一条非书架书本阅读记录用
+-(NSString* )componentsBookShelfExistIdString {
+    NSString* resultStr = nil;
+    for (NSInteger i = 0; i < self.dataArray.count; i ++) {
+        LMBookShelfModel* subModel = [self.dataArray objectAtIndex:i];
+        UInt32 subBookId = subModel.userBook.book.bookId;
+        if (i == 0) {
+            resultStr = [NSString stringWithFormat:@"%u", subBookId];
+        }else {
+            resultStr = [NSString stringWithFormat:@"%@,%u", resultStr, subBookId];
+        }
+        if (i == self.dataArray.count - 1) {
+            resultStr = [NSString stringWithFormat:@"(%@)", resultStr];
+        }
+    }
+    return resultStr;
+}
 
 #pragma mark - GDTNativeExpressAdDelegete
 /**
@@ -597,23 +734,104 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
 //    self.tableView.tableHeaderView = headerView;
 }
 
-#pragma mark -UIScrollViewDelegate
--(void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (self.collectionView.contentSize.height <= self.collectionView.frame.size.height) {
-        self.cycleAddBtn.hidden = YES;
-        return;
+//点击最新阅读记录
+-(void)clickedLastestReadRecordButton:(UIButton* )sender {
+    LMReaderBookViewController* readerBookVC = [[LMReaderBookViewController alloc]init];
+    readerBookVC.bookId = self.lastReadBook.bookId;
+    readerBookVC.bookName = self.lastReadBook.bookName;
+    readerBookVC.bookCover = self.lastReadBook.coverUrlStr;
+    
+    LMBaseNavigationController* bookNavi = [[LMBaseNavigationController alloc]initWithRootViewController:readerBookVC];
+    [self presentViewController:bookNavi animated:YES completion:nil];
+}
+
+#pragma mark -UICollectionViewDelegateFlowLayout
+-(CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    if (self.lastReadBook != nil) {
+        return CGSizeMake(self.collectionView.frame.size.width, 20 * 3 + self.bookCoverHeight + 20 + 10);//10为图片底部灰色横条高度
     }
-    if (scrollView == self.collectionView) {
-        CGFloat height = scrollView.frame.size.height;
-        CGFloat contentOffsetY = scrollView.contentOffset.y;
-        CGFloat bottomOffset = scrollView.contentSize.height - contentOffsetY;
-        //设置 添加图书 按钮
-        if (bottomOffset <= height) {//滑至底部
-            self.cycleAddBtn.hidden = YES;
-        }else {
-            self.cycleAddBtn.hidden = NO;
+    return CGSizeMake(self.view.frame.size.width, 0);
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForFooterInSection:(NSInteger)section {
+    return CGSizeMake(self.view.frame.size.width, 0);
+}
+
+-(UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
+        UICollectionReusableView* headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:headerCellIdentifier forIndexPath:indexPath];
+        if (@available(iOS 11.0, *)) {
+            headerView = (LMBookShelfCollectionReusableView* )headerView;
         }
+        for (UIView* vi in headerView.subviews) {
+            if (vi.tag == 1) {
+                [vi removeFromSuperview];
+            }
+        }
+        if (self.lastReadBook != nil) {
+            headerView.backgroundColor = [UIColor colorWithRed:233.f/255 green:233.f/255 blue:233.f/255 alpha:1];
+            
+            UIView* recordBgView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.collectionView.frame.size.width, 20 * 3 + self.bookCoverHeight + 20)];
+            recordBgView.backgroundColor = [UIColor whiteColor];
+            recordBgView.tag = 1;
+            [headerView addSubview:recordBgView];
+            
+            UIImageView* recordIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, 20, 20)];
+            recordIV.image = [UIImage imageNamed:@"bookShelf_Record"];
+            [recordBgView addSubview:recordIV];
+            
+            UILabel* recordLab = [[UILabel alloc]initWithFrame:CGRectMake(recordIV.frame.origin.x + recordIV.frame.size.width + 10, recordIV.frame.origin.y, recordBgView.frame.size.width - recordIV.frame.origin.x - recordIV.frame.size.width - 20 * 2, recordIV.frame.size.height)];
+            recordLab.font = [UIFont boldSystemFontOfSize:15];
+            recordLab.text = @"最近阅读";
+            [recordBgView addSubview:recordLab];
+            
+            UIImageView* recordCoverIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, recordIV.frame.origin.y + recordIV.frame.size.height + 20, self.bookCoverWidth, self.bookCoverHeight)];
+            NSString* tempUrlStr = [self.lastReadBook.coverUrlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+            [recordCoverIV sd_setImageWithURL:[NSURL URLWithString:tempUrlStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage_Gray"] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+                if (image && error == nil) {
+                    
+                }else {
+                    recordCoverIV.image = [UIImage imageNamed:@"defaultBookImage"];
+                }
+            }];
+            recordCoverIV.userInteractionEnabled = YES;
+            [recordBgView addSubview:recordCoverIV];
+            
+            //长按查看详情收拾
+            UILongPressGestureRecognizer* recordLongGR = [[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(longPressedLastestReadRecord:)];
+            [recordCoverIV addGestureRecognizer:recordLongGR];
+            
+            CGFloat tempSpaceY = (self.bookCoverHeight - 20 - 15 - 30) / 4;
+            UILabel* recordNameLab = [[UILabel alloc]initWithFrame:CGRectMake(recordCoverIV.frame.origin.x + recordCoverIV.frame.size.width + 20, recordCoverIV.frame.origin.y + tempSpaceY, recordBgView.frame.size.width - recordCoverIV.frame.origin.x - recordCoverIV.frame.size.width - 20 * 2, 20)];
+            recordNameLab.font = [UIFont systemFontOfSize:15];
+            recordNameLab.text = self.lastReadBook.bookName;
+            [recordBgView addSubview:recordNameLab];
+            
+            UILabel* recordProgressLab = [[UILabel alloc]initWithFrame:CGRectMake(recordNameLab.frame.origin.x, recordNameLab.frame.origin.y + recordNameLab.frame.size.height + tempSpaceY, recordNameLab.frame.size.width, 15)];
+            recordProgressLab.font = [UIFont systemFontOfSize:12];
+            recordProgressLab.textColor = [UIColor colorWithRed:165.f/255 green:165.f/255 blue:165.f/255 alpha:1];
+            NSString* tempProgressStr = @"未读";
+            if (self.lastReadBook.readProgress != nil && ![self.lastReadBook.readProgress isKindOfClass:[NSNull class]] && self.lastReadBook.readProgress.length > 0) {
+                tempProgressStr = [NSString stringWithFormat:@"已读%@%%", self.lastReadBook.readProgress];
+                recordProgressLab.textColor = THEMEORANGECOLOR;
+            }
+            recordProgressLab.text = tempProgressStr;
+            [recordBgView addSubview:recordProgressLab];
+            
+            UIButton* recordReadBtn = [[UIButton alloc]initWithFrame:CGRectMake(recordProgressLab.frame.origin.x, recordProgressLab.frame.origin.y + recordProgressLab.frame.size.height + tempSpaceY, 75, 30)];
+            recordReadBtn.layer.cornerRadius = 3;
+            recordReadBtn.layer.masksToBounds = YES;
+            recordReadBtn.backgroundColor = THEMEORANGECOLOR;
+            recordReadBtn.titleLabel.font = [UIFont systemFontOfSize:15];
+            [recordReadBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+            [recordReadBtn setTitle:@"继续阅读" forState:UIControlStateNormal];
+            [recordReadBtn addTarget:self action:@selector(clickedLastestReadRecordButton:) forControlEvents:UIControlEventTouchUpInside];
+            [recordBgView addSubview:recordReadBtn];
+        }
+        
+        return headerView;
     }
+    return nil;
 }
 
 #pragma mark -UICollectionViewDataSource
@@ -632,7 +850,7 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
         if (row == self.dataArray.count) {
             LMBookShelfListAddCollectionViewCell* cell = [self.collectionView dequeueReusableCellWithReuseIdentifier:listAddCellIdentifier forIndexPath:indexPath];
             
-            [cell setupListAddCellWithItemWidth:self.view.frame.size.width itemHeight:60];
+            [cell setupListAddCellWithItemWidth:self.view.frame.size.width itemHeight:80];
             cell.delegate = self;
             
             return cell;
@@ -661,6 +879,18 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
             LMBookShelfModel* model = [self.dataArray objectAtIndex:row];
             [cell setupSquareCellWithModel:model ivWidth:self.bookCoverWidth ivHeight:self.bookCoverHeight itemWidth:self.bookCoverWidth + 5 * 2 itemHeight:itemHeight];
             cell.delegate = self;
+            
+            //显示书架页用户指引
+            if (row == 1 && self.dataArray.count > 1) {
+                if ([LMTool shouldShowBookShelfUserInstructionsView]) {
+                    CGFloat naviHeight = 20 + 44;
+                    if ([LMTool isBangsScreen]) {
+                        naviHeight = 44 + 44;
+                    }
+                    LMBookShelfUserInstructionsView* shelfUIV = [[LMBookShelfUserInstructionsView alloc]init];
+                    [shelfUIV startShowWithBookPoint:CGPointMake(self.view.frame.size.width / 2, naviHeight + 20 + self.bookCoverHeight / 2)];
+                }
+            }
             
             return cell;
         }
@@ -705,7 +935,7 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     LMReaderBookViewController* readerBookVC = [[LMReaderBookViewController alloc]init];
     readerBookVC.bookId = book.bookId;
     readerBookVC.bookName = book.name;
-    
+    readerBookVC.bookCover = book.pic;
     readerBookVC.callBlock = ^(BOOL resetOrder) {
         
         if (weakSelf.dataArray != nil && weakSelf.dataArray.count > 1) {
@@ -745,7 +975,7 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     if (self.type == LMBookShelfTypeList) {
         CGFloat itemHeight = self.bookCoverHeight + 20 * 2;
         if (row == self.dataArray.count) {
-            itemHeight = 60;
+            itemHeight = 80;
         }
         return CGSizeMake(self.view.frame.size.width, itemHeight);
     }
@@ -809,7 +1039,7 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     if (model.userBook.isTop) {
         topStr = @"取消置顶";
     }
-    LMBookShelfBottomOperationView* bottomOperationView = [[LMBookShelfBottomOperationView alloc]initWithFrame:CGRectZero imgsArr:@[@"bookShelf_Operation_Top", @"bookShelf_Operation_Detail.png", @"bookShelf_Operation_Delete.png"] titleArr:@[topStr, @"书籍详情", @"删除"]];
+    LMBookShelfBottomOperationView* bottomOperationView = [[LMBookShelfBottomOperationView alloc]initWithFrame:CGRectZero imgsArr:@[@"bookShelf_Operation_Top", @"bookShelf_Operation_Detail", @"bookShelf_Operation_Delete"] titleArr:@[topStr, @"书籍详情", @"删除"]];
     bottomOperationView.clickBlock = ^(NSInteger index) {
         if (index == 0) {
             [self longPressOperationUpsideBoookWithBookModel:model];
@@ -845,7 +1075,7 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     if (model.userBook.isTop) {
         topStr = @"取消置顶";
     }
-    LMBookShelfBottomOperationView* bottomOperationView = [[LMBookShelfBottomOperationView alloc]initWithFrame:CGRectZero imgsArr:@[@"bookShelf_Operation_Top", @"bookShelf_Operation_Detail.png", @"bookShelf_Operation_Delete.png"] titleArr:@[topStr, @"书籍详情", @"删除"]];
+    LMBookShelfBottomOperationView* bottomOperationView = [[LMBookShelfBottomOperationView alloc]initWithFrame:CGRectZero imgsArr:@[@"bookShelf_Operation_Top", @"bookShelf_Operation_Detail", @"bookShelf_Operation_Delete"] titleArr:@[topStr, @"书籍详情", @"删除"]];
     bottomOperationView.clickBlock = ^(NSInteger index) {
         if (index == 0) {
             [self longPressOperationUpsideBoookWithBookModel:model];
@@ -1016,7 +1246,6 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
                         }
                     }
                     [weakSelf.collectionView reloadData];
-//                    [weakSelf.collectionView deleteItemsAtIndexPaths:@[indexPath]];
                 }else if (err == ErrCodeErrCannotadddelmodify) {//无法增删改
                     
                 }else if (err == ErrCodeErrBooknotexist) {//书本不存在
@@ -1034,9 +1263,97 @@ static NSString* listAddCellIdentifier = @"listAddCellIdentifier";
     }];
 }
 
+-(void)loadSystemMessageData {
+    __weak LMBookShelfViewController* weakSelf = self;
+    
+    SysMsgListReqBuilder* builder = [SysMsgListReq builder];
+    [builder setPage:0];
+    SysMsgListReq* req = [builder build];
+    NSData* reqData = [req data];
+    LMNetworkTool* networkTool = [LMNetworkTool sharedNetworkTool];
+    [networkTool postWithCmd:46 ReqData:reqData successBlock:^(NSData *successData) {
+        @try {
+            FtBookApiRes* apiRes = [FtBookApiRes parseFromData:successData];
+            if (apiRes.cmd == 46) {
+                ErrCode err = apiRes.err;
+                if (err == ErrCodeErrNone) {
+                    SysMsgListRes* res = [SysMsgListRes parseFromData:apiRes.body];
+                    NSArray* arr = res.sysmsgs;
+                    NSInteger timeSpace = res.nT;//时间间隔
+                    
+                    weakSelf.timeCount = timeSpace;
+                    weakSelf.currentCount = 0;
+                    [weakSelf setupTimer];
+                    
+                    if (arr != nil && arr.count > 0) {
+                        BOOL isUnread = NO;
+                        for (SysMsg* msg in arr) {
+                            if (!msg.isRead) {
+                                isUnread = YES;
+                                break;
+                            }
+                        }
+                        //是否有未读消息
+                        [weakSelf updateSystemMessageWithUnread:isUnread];
+                    }else {
+                        //是否有未读消息
+                        [weakSelf updateSystemMessageWithUnread:NO];
+                    }
+                }
+            }
+        } @catch (NSException *exception) {
+            
+        } @finally {
+            
+        }
+    } failureBlock:^(NSError *failureError) {
+        weakSelf.timeCount = 300;
+        weakSelf.currentCount = 0;
+        [weakSelf setupTimer];
+    }];
+}
+
+-(void)setupTimer {
+    __weak LMBookShelfViewController* weakSelf = self;
+    
+    if (!self.timer) {
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:1 target:weakSelf selector:@selector(startCount) userInfo:nil repeats:YES];
+        [self.timer setFireDate:[NSDate distantFuture]];
+    }else {
+        [self.timer setFireDate:[NSDate distantFuture]];
+        [self.timer setFireDate:[NSDate distantPast]];
+    }
+}
+
+-(void)startCount {
+    __weak LMBookShelfViewController* weakSelf = self;
+    
+    self.currentCount ++;
+    if (self.currentCount >= self.timeCount) {
+        if (weakSelf.timer) {
+            [weakSelf.timer setFireDate:[NSDate distantFuture]];
+            [weakSelf.timer invalidate];
+        }
+        
+        [weakSelf loadSystemMessageData];
+    }
+}
+
+//更新 我的-我的消息 红点标记
+-(void)updateSystemMessageWithUnread:(BOOL )unread {
+    LMRootViewController* rootVC = [LMRootViewController sharedRootViewController];
+    if (unread) {
+        [rootVC setupShowRedDot:YES index:3];
+    }else {
+        [rootVC setupShowRedDot:NO index:3];
+    }
+}
 
 -(void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"refreshBookShelfViewController" object:nil];
+    if (self.collectionView) {
+        [self.collectionView removeObserver:self forKeyPath:@"contentOffset" context:nil];
+    }
 }
 
 - (void)didReceiveMemoryWarning {

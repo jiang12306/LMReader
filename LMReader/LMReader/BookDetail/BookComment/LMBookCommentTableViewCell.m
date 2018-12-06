@@ -118,13 +118,11 @@
     }
     
     NSString* nickStr = user.nickname;
-    if (nickStr) {
-        self.nameLab.text = nickStr;
-    }else {
-        self.nameLab.text = @"";
+    if (nickStr == nil || nickStr.length == 0) {
+        nickStr = user.phoneNum;
     }
+    self.nameLab.text = nickStr;
     self.nameLab.frame = CGRectMake(CommentAvatorIVWidth + 20 * 2, self.avatorIV.frame.origin.y, self.likeBtn.frame.origin.x - CommentAvatorIVWidth - 20 * 3, CommentNameLabHeight);
-    
     
     CGRect starViewRect = self.starView.frame;
     starViewRect.origin.y = self.nameLab.frame.origin.y + self.nameLab.frame.size.height + 5;

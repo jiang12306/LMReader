@@ -351,7 +351,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
 }
 
 //保存txt
-+(BOOL )saveBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId bookText:(NSString* )text {
++(BOOL )saveBookTextWithBookId:(UInt32 )bookId chapterId:(NSString* )chapterId bookText:(NSString* )text {
     BOOL result = NO;
     NSString* path = [LMTool getBookRecordPath];
     NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
@@ -361,7 +361,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
         [fileManager createDirectoryAtPath:bookPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
-    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.txt", chapterId]];
+    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.txt", chapterId]];
     
     if ([fileManager fileExistsAtPath:textPath]) {
         [fileManager removeItemAtPath:textPath error:nil];
@@ -372,7 +372,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
 }
 
 //删除txt
-+(BOOL )deleteBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId {
++(BOOL )deleteBookTextWithBookId:(UInt32 )bookId chapterId:(NSString* )chapterId {
     BOOL result = NO;
     NSString* path = [LMTool getBookRecordPath];
     NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
@@ -382,7 +382,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
         return result;
     }
-    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.txt", chapterId]];
+    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.txt", chapterId]];
     
     if ([fileManager fileExistsAtPath:textPath]) {
         result = [fileManager removeItemAtPath:textPath error:nil];
@@ -454,7 +454,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
 }
 
 //是否存在txt
-+(BOOL )isExistBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId {
++(BOOL )isExistBookTextWithBookId:(UInt32 )bookId chapterId:(NSString* )chapterId {
     BOOL result = NO;
     NSString* path = [LMTool getBookRecordPath];
     NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
@@ -464,7 +464,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
         return result;
     }
-    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.txt", chapterId]];
+    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.txt", chapterId]];
     
     if ([fileManager fileExistsAtPath:textPath]) {
         result = YES;
@@ -474,7 +474,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
 }
 
 //取txt
-+(NSString* )queryBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId {
++(NSString* )queryBookTextWithBookId:(UInt32 )bookId chapterId:(NSString* )chapterId {
     NSString* path = [LMTool getBookRecordPath];
     NSString* bookIdStr = [NSString stringWithFormat:@"%d", bookId];
     NSString* bookPath = [path stringByAppendingPathComponent:bookIdStr];
@@ -483,7 +483,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     if (![fileManager fileExistsAtPath:bookPath isDirectory:&isDir]) {
         return nil;
     }
-    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.txt", chapterId]];
+    NSString* textPath = [bookPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.txt", chapterId]];
     if (![fileManager fileExistsAtPath:textPath]) {
         return nil;
     }
@@ -505,9 +505,8 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
         LMReaderBookChapter* chapter = [catalogList objectAtIndex:i];
         NSString* urlStr = chapter.url;
         NSString* title = chapter.title;
-        NSInteger chapterId = chapter.chapterId;
-        NSNumber* chapterIdNum = [NSNumber numberWithInteger:chapterId];
-        NSDictionary* dic = [[NSDictionary alloc]initWithObjects:@[urlStr, title, chapterIdNum] forKeys:@[@"url", @"title", @"chapterId"]];
+        NSString* chapterIdStr = chapter.chapterId;
+        NSDictionary* dic = [[NSDictionary alloc]initWithObjects:@[urlStr, title, chapterIdStr] forKeys:@[@"url", @"title", @"chapterId"]];
         [arr addObject:dic];
     }
     AppDelegate* appDelegate = (AppDelegate* )[UIApplication sharedApplication].delegate;
@@ -535,8 +534,8 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
         LMReaderBookChapter* chapter = [[LMReaderBookChapter alloc]init];
         chapter.url = [dic objectForKey:@"url"];
         chapter.title = [dic objectForKey:@"title"];
-        NSNumber* chapterIdNum = [dic objectForKey:@"chapterId"];
-        chapter.chapterId = [chapterIdNum integerValue];
+        id chapterId = [dic objectForKey:@"chapterId"];
+        chapter.chapterId = [NSString stringWithFormat:@"%@", chapterId];
         [arr addObject:chapter];
     }
     return arr;
@@ -594,6 +593,135 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
         result = [fileManager removeItemAtPath:filePath error:nil];
     }
     return result;
+}
+
+//json解析获取章节目录列表，元素为 LMReaderBookChapter 类型
++(NSArray* )jsonParseChapterListWithParse:(UrlReadParse* )parse originalDic:(NSDictionary* )originalDic {
+    if (originalDic == nil || [originalDic isKindOfClass:[NSNull class]] || originalDic.count == 0) {
+        return nil;
+    }
+    NSMutableArray* listArr = [NSMutableArray array];
+    
+    KanapiJiaston* jsonApi = parse.api;
+    
+    NSString* originalUrlStr = jsonApi.curlStr;
+    NSString* titleKeyStr = jsonApi.ctitleKey;
+    NSString* idKeyStr = jsonApi.cidKey;
+    
+    NSArray* listParseArr = jsonApi.listParse;
+    id tempResultId = originalDic;
+    NSMutableArray* dicArray = [NSMutableArray array];
+    for (NSInteger i = 0; i < listParseArr.count; i ++) {
+        JsonParse* jsonParse = [listParseArr objectAtIndex:i];
+        NSString* keyStr = jsonParse.jsonKey;
+        if (jsonParse.jsonType == 1) {//array类型
+            if ([tempResultId isKindOfClass:[NSArray class]]) {
+                for (id subIdType in tempResultId) {
+                    NSArray* finalArr = [subIdType objectForKey:keyStr];
+                    
+                    for (id finalElement in finalArr) {
+                        if (i == listParseArr.count - 1) {
+                            [dicArray addObject:finalElement];
+                        }else {
+                            
+                        }
+                    }
+                }
+            }else if ([tempResultId isKindOfClass:[NSDictionary class]]) {
+                if (i == listParseArr.count - 1) {
+                    [dicArray addObject:tempResultId];
+                }else {
+                    
+                }
+            }
+        }else if (jsonParse.jsonType == 0) {//dictionary类型
+            if ([tempResultId isKindOfClass:[NSDictionary class]]) {
+                tempResultId = [tempResultId objectForKey:keyStr];
+                if (i == listParseArr.count - 1) {
+                    if ([tempResultId isKindOfClass:[NSArray class]]) {
+                        for (id finalSub in tempResultId) {
+                            [dicArray addObject:finalSub];
+                        }
+                    }else if ([tempResultId isKindOfClass:[NSDictionary class]]) {
+                        [dicArray addObject:tempResultId];
+                    }
+                }
+            }
+        }
+    }
+    
+    for (id subElement in dicArray) {
+        if ([subElement isKindOfClass:[NSDictionary class]]) {
+            LMReaderBookChapter* bookChapter = [[LMReaderBookChapter alloc]init];
+            id subIdType = [subElement objectForKey:idKeyStr];
+            bookChapter.url = [originalUrlStr stringByReplacingOccurrencesOfString:@"[cid]" withString:[NSString stringWithFormat:@"%@", subIdType]];
+            bookChapter.title = [subElement objectForKey:titleKeyStr];
+            bookChapter.chapterId = [NSString stringWithFormat:@"%@", subIdType];
+            [listArr addObject:bookChapter];
+        }
+    }
+    
+    if (listArr.count > 0) {
+        return listArr;
+    }
+    return nil;
+}
+
+//json解析获取章节内容，为 NSString 类型
++(NSString* )jsonParseChapterContentWithParse:(UrlReadParse* )parse originalDic:(NSDictionary* )originalDic {
+    if (originalDic == nil || [originalDic isKindOfClass:[NSNull class]] || originalDic.count == 0) {
+        return nil;
+    }
+    
+    KanapiJiaston* jsonApi = parse.api;
+    
+    NSString* contentKeyStr = jsonApi.contentKey;
+    
+    NSArray* listParseArr = jsonApi.contentParse;
+    id tempResultId = originalDic;
+    NSDictionary* resultDic;
+    for (NSInteger i = 0; i < listParseArr.count; i ++) {
+        JsonParse* jsonParse = [listParseArr objectAtIndex:i];
+        NSString* keyStr = jsonParse.jsonKey;
+        if (jsonParse.jsonType == 1) {//array类型
+            if ([tempResultId isKindOfClass:[NSArray class]]) {
+                for (id subIdType in tempResultId) {
+                    NSArray* finalArr = [subIdType objectForKey:keyStr];
+                    
+                    for (id finalElement in finalArr) {
+                        if (i == listParseArr.count - 1) {
+                            resultDic = finalElement;
+                        }else {
+                            
+                        }
+                    }
+                }
+            }else if ([tempResultId isKindOfClass:[NSDictionary class]]) {
+                if (i == listParseArr.count - 1) {
+                    resultDic = tempResultId;
+                }else {
+                    
+                }
+            }
+        }else if (jsonParse.jsonType == 0) {//dictionary类型
+            if ([tempResultId isKindOfClass:[NSDictionary class]]) {
+                tempResultId = [tempResultId objectForKey:keyStr];
+                if (i == listParseArr.count - 1) {
+                    resultDic = tempResultId;
+                }
+            }
+        }
+    }
+    
+    
+    if ([resultDic isKindOfClass:[NSDictionary class]]) {
+        NSString* resultStr = [resultDic objectForKey:contentKeyStr];
+        if (resultStr != nil && [resultStr isKindOfClass:[NSString class]]) {
+            return resultStr;
+        }
+    }
+    
+    return nil;
 }
 
 //归档 保存图书源列表最新章节
@@ -991,16 +1119,21 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
 
 //uuid
 +(NSString* )uuid {
-//    ASIdentifierManager* adManager = [ASIdentifierManager sharedManager];
-//    if (adManager.advertisingTrackingEnabled) {
-//
-//    }
-//    NSString *advertisingId = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
     NSString* uuidStr = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
     return uuidStr;
 }
 
-//当前APP版本号（1.0.1）
+//idfa
++(NSString* )idfa {
+    ASIdentifierManager* adManager = [ASIdentifierManager sharedManager];
+    if (adManager.advertisingTrackingEnabled) {
+        NSString *advertisingId = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+        return advertisingId;
+    }
+    return nil;
+}
+
+//当前APP版本号（2.0.1）
 +(NSString* )applicationCurrentVersion {
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *appCurVersion = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
@@ -1047,6 +1180,7 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
 +(DeviceUdId* )protobufDeviceUuId {
     DeviceUdIdBuilder* builder = [DeviceUdId builder];
     [builder setUuid:[LMTool uuid]];
+    [builder setIdfa:[LMTool idfa]];
     return [builder build];
 }
 
@@ -1327,11 +1461,18 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     if (originalStr == nil || [originalStr isKindOfClass:[NSNull class]]) {
         return @"";
     }
+    
+    
     NSString* changedStr = [originalStr stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    NSString* regexStr = @"(\\r|\\n){1,}[ ]?";
+    NSString* regexStr1 = @"(\\r|\\n){1,}[ ]?";//将\r\n等换行符替换成\n
+    NSString* replaceStr1 = @"\n";
+    NSRegularExpression* expression1 = [NSRegularExpression regularExpressionWithPattern:regexStr1 options:NSRegularExpressionUseUnixLineSeparators error:nil];
+    NSString* resultStr = [expression1 stringByReplacingMatchesInString:changedStr options:NSMatchingReportCompletion range:NSMakeRange(0, changedStr.length) withTemplate:replaceStr1];
+    
+    NSString* regexStr = @"\\n+\\s{1,}\\n+";//将多个\n替换成一个\n
     NSString* replaceStr = @"\n";
     NSRegularExpression* expression = [NSRegularExpression regularExpressionWithPattern:regexStr options:NSRegularExpressionUseUnixLineSeparators error:nil];
-    NSString* resultStr = [expression stringByReplacingMatchesInString:changedStr options:NSMatchingReportCompletion range:NSMakeRange(0, changedStr.length) withTemplate:replaceStr];
+    resultStr = [expression stringByReplacingMatchesInString:resultStr options:NSMatchingReportCompletion range:NSMakeRange(0, resultStr.length) withTemplate:replaceStr];
     resultStr = [NSString stringWithFormat:@"    %@", resultStr];
     return resultStr;
 }
@@ -1439,5 +1580,147 @@ static NSString* bookRecord = @"bookRecord";//阅读器 缓存、下载 文件�
     NSData* data = [[NSData alloc]initWithContentsOfFile:filePath];
     return data;
 }
+
+
+
+
+//是否显示所有的用户指引
++(BOOL )shouldShowAllUserInstructionsView {
+    NSString* keyStr = @"allUserInstructionsView";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    return [userDefaults boolForKey:keyStr];
+}
+//设置不显示所有的用户指引
++(void)updateSetShowAllUserInstructionsView {
+    NSString* keyStr = @"allUserInstructionsView";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:YES forKey:keyStr];
+    [userDefaults synchronize];
+}
+
+//是否显示书架页指引
++(BOOL )shouldShowBookShelfUserInstructionsView {
+    if ([LMTool shouldShowAllUserInstructionsView]) {
+        NSString* keyStr = @"bookShelfUserInstructionsView";
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        BOOL didShow = [userDefaults boolForKey:keyStr];
+        return !didShow;
+    }
+    return NO;
+}
+//已经显示过书架页指引
++(void)updateSetShowBookShelfUserInstructionsView {
+    NSString* keyStr = @"bookShelfUserInstructionsView";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:YES forKey:keyStr];
+    [userDefaults synchronize];
+}
+
+//是否显示书城页指引
++(BOOL )shouldShowBookStoreUserInstructionsView {
+    if ([LMTool shouldShowAllUserInstructionsView]) {
+        NSString* keyStr = @"bookStoreUserInstructionsView";
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        BOOL didShow = [userDefaults boolForKey:keyStr];
+        return !didShow;
+    }
+    return NO;
+}
+//已经显示过书城页指引
++(void)updateSetShowBookStoreUserInstructionsView {
+    NSString* keyStr = @"bookStoreUserInstructionsView";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:YES forKey:keyStr];
+    [userDefaults synchronize];
+}
+
+//是否显示搜索页指引
++(BOOL )shouldShowSearchUserInstructionsView {
+    if ([LMTool shouldShowAllUserInstructionsView]) {
+        NSString* keyStr = @"searchUserInstructionsView";
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        BOOL didShow = [userDefaults boolForKey:keyStr];
+        return !didShow;
+    }
+    return NO;
+}
+//已经显示过搜索页指引
++(void)updateSetShowSearchUserInstructionsView {
+    NSString* keyStr = @"searchUserInstructionsView";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:YES forKey:keyStr];
+    [userDefaults synchronize];
+}
+
+//是否显示阅读页指引
++(BOOL )shouldShowReaderUserInstructionsView {
+    if ([LMTool shouldShowAllUserInstructionsView]) {
+        NSString* keyStr = @"readerUserInstructionsView";
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        BOOL didShow = [userDefaults boolForKey:keyStr];
+        return !didShow;
+    }
+    return NO;
+}
+//已经显示过阅读页指引
++(void)updateSetShowReaderUserInstructionsView {
+    NSString* keyStr = @"readerUserInstructionsView";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:YES forKey:keyStr];
+    [userDefaults synchronize];
+}
+//是否显示阅读页指引1
++(BOOL )shouldShowReaderUserInstructionsView1 {
+    if ([LMTool shouldShowReaderUserInstructionsView]) {
+        NSString* keyStr = @"readerUserInstructionsView1";
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        BOOL didShow = [userDefaults boolForKey:keyStr];
+        return !didShow;
+    }
+    return NO;
+}
+//已经显示过阅读页指引1
++(void)updateSetShowReaderUserInstructionsView1 {
+    NSString* keyStr = @"readerUserInstructionsView1";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:YES forKey:keyStr];
+    [userDefaults synchronize];
+}
+//是否显示阅读页指引2
++(BOOL )shouldShowReaderUserInstructionsView2 {
+    if ([LMTool shouldShowReaderUserInstructionsView]) {
+        NSString* keyStr = @"readerUserInstructionsView2";
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        BOOL didShow = [userDefaults boolForKey:keyStr];
+        return !didShow;
+    }
+    return NO;
+}
+//已经显示过阅读页指引2
++(void)updateSetShowReaderUserInstructionsView2 {
+    NSString* keyStr = @"readerUserInstructionsView2";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:YES forKey:keyStr];
+    [userDefaults synchronize];
+}
+//是否显示阅读页指引3
++(BOOL )shouldShowReaderUserInstructionsView3 {
+    if ([LMTool shouldShowReaderUserInstructionsView]) {
+        NSString* keyStr = @"readerUserInstructionsView3";
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        BOOL didShow = [userDefaults boolForKey:keyStr];
+        return !didShow;
+    }
+    return NO;
+}
+//已经显示过阅读页指引3
++(void)updateSetShowReaderUserInstructionsView3 {
+    NSString* keyStr = @"readerUserInstructionsView3";
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setBool:YES forKey:keyStr];
+    [userDefaults synchronize];
+}
+
+
 
 @end

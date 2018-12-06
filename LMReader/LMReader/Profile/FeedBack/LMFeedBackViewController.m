@@ -18,6 +18,8 @@ typedef enum {
 
 @property (nonatomic, strong) UIScrollView* scrollView;
 @property (nonatomic, assign) LMFeedBackType type;
+@property (nonatomic, strong) UIButton* typeBtn;
+@property (nonatomic, copy) NSArray* typeArray;
 @property (nonatomic, strong) UITextView* textView;
 @property (nonatomic, strong) UITextField* phoneTF;
 @property (nonatomic, strong) UITextField* emailTF;
@@ -32,7 +34,8 @@ typedef enum {
     
     self.title = @"意见反馈";
     
-    CGFloat spaceX = 10;
+    self.typeArray = @[@"APP体验问题", @"小说版权问题"];
+    
     CGFloat spaceY = 15;
     CGFloat labHeight = 30;
     
@@ -53,18 +56,17 @@ typedef enum {
     [typeLab setAttributedText:typeStr];
     [self.scrollView addSubview:typeLab];
     
-    __weak LMFeedBackViewController* weakSelf = self;
-    
-    NSArray* arr = @[@"APP体验问题", @"小说版权问题"];
-    LMComboxView* comboxView = [[LMComboxView alloc]initWithFrame:CGRectMake(typeLab.frame.origin.x + typeLab.frame.size.width + 20, typeLab.frame.origin.y, self.view.frame.size.width - typeLab.frame.size.width - 20 * 3, labHeight * (arr.count + 1)) titleArr:arr cellHeight:labHeight];
-    [comboxView didSelectedIndex:^(NSInteger selectedIndex) {
-        if (selectedIndex == 0) {
-            weakSelf.type = LMFeedBackTypeExperience;
-        }else if (selectedIndex == 1) {
-            weakSelf.type = LMFeedBackTypeCopyright;
-        }
-    }];
-    [self.scrollView addSubview:comboxView];
+    self.typeBtn = [[UIButton alloc]initWithFrame:CGRectMake(typeLab.frame.origin.x + typeLab.frame.size.width + 20, typeLab.frame.origin.y, self.view.frame.size.width - typeLab.frame.size.width - 20 * 3, labHeight)];
+    self.typeBtn.backgroundColor = [UIColor whiteColor];
+    self.typeBtn.titleLabel.font = [UIFont systemFontOfSize:15];
+    [self.typeBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [self.typeBtn setImage:[UIImage imageNamed:@"comboxView_Down"] forState:UIControlStateNormal];
+    [self.typeBtn setTitle:self.typeArray[0] forState:UIControlStateNormal];
+    [self.typeBtn setImageEdgeInsets:UIEdgeInsetsMake(5, self.typeBtn.frame.size.width - 20 - 5, 5, 5)];
+    [self.typeBtn setTitleEdgeInsets:UIEdgeInsetsMake(5, 0, 5, self.typeBtn.frame.size.width - 120)];
+    [self.typeBtn addTarget:self action:@selector(clickedTypeButton:) forControlEvents:UIControlEventTouchUpInside];
+    self.typeBtn.selected = NO;
+    [self.scrollView addSubview:self.typeBtn];
     
     UILabel* phoneLab = [[UILabel alloc]initWithFrame:CGRectMake(20, labHeight * 3 + spaceY, typeLab.frame.size.width, labHeight)];
     NSMutableAttributedString* phoneStr = [[NSMutableAttributedString alloc]initWithString:@"手机*" attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:15]}];
@@ -108,9 +110,9 @@ typedef enum {
     self.textView.layer.masksToBounds = YES;
     [self.scrollView addSubview:self.textView];
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.textView.frame.origin.y + self.textView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 50)];
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.textView.frame.origin.y + self.textView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 45)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 25;
+    self.sendBtn.layer.cornerRadius = self.sendBtn.frame.size.height / 2;
     self.sendBtn.layer.masksToBounds = YES;
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -124,6 +126,34 @@ typedef enum {
     
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+-(void)clickedTypeButton:(UIButton* )sender {
+    [self.typeBtn setImage:[UIImage imageNamed:@"comboxView_Up"] forState:UIControlStateNormal];
+    NSInteger currentIndex = 0;
+    if (self.type == LMFeedBackTypeCopyright) {
+        currentIndex = 1;
+    }
+    UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
+    CGRect targetRect = [self.view convertRect:self.typeBtn.frame toView:keyWindow];
+    targetRect.origin.y += self.typeBtn.frame.size.height;
+    LMComboxView* boxView = [[LMComboxView alloc]initWithFrame:targetRect titleArr:self.typeArray cellHeight:40 selectedIndex:currentIndex];
+    boxView.callBlock = ^(NSInteger selectedIndex) {
+        if (selectedIndex == 1) {
+            self.type = LMFeedBackTypeCopyright;
+            [self.typeBtn setTitle:self.typeArray[1] forState:UIControlStateNormal];
+            self.typeBtn.selected = YES;
+        }else {
+            self.type = LMFeedBackTypeExperience;
+            [self.typeBtn setTitle:self.typeArray[0] forState:UIControlStateNormal];
+            self.typeBtn.selected = NO;
+        }
+        [self.typeBtn setImage:[UIImage imageNamed:@"comboxView_Down"] forState:UIControlStateNormal];
+    };
+    boxView.cancelBlock = ^(BOOL didCancel) {
+        [self.typeBtn setImage:[UIImage imageNamed:@"comboxView_Down"] forState:UIControlStateNormal];
+    };
+    [boxView startShow];
 }
 
 -(void)tapped:(UITapGestureRecognizer* )tapGR {

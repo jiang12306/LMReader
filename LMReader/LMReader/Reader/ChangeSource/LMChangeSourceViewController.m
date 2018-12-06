@@ -78,45 +78,86 @@ static NSString* cellIdentifier = @"cellIdentifier";
     for (NSInteger i = 0; i < subSourceArr.count; i ++) {
         UrlReadParse* parse = [subSourceArr objectAtIndex:i];
         NSString* urlStr = parse.listUrl;
-        NSArray* listArr = [parse.listParse componentsSeparatedByString:@","];
-        [[LMNetworkTool sharedNetworkTool]AFNetworkPostWithURLString:urlStr successBlock:^(NSData *successData) {
-            NSStringEncoding encoding = [LMTool convertEncodingStringWithEncoding:parse.source.htmlcharset];
-            NSString* originStr = [[NSString alloc]initWithData:successData encoding:encoding];
-            NSData* changeData = [originStr dataUsingEncoding:NSUTF8StringEncoding];
-            TFHpple* doc = [[TFHpple alloc] initWithData:changeData isXML:NO];
-            NSString* searchStr = [LMTool convertToHTMLStringWithListArray:listArr];
-            NSArray* elementArr = [doc searchWithXPathQuery:searchStr];
-            if (elementArr != nil && elementArr.count > 0) {
-                
-                TFHppleElement* element = [elementArr lastObject];
-                
-                NSString* titleStr = element.content;
-                if (titleStr != nil && ![titleStr isKindOfClass:[NSNull class]]) {
-                    [weakSelf.lastChapterDic setObject:titleStr forKey:urlStr];
+        if ([parse hasApi]) {//json解析
+            NSString* urlStr = parse.listUrl;
+            [[LMNetworkTool sharedNetworkTool]AFNetworkPostWithURLString:urlStr successBlock:^(NSData *successData) {
+                @try {
+                    NSError* jsonError = nil;
+                    NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:successData options:NSJSONReadingMutableLeaves error:&jsonError];
+                    if (jsonError != nil || dic == nil || [dic isKindOfClass:[NSNull class]] || dic.count == 0) {
+                        
+                    }
+                    
+                    NSArray* tempArr = [LMTool jsonParseChapterListWithParse:parse originalDic:dic];
+                    
+                    if (tempArr.count > 0) {
+                        LMReaderBookChapter* tempLastChapter = [tempArr lastObject];
+                        [weakSelf.lastChapterDic setObject:tempLastChapter.title forKey:urlStr];
+                    }else {
+                        [weakSelf.lastChapterDic setObject:@"" forKey:urlStr];
+                    }
+                } @catch (NSException *exception) {
+                    
+                } @finally {
+                    totalCount ++;
+                }
+                if (totalCount % 3 == 0 || totalCount == subSourceArr.count) {
+                    [weakSelf hideNetworkLoadingView];
+                    if (weakSelf.lastChapterDic.count > 0) {
+                        [weakSelf.tableView reloadData];
+                    }
+                    //
+                    [weakSelf saveCurrentBookSourceCache];
+                }
+            } failureBlock:^(NSError *failureError) {
+                totalCount ++;
+                if (totalCount % 3 == 0 || totalCount == subSourceArr.count) {
+                    [weakSelf hideNetworkLoadingView];
+                    //
+                    [weakSelf saveCurrentBookSourceCache];
+                }
+            }];
+        }else {//html解析
+            NSArray* listArr = [parse.listParse componentsSeparatedByString:@","];
+            [[LMNetworkTool sharedNetworkTool]AFNetworkPostWithURLString:urlStr successBlock:^(NSData *successData) {
+                NSStringEncoding encoding = [LMTool convertEncodingStringWithEncoding:parse.source.htmlcharset];
+                NSString* originStr = [[NSString alloc]initWithData:successData encoding:encoding];
+                NSData* changeData = [originStr dataUsingEncoding:NSUTF8StringEncoding];
+                TFHpple* doc = [[TFHpple alloc] initWithData:changeData isXML:NO];
+                NSString* searchStr = [LMTool convertToHTMLStringWithListArray:listArr];
+                NSArray* elementArr = [doc searchWithXPathQuery:searchStr];
+                if (elementArr != nil && elementArr.count > 0) {
+                    
+                    TFHppleElement* element = [elementArr lastObject];
+                    
+                    NSString* titleStr = element.content;
+                    if (titleStr != nil && ![titleStr isKindOfClass:[NSNull class]]) {
+                        [weakSelf.lastChapterDic setObject:titleStr forKey:urlStr];
+                    }else {
+                        [weakSelf.lastChapterDic setObject:@"" forKey:urlStr];
+                    }
+                    totalCount ++;
                 }else {
-                    [weakSelf.lastChapterDic setObject:@"" forKey:urlStr];
+                    totalCount ++;
                 }
-                totalCount ++;
-            }else {
-                totalCount ++;
-            }
-            
-            if (totalCount % 3 == 0 || totalCount == subSourceArr.count) {
-                [weakSelf hideNetworkLoadingView];
-                if (weakSelf.lastChapterDic.count > 0) {
-                    [weakSelf.tableView reloadData];
+                
+                if (totalCount % 3 == 0 || totalCount == subSourceArr.count) {
+                    [weakSelf hideNetworkLoadingView];
+                    if (weakSelf.lastChapterDic.count > 0) {
+                        [weakSelf.tableView reloadData];
+                    }
+                    //
+                    [weakSelf saveCurrentBookSourceCache];
                 }
-                //
-                [weakSelf saveCurrentBookSourceCache];
-            }
-        } failureBlock:^(NSError *failureError) {
-            totalCount ++;
-            if (totalCount % 3 == 0 || totalCount == subSourceArr.count) {
-                [weakSelf hideNetworkLoadingView];
-                //
-                [weakSelf saveCurrentBookSourceCache];
-            }
-        }];
+            } failureBlock:^(NSError *failureError) {
+                totalCount ++;
+                if (totalCount % 3 == 0 || totalCount == subSourceArr.count) {
+                    [weakSelf hideNetworkLoadingView];
+                    //
+                    [weakSelf saveCurrentBookSourceCache];
+                }
+            }];
+        }
     }
 }
 

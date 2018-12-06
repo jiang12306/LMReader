@@ -25,6 +25,8 @@ CGFloat aligmentSpaceY = 10;
 -(void)setupSubviews {
     if (!self.coverIV) {
         self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(aligmentSpaceX, aligmentSpaceX, self.frame.size.width - aligmentSpaceX * 2, self.frame.size.height - aligmentSpaceX - aligmentSpaceY * 2 - 50 - 20)];
+        self.coverIV.contentMode = UIViewContentModeScaleAspectFill;
+        self.coverIV.clipsToBounds = YES;
         [self.contentView addSubview:self.coverIV];
     }
     if (!self.markIV) {
@@ -66,7 +68,13 @@ CGFloat aligmentSpaceY = 10;
     NSString* coverUrlStr = [book.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
     CGFloat tempSpace = (itemWidth - ivWidth) / 2;
     self.coverIV.frame = CGRectMake(tempSpace, tempSpace, ivWidth, ivHeight);
-    [self.coverIV sd_setImageWithURL:[NSURL URLWithString:coverUrlStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage"]];
+    [self.coverIV sd_setImageWithURL:[NSURL URLWithString:coverUrlStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage_Gray"] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+        if (image && error == nil) {
+            
+        }else {
+            self.coverIV.image = [UIImage imageNamed:@"defaultBookImage"];
+        }
+    }];
     
     if ([book hasMarkUrl]) {
         self.markIV.hidden = NO;

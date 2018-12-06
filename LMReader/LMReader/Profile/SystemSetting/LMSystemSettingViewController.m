@@ -41,6 +41,15 @@ static NSString* cellIdentifier = @"cellIdentifier";
     
     self.title = @"系统设置";
     
+    self.titleArray = [NSMutableArray arrayWithObjects:@"夜间模式", @"清理缓存", @"预加载下一章节", @"推送设置", nil];
+    self.memoryInt = 0;
+    self.isNightShift = [LMTool getSystemNightShift];
+    [LMTool getSystemSettingConfig:^(BOOL alert, BOOL download, BOOL loadNext) {
+        self.isAlert = alert;
+        self.isDownload = download;
+        self.isLoadNext = loadNext;
+    }];
+    
     CGFloat naviHeight = 20 + 44;
     if ([LMTool isBangsScreen]) {
         naviHeight = 44 + 44;
@@ -58,9 +67,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
     LoginedRegUser* regUser = [LMTool getLoginedRegUser];
     if (regUser != nil) {
         UIView* footerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 65)];
-        UIButton* loginOutBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, 15, footerView.frame.size.width - 60 * 2, 50)];
+        UIButton* loginOutBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, 15, footerView.frame.size.width - 60 * 2, 45)];
         loginOutBtn.backgroundColor = THEMEORANGECOLOR;
-        loginOutBtn.layer.cornerRadius = 25;
+        loginOutBtn.layer.cornerRadius = loginOutBtn.frame.size.height / 2;
         loginOutBtn.layer.masksToBounds = YES;
         [loginOutBtn setTitle:@"退出登录" forState:UIControlStateNormal];
         [loginOutBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -70,26 +79,19 @@ static NSString* cellIdentifier = @"cellIdentifier";
         self.tableView.tableFooterView = footerView;
     }
     
-    self.memoryInt = 0;
+    //
+    [self getUserNotificationSetting];
     
-    [LMTool getSystemSettingConfig:^(BOOL alert, BOOL download, BOOL loadNext) {
-        self.isAlert = alert;
-        self.isDownload = download;
-        self.isLoadNext = loadNext;
-    }];
+    SDWebImageManager* manager = [SDWebImageManager sharedManager];
+    SDImageCache* imageCache = manager.imageCache;
+    self.memoryInt += [imageCache getSize];
+    self.memoryInt += [imageCache getDiskCount];
     
-    self.isNightShift = [LMTool getSystemNightShift];
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        SDWebImageManager* manager = [SDWebImageManager sharedManager];
-        SDImageCache* imageCache = manager.imageCache;
-        self.memoryInt += [imageCache getSize];
-        self.memoryInt += [imageCache getDiskCount];
-        
-        NSFileManager* fileManager = [NSFileManager defaultManager];
-        NSString* recordPath = [LMTool getBookRecordPath];
-        LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-        NSArray* recordArr = [tool queryBookReadRecordOver30Days];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    NSString* recordPath = [LMTool getBookRecordPath];
+    LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
+    NSArray* recordArr = [tool queryBookReadRecordOver30Days];
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         for (NSDictionary* dic in recordArr) {//删除保存的图书
             NSNumber* bookIdNum = [dic objectForKey:@"bookId"];
             if (bookIdNum != nil && ![bookIdNum isKindOfClass:[NSNull class]]) {
@@ -110,18 +112,12 @@ static NSString* cellIdentifier = @"cellIdentifier";
             }
         }
         
-        dispatch_async(dispatch_get_main_queue(), ^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
             NSIndexPath* indexpath = [NSIndexPath indexPathForRow:1 inSection:0];
             NSArray* arr = @[indexpath];
             [self.tableView reloadRowsAtIndexPaths:arr withRowAnimation:UITableViewRowAnimationNone];
-        });
-    });
-    
-    self.titleArray = [NSMutableArray arrayWithObjects:@"夜间模式", @"清理缓存", @"预加载下一章节", @"推送设置", nil];
-    [self.tableView reloadData];
-    
-    //
-    [self getUserNotificationSetting];
+//        });
+//    });
     
     //
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(appDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
@@ -134,37 +130,40 @@ static NSString* cellIdentifier = @"cellIdentifier";
 -(void)getUserNotificationSetting {
     [[UNUserNotificationCenter currentNotificationCenter]getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
         
-        self.allowedNotify = YES;
-        self.isNotify = [LMTool getUserNotificatioinState];
-        
-        UNAuthorizationStatus notifyState = settings.authorizationStatus;
-        if (notifyState == UNAuthorizationStatusDenied) {
-            self.allowedNotify = NO;
-            self.isNotify = NO;
-        }else if (notifyState == UNAuthorizationStatusAuthorized) {
+        dispatch_async(dispatch_get_main_queue(), ^{
             
-        }else {
-            if (@available(iOS 12.0, *)) {
-                if (notifyState == UNAuthorizationStatusProvisional) {
-                    
+            self.allowedNotify = YES;
+            self.isNotify = [LMTool getUserNotificatioinState];
+            
+            UNAuthorizationStatus notifyState = settings.authorizationStatus;
+            if (notifyState == UNAuthorizationStatusDenied) {
+                self.allowedNotify = NO;
+                self.isNotify = NO;
+            }else if (notifyState == UNAuthorizationStatusAuthorized) {
+                
+            }else {
+                if (@available(iOS 12.0, *)) {
+                    if (notifyState == UNAuthorizationStatusProvisional) {
+                        
+                    }
                 }
             }
-        }
-        
-        [self.tableView reloadData];
-        
-        //
-        [LMTool setupUserNotificatioinState:self.isNotify];
-        
-        if (self.isNotify) {
-            [JPUSHService setAlias:[[LMTool uuid] stringByReplacingOccurrencesOfString:@"-" withString:@""] completion:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
-                
-            } seq:0];
-        }else {
-            [JPUSHService deleteAlias:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
-                
-            } seq:0];
-        }
+            
+            [self.tableView reloadData];
+            
+            //
+            [LMTool setupUserNotificatioinState:self.isNotify];
+            
+            if (self.isNotify) {
+                [JPUSHService setAlias:[[LMTool uuid] stringByReplacingOccurrencesOfString:@"-" withString:@""] completion:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
+                    
+                } seq:0];
+            }else {
+                [JPUSHService deleteAlias:^(NSInteger iResCode, NSString *iAlias, NSInteger seq) {
+                    
+                } seq:0];
+            }
+        });
     }];
 }
 

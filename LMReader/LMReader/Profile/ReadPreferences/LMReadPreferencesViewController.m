@@ -16,6 +16,8 @@
 @property (nonatomic, assign) GenderType genderType;/**<默认 男*/
 @property (nonatomic, strong) UIImageView* maleIV;
 @property (nonatomic, strong) UIImageView* femaleIV;
+@property (nonatomic, strong) UIImageView* maleSelectIV;
+@property (nonatomic, strong) UIImageView* femaleSelectIV;
 @property (nonatomic, strong) NSMutableArray* maleArray;
 @property (nonatomic, strong) NSMutableArray* femaleArray;
 @property (nonatomic, strong) NSMutableArray* dataArray;
@@ -49,11 +51,9 @@ static NSString* cellId = @"cellIdentifier";
 }
 
 -(void)setupSubviews {
-    CGFloat viewWidth = self.view.frame.size.width/4;
-    
     UILabel* lab1 = [[UILabel alloc]initWithFrame:CGRectMake(0, 10, self.view.frame.size.width, 40)];
     lab1.textAlignment = NSTextAlignmentCenter;
-    lab1.font = [UIFont systemFontOfSize:18];
+    lab1.font = [UIFont boldSystemFontOfSize:18];
     lab1.text = @"请选择您的读书类型";
     [self.view addSubview:lab1];
     
@@ -63,50 +63,108 @@ static NSString* cellId = @"cellIdentifier";
     lab2.text = @"我们将为您推荐更合适您的小说";
     [self.view addSubview:lab2];
     
-    UIView* maleView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - viewWidth - 20, lab2.frame.origin.y + lab2.frame.size.height + 10, viewWidth, viewWidth)];
+    CGFloat viewWidth = self.view.frame.size.width/4;
+    CGFloat viewHeight = viewWidth + 30;
+    
+    UIView* maleView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 - viewWidth - 20, lab2.frame.origin.y + lab2.frame.size.height + 20, viewWidth, viewHeight)];
+    maleView.backgroundColor = [UIColor whiteColor];
+    maleView.layer.shadowColor = [UIColor grayColor].CGColor;
+    maleView.layer.shadowOffset = CGSizeMake(0, 0);
+    maleView.layer.shadowOpacity = 0.4;
     [self.view addSubview:maleView];
+    
+    UIBezierPath * malePath = [UIBezierPath bezierPath];
+    float maleWidth = maleView.bounds.size.width;
+    float maleHeight = maleView.bounds.size.height;
+    float maleX = maleView.bounds.origin.x;
+    float maleY = maleView.bounds.origin.y;
+    float maleAdd = 2;
+    CGPoint maleTopLeft = maleView.bounds.origin;
+    CGPoint maleTopMiddle = CGPointMake(maleX+(maleWidth/2),maleY-maleAdd);
+    CGPoint maleTopRight = CGPointMake(maleX+maleWidth,maleY);
+    CGPoint maleRightMiddle = CGPointMake(maleX+maleWidth+maleAdd,maleY+(maleHeight/2));
+    CGPoint maleBottomRight  = CGPointMake(maleX+maleWidth,maleY+maleHeight);
+    CGPoint maleBottomMiddle = CGPointMake(maleX+(maleWidth/2),maleY+maleHeight+maleAdd);
+    CGPoint maleBottomLeft   = CGPointMake(maleX,maleY+maleHeight);
+    CGPoint maleLeftMiddle = CGPointMake(maleX-maleAdd,maleY+(maleHeight/2));
+    [malePath  moveToPoint:maleTopLeft];
+    [malePath addQuadCurveToPoint:maleTopRight controlPoint:maleTopMiddle];
+    [malePath addQuadCurveToPoint:maleBottomRight controlPoint:maleRightMiddle];
+    [malePath addQuadCurveToPoint:maleBottomLeft controlPoint:maleBottomMiddle];
+    [malePath addQuadCurveToPoint:maleTopLeft controlPoint:maleLeftMiddle];
+    maleView.layer.shadowPath = malePath.CGPath;
+    
     
     UITapGestureRecognizer* maleTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedMaleView:)];
     [maleView addGestureRecognizer:maleTap];
     
     self.maleIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, viewWidth - 20, viewWidth - 20)];
-    self.maleIV.layer.cornerRadius = self.maleIV.frame.size.width / 2;
-    self.maleIV.layer.masksToBounds = YES;
     self.maleIV.image = [UIImage imageNamed:@"male"];
     [maleView addSubview:self.maleIV];
     
-    UIView* femaleView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 + 20, maleView.frame.origin.y, viewWidth, viewWidth)];
+    self.maleSelectIV = [[UIImageView alloc]initWithFrame:CGRectMake((viewWidth - 20) / 2, viewHeight - 20 - 10, 20, 20)];
+    self.maleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Normal"];
+    [maleView addSubview:self.maleSelectIV];
+    
+    UIView* femaleView = [[UIView alloc]initWithFrame:CGRectMake(self.view.frame.size.width/2 + 20, maleView.frame.origin.y, viewWidth, viewHeight)];
+    femaleView.backgroundColor = [UIColor whiteColor];
+    femaleView.layer.shadowColor = [UIColor grayColor].CGColor;
+    femaleView.layer.shadowOffset = CGSizeMake(0, 0);
+    femaleView.layer.shadowOpacity = 0.5;
     [self.view addSubview:femaleView];
+    
+    UIBezierPath * femalePath = [UIBezierPath bezierPath];
+    float femaleWidth = femaleView.bounds.size.width;
+    float femaleHeight = femaleView.bounds.size.height;
+    float femaleX = femaleView.bounds.origin.x;
+    float femaleY = femaleView.bounds.origin.y;
+    float femaleAdd = 2;
+    CGPoint femaleTopLeft = femaleView.bounds.origin;
+    CGPoint femaleTopMiddle = CGPointMake(femaleX+(femaleWidth/2),femaleY-femaleAdd);
+    CGPoint femaleTopRight = CGPointMake(femaleX+femaleWidth,femaleY);
+    CGPoint femaleRightMiddle = CGPointMake(femaleX+femaleWidth+femaleAdd,femaleY+(femaleHeight/2));
+    CGPoint femaleBottomRight  = CGPointMake(femaleX+femaleWidth,femaleY+femaleHeight);
+    CGPoint femaleBottomMiddle = CGPointMake(femaleX+(femaleWidth/2),femaleY+femaleHeight+femaleAdd);
+    CGPoint femaleBottomLeft   = CGPointMake(femaleX,femaleY+femaleHeight);
+    CGPoint femaleLeftMiddle = CGPointMake(femaleX-femaleAdd,femaleY+(femaleHeight/2));
+    [femalePath  moveToPoint:femaleTopLeft];
+    [femalePath addQuadCurveToPoint:femaleTopRight controlPoint:femaleTopMiddle];
+    [femalePath addQuadCurveToPoint:femaleBottomRight controlPoint:femaleRightMiddle];
+    [femalePath addQuadCurveToPoint:femaleBottomLeft controlPoint:femaleBottomMiddle];
+    [femalePath addQuadCurveToPoint:femaleTopLeft controlPoint:femaleLeftMiddle];
+    femaleView.layer.shadowPath = femalePath.CGPath;
+    
     
     UITapGestureRecognizer* femaleTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tappedFemaleView:)];
     [femaleView addGestureRecognizer:femaleTap];
     
     self.femaleIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, viewWidth - 20, viewWidth - 20)];
-    self.femaleIV.layer.cornerRadius = self.femaleIV.frame.size.width / 2;
-    self.femaleIV.layer.masksToBounds = YES;
     self.femaleIV.image = [UIImage imageNamed:@"female"];
     [femaleView addSubview:self.femaleIV];
     
+    self.femaleSelectIV = [[UIImageView alloc]initWithFrame:CGRectMake((viewWidth - 20) / 2, viewHeight - 20 - 10, 20, 20)];
+    self.femaleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Normal"];
+    [femaleView addSubview:self.femaleSelectIV];
+    
     if (self.genderType == GenderTypeGenderFemale) {
-        self.femaleIV.layer.borderWidth = 3;
-        self.femaleIV.layer.borderColor = THEMEORANGECOLOR.CGColor;
+        self.maleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Normal"];
+        self.femaleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Selected"];
     }else {
-        self.maleIV.layer.borderWidth = 3;
-        self.maleIV.layer.borderColor = THEMEORANGECOLOR.CGColor;
+        self.maleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Selected"];
+        self.femaleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Normal"];
     }
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(20, self.view.frame.size.height - 80, self.view.frame.size.width - 20 * 2, 40)];
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.view.frame.size.height - 100, self.view.frame.size.width - 60 * 2, 45)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 5;
+    self.sendBtn.layer.cornerRadius = self.sendBtn.frame.size.height / 2;
     self.sendBtn.layer.masksToBounds = YES;
-    self.sendBtn.titleLabel.font = [UIFont systemFontOfSize:16];
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.sendBtn];
     
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
-    self.collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, maleView.frame.origin.y + maleView.frame.size.height + 10, self.view.frame.size.width, self.sendBtn.frame.origin.y - maleView.frame.origin.y - maleView.frame.size.height - 10 * 2) collectionViewLayout:layout];
+    self.collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, maleView.frame.origin.y + maleView.frame.size.height + 20, self.view.frame.size.width, self.sendBtn.frame.origin.y - maleView.frame.origin.y - maleView.frame.size.height - 20 * 2) collectionViewLayout:layout];
     self.collectionView.backgroundColor = [UIColor whiteColor];
     self.collectionView.dataSource = self;
     self.collectionView.delegate = self;
@@ -267,10 +325,8 @@ static NSString* cellId = @"cellIdentifier";
         return;
     }
     self.genderType = GenderTypeGenderMale;
-    self.maleIV.layer.borderWidth = 3;
-    self.maleIV.layer.borderColor = THEMEORANGECOLOR.CGColor;
-    self.femaleIV.layer.borderWidth = 0;
-    self.femaleIV.layer.borderColor = [UIColor clearColor].CGColor;
+    self.maleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Selected"];
+    self.femaleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Normal"];
     [self.interestArray removeAllObjects];
     [self.dataArray removeAllObjects];
     
@@ -288,10 +344,8 @@ static NSString* cellId = @"cellIdentifier";
         return;
     }
     self.genderType = GenderTypeGenderFemale;
-    self.femaleIV.layer.borderWidth = 3;
-    self.femaleIV.layer.borderColor = THEMEORANGECOLOR.CGColor;
-    self.maleIV.layer.borderWidth = 0;
-    self.maleIV.layer.borderColor = [UIColor clearColor].CGColor;
+    self.femaleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Selected"];
+    self.maleSelectIV.image = [UIImage imageNamed:@"bookShelf_Edit_Normal"];
     [self.interestArray removeAllObjects];
     [self.dataArray removeAllObjects];
     

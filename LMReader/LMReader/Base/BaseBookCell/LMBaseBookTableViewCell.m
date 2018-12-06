@@ -29,6 +29,8 @@ CGFloat spaceMin = 5;
     CGRect screenRect = [UIScreen mainScreen].bounds;
     if (!self.coverIV) {
         self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(spaceMax, spaceTop, 70, baseBookCellHeight - spaceTop * 2)];
+        self.coverIV.contentMode = UIViewContentModeScaleAspectFill;
+        self.coverIV.clipsToBounds = YES;
         self.coverIV.layer.borderColor = [UIColor colorWithRed:200.f / 255 green:200.f / 255 blue:200.f / 255 alpha:1].CGColor;
         self.coverIV.layer.borderWidth = 0.5;
         self.coverIV.layer.shadowColor = [UIColor grayColor].CGColor;
@@ -92,9 +94,14 @@ CGFloat spaceMin = 5;
 }
 
 -(void)setupContentBook:(Book* )book {
-    NSString* picStr = [book.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    NSURL* picUrl = [NSURL URLWithString:picStr];
-    [self.coverIV sd_setImageWithURL:picUrl placeholderImage:[UIImage imageNamed:@"defaultBookImage"] options:SDWebImageRefreshCached];
+    NSString* coverUrlStr = [book.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    [self.coverIV sd_setImageWithURL:[NSURL URLWithString:coverUrlStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage_Gray"] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+        if (image && error == nil) {
+            
+        }else {
+            self.coverIV.image = [UIImage imageNamed:@"defaultBookImage"];
+        }
+    }];
     
     self.nameLab.text = book.name;
     

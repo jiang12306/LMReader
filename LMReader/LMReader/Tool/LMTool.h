@@ -58,10 +58,10 @@
 +(void)changeSystemSettingWithAlert:(BOOL )alert download:(BOOL )download loadNext:(BOOL )loadNext;
 
 //保存txt
-+(BOOL )saveBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId bookText:(NSString* )text;
++(BOOL )saveBookTextWithBookId:(UInt32 )bookId chapterId:(NSString* )chapterId bookText:(NSString* )text;
 
 //删除txt
-+(BOOL )deleteBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId;
++(BOOL )deleteBookTextWithBookId:(UInt32 )bookId chapterId:(NSString* )chapterId;
 
 //删除book
 +(BOOL )deleteBookWithBookId:(UInt32 )bookId;
@@ -72,9 +72,9 @@
 //获取书本所占内存大小 单位：MB
 +(float )getBookFileSizeWithBookId:(UInt32 )bookId;
 //是否存在txt
-+(BOOL )isExistBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId;
++(BOOL )isExistBookTextWithBookId:(UInt32 )bookId chapterId:(NSString* )chapterId;
 //取txt
-+(NSString* )queryBookTextWithBookId:(UInt32 )bookId chapterId:(UInt32 )chapterId;
++(NSString* )queryBookTextWithBookId:(UInt32 )bookId chapterId:(NSString* )chapterId;
 
 //新解析方式下 保存章节列表  拼上catalogList，用以区别旧解析方式下保存的NSData数据
 +(BOOL )archiveNewParseBookCatalogListWithBookId:(UInt32 )bookId catalogList:(NSArray* )catalogList;
@@ -88,6 +88,11 @@
 +(NSData* )unArchiveBookCatalogListWithBookId:(UInt32 )bookId;
 //删除 图书目录
 +(BOOL )deleteArchiveBookCatalogListWithBookId:(UInt32 )bookId;
+
+//json解析获取章节目录列表，元素为 LMReaderBookChapter 类型
++(NSArray* )jsonParseChapterListWithParse:(UrlReadParse* )parse originalDic:(NSDictionary* )originalDic;
+//json解析获取章节内容，为 NSString 类型
++(NSString* )jsonParseChapterContentWithParse:(UrlReadParse* )parse originalDic:(NSDictionary* )originalDic;
 
 //归档 保存图书源列表最新章节
 +(BOOL )archiveBookSourceWithBookId:(UInt32 )bookId sourceDic:(NSDictionary* )sourceDic;
@@ -208,5 +213,44 @@
 
 //反归档 广告开关
 +(NSData* )unArchiveAdvertisementSwitchData;
+
+
+
+//是否显示所有的用户指引
++(BOOL )shouldShowAllUserInstructionsView;
+//设置不显示所有的用户指引
++(void)updateSetShowAllUserInstructionsView;
+
+//是否显示书架页指引
++(BOOL )shouldShowBookShelfUserInstructionsView;
+//已经显示过书架页指引
++(void)updateSetShowBookShelfUserInstructionsView;
+
+//是否显示书城页指引
++(BOOL )shouldShowBookStoreUserInstructionsView;
+//已经显示过书城页指引
++(void)updateSetShowBookStoreUserInstructionsView;
+
+//是否显示搜索页指引
++(BOOL )shouldShowSearchUserInstructionsView;
+//已经显示过搜索页指引
++(void)updateSetShowSearchUserInstructionsView;
+
+//是否显示阅读页指引
++(BOOL )shouldShowReaderUserInstructionsView;
+//已经显示过阅读页指引
++(void)updateSetShowReaderUserInstructionsView;
+//是否显示阅读页指引1
++(BOOL )shouldShowReaderUserInstructionsView1;
+//已经显示过阅读页指引1
++(void)updateSetShowReaderUserInstructionsView1;
+//是否显示阅读页指引2
++(BOOL )shouldShowReaderUserInstructionsView2;
+//已经显示过阅读页指引2
++(void)updateSetShowReaderUserInstructionsView2;
+//是否显示阅读页指引3
++(BOOL )shouldShowReaderUserInstructionsView3;
+//已经显示过阅读页指引3
++(void)updateSetShowReaderUserInstructionsView3;
 
 @end

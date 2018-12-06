@@ -7,6 +7,7 @@
 //
 
 #import "LMProfileViewController.h"
+#import "LMBaseRefreshTableView.h"
 #import "LMProfileTableViewCell.h"
 #import "LMSearchViewController.h"
 #import "LMReadRecordViewController.h"
@@ -24,10 +25,12 @@
 #import "LMRightItemView.h"
 #import "UIImageView+WebCache.h"
 #import "LMProfileBookCommentViewController.h"
+#import "LMProfileMessageViewController.h"
+#import "LMRootViewController.h"
 
 @interface LMProfileViewController () <UITableViewDelegate, UITableViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
-@property (nonatomic, strong) UITableView* tableView;
+@property (nonatomic, strong) LMBaseRefreshTableView* tableView;
 @property (nonatomic, strong) NSMutableArray* dataArray;
 @property (nonatomic, strong) UIImageView* avatorIV;
 @property (nonatomic, strong) UIImageView* arrowIV;
@@ -36,11 +39,13 @@
 @property (nonatomic, strong) UILabel* timeLab;
 @property (nonatomic, strong) LoginedRegUser* loginedRegUser;
 @property (nonatomic, assign) BOOL isNight;
+@property (nonatomic, assign) BOOL hasUnreadMsg;/**<是否有未读消息*/
 
 @end
 
 @implementation LMProfileViewController
 
+CGFloat profileCellHeight = 60;
 static NSString* cellIdentifier = @"cellIdentifier";
 
 - (void)viewDidLoad {
@@ -48,17 +53,23 @@ static NSString* cellIdentifier = @"cellIdentifier";
     
     self.fd_prefersNavigationBarHidden = YES;
     
+    self.dataArray = [NSMutableArray arrayWithObjects:@[@{@"name" : @"阅读记录", @"cover" : @"profile_ReadRecord"}, @{@"name" : @"阅读偏好", @"cover" : @"profile_ReadPreferences"}, @{@"name" : @"我的评论", @"cover" : @"profile_MyComment"}, @{@"name" : @"我的消息", @"cover" : @"profile_MyMessage"}], @[@{@"name" : @"系统设置", @"cover" : @"profile_SystemSetting"}, @{@"name" : @"意见反馈", @"cover" : @"profile_FeedBack"}, @{@"name" : @"关于我们", @"cover" : @"profile_AboutUs"}], nil];
+    
     CGFloat naviHeight = 0;
+    CGFloat tabBarHeight = 49;
     if ([LMTool isBangsScreen]) {
         naviHeight = 44;
+        tabBarHeight = 83;
     }
-    self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) style:UITableViewStyleGrouped];
+    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight - tabBarHeight) style:UITableViewStyleGrouped];
     if (@available(ios 11.0, *)) {
         self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
     self.tableView.backgroundColor = [UIColor whiteColor];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
+    [self.tableView setupNoRefreshData];
+    [self.tableView setupNoMoreData];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     [self.tableView registerClass:[LMProfileTableViewCell class] forCellReuseIdentifier:cellIdentifier];
     [self.view addSubview:self.tableView];
@@ -116,24 +127,6 @@ static NSString* cellIdentifier = @"cellIdentifier";
     [headerView addSubview:self.timeLab];
     
     self.tableView.tableHeaderView = headerView;
-    
-    self.dataArray = [NSMutableArray arrayWithObjects:@[@{@"name" : @"阅读记录", @"cover" : @"profile_ReadRecord"}, @{@"name" : @"阅读偏好", @"cover" : @"profile_ReadPreferences"}, @{@"name" : @"我的评论", @"cover" : @"profile_MyComment"}], @[@{@"name" : @"系统设置", @"cover" : @"profile_SystemSetting"}, @{@"name" : @"意见反馈", @"cover" : @"profile_FeedBack"}, @{@"name" : @"关于我们", @"cover" : @"profile_AboutUs"}], nil];
-    [self.tableView reloadData];
-    
-    //添加通知
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(jumpToViewController:) name:@"jumpToViewController" object:nil];
-}
-
-//登录状态过期时，接收通知并重新跳转至登录界面
--(void)jumpToViewController:(NSNotification* )notify {
-    LMLoginViewController* loginVC = [[LMLoginViewController alloc]init];
-    loginVC.userBlock = ^(LoginedRegUser *loginUser) {
-        NSString* tokenStr = loginUser.token;
-        if (tokenStr != nil && ![tokenStr isKindOfClass:[NSNull class]] && tokenStr.length > 0) {
-            
-        }
-    };
-    [self.navigationController pushViewController:loginVC animated:YES];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -150,9 +143,15 @@ static NSString* cellIdentifier = @"cellIdentifier";
         tabBarController.tabBar.frame = CGRectMake(0, screenRect.size.height - tabBarHeight, screenRect.size.width, tabBarHeight);
     }
     
+    //是否有未读消息
+    LMRootViewController* rootVC = [LMRootViewController sharedRootViewController];
+    self.hasUnreadMsg = [rootVC getShowRedDotWithIndex:3];
+    NSIndexPath* msgIndexPath = [NSIndexPath indexPathForRow:3 inSection:0];
+    
+    //是否夜间模式
     self.isNight = [LMTool getSystemNightShift];
-    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0 inSection:1];
-    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+    NSIndexPath* nightIndexPath = [NSIndexPath indexPathForRow:0 inSection:1];
+    [self.tableView reloadRowsAtIndexPaths:@[msgIndexPath, nightIndexPath] withRowAnimation:UITableViewRowAnimationNone];
     
     //更新头像、昵称信息
     self.loginedRegUser = [LMTool getLoginedRegUser];
@@ -193,9 +192,9 @@ static NSString* cellIdentifier = @"cellIdentifier";
         }else {
             NSString* avator = user.icon;
             if (avator != nil && avator.length > 0) {
-                [self.avatorIV sd_setImageWithURL:[NSURL URLWithString:avator] placeholderImage:[UIImage imageNamed:@"avator_LoginOut"]];
+                [self.avatorIV sd_setImageWithURL:[NSURL URLWithString:avator] placeholderImage:[UIImage imageNamed:@"avator_LoginIn"]];
             }else {
-                self.avatorIV.image = [UIImage imageNamed:@"avator_LoginOut"];
+                self.avatorIV.image = [UIImage imageNamed:@"avator_LoginIn"];
             }
         }
     }else {
@@ -362,7 +361,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 60;
+    return profileCellHeight;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -370,26 +369,57 @@ static NSString* cellIdentifier = @"cellIdentifier";
     if (!cell) {
         cell = [[LMProfileTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
+    for (UIView* subVi in cell.contentView.subviews) {
+        [subVi removeFromSuperview];
+    }
+    
     NSInteger section = indexPath.section;
     NSInteger row = indexPath.row;
-    BOOL showArrow = YES;
-    BOOL showMarkLab = NO;
-    BOOL showMarkIV = NO;
-    if (section == 1 && row == 0 && self.isNight) {
-        showArrow = NO;
-        showMarkLab = YES;
-        showMarkIV = YES;
-    }
-    [cell showLineView:NO];
-    [cell setupShowArrowIV:showArrow showMarkLabel:showMarkLab showMarkIV:showMarkIV];
     
     NSArray* subArr = [self.dataArray objectAtIndex:section];
     NSDictionary* detailDic = [subArr objectAtIndex:row];
-    NSString* nameStr = [detailDic objectForKey:@"name"];
-    NSString* imgStr = [detailDic objectForKey:@"cover"];
     
-    cell.nameLab.text = nameStr;
-    cell.coverIV.image = [UIImage imageNamed:imgStr];
+    //icon
+    UIImageView* iconIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, (profileCellHeight - 28) / 2, 28, 28)];
+    iconIV.contentMode = UIViewContentModeScaleAspectFill;
+    iconIV.clipsToBounds = YES;
+    NSString* imgStr = [detailDic objectForKey:@"cover"];
+    iconIV.image = [UIImage imageNamed:imgStr];
+    [cell.contentView addSubview:iconIV];
+    
+    //label
+    UILabel* nameLab = [[UILabel alloc]initWithFrame:CGRectMake(iconIV.frame.origin.x + iconIV.frame.size.width + 20, 0, 80, profileCellHeight)];
+    nameLab.font = [UIFont systemFontOfSize:15];
+    nameLab.text = [detailDic objectForKey:@"name"];
+    [cell.contentView addSubview:nameLab];
+    
+    //箭头
+    UIImageView* cellArrowIV = [[UIImageView alloc]initWithFrame:CGRectMake(self.tableView.frame.size.width - 20 - 10, (profileCellHeight - 10)/2, 10, 10)];
+    cellArrowIV.image = [UIImage imageNamed:@"cell_Arrow"];
+    [cell.contentView addSubview:cellArrowIV];
+    
+    //我的消息 红点标记
+    if (section == 0 && row == 3 && self.hasUnreadMsg) {
+        UILabel* cellUnreadLab = [[UILabel alloc]initWithFrame:CGRectMake(cellArrowIV.frame.origin.x - 10 - 8, (profileCellHeight - 8) / 2, 8, 8)];
+        cellUnreadLab.backgroundColor = THEMEORANGECOLOR;
+        cellUnreadLab.layer.cornerRadius = 4;
+        cellUnreadLab.layer.masksToBounds = YES;
+        [cell.contentView addSubview:cellUnreadLab];
+    }
+    
+    //系统设置 是否夜间模式
+    if (section == 1 && row == 0 && self.isNight) {
+        UILabel* cellNightLab = [[UILabel alloc]initWithFrame:CGRectMake(cellArrowIV.frame.origin.x - 10 - 35, 0, 35, profileCellHeight)];//self.tableView.frame.size.width - 20 - 35
+        cellNightLab.font = [UIFont systemFontOfSize:15];
+        cellNightLab.textColor = [UIColor colorWithRed:60.f/255 green:60.f/255 blue:60.f/255 alpha:1];
+        cellNightLab.textAlignment = NSTextAlignmentRight;
+        cellNightLab.text = @"夜间";
+        [cell.contentView addSubview:cellNightLab];
+        
+        UIImageView* cellNightIV = [[UIImageView alloc]initWithFrame:CGRectMake(cellNightLab.frame.origin.x - 15, (profileCellHeight - 15) / 2, 15, 15)];
+        cellNightIV.image = [UIImage imageNamed:@"systemSetting_Night"];
+        [cell.contentView addSubview:cellNightIV];
+    }
     
     return cell;
 }
@@ -416,6 +446,12 @@ static NSString* cellIdentifier = @"cellIdentifier";
             {
                 LMProfileBookCommentViewController* bookCommentVC = [[LMProfileBookCommentViewController alloc]init];
                 [self.navigationController pushViewController:bookCommentVC animated:YES];
+            }
+                break;
+            case 3:
+            {
+                LMProfileMessageViewController* messageVC = [[LMProfileMessageViewController alloc]init];
+                [self.navigationController pushViewController:messageVC animated:YES];
             }
                 break;
             default:
@@ -445,10 +481,6 @@ static NSString* cellIdentifier = @"cellIdentifier";
                 break;
         }
     }
-}
-
--(void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"jumpToViewController" object:nil];
 }
 
 - (void)didReceiveMemoryWarning {

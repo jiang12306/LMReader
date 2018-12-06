@@ -94,26 +94,26 @@
 -(void)showNetworkLoadingView {
     if (!self.loadingView) {
         self.loadingView = [[UIView alloc]initWithFrame:CGRectMake((self.view.frame.size.width - 70)/2, (self.view.frame.size.height - 70 - 70)/2, 70, 70)];//去掉表头70
-        self.loadingView.backgroundColor = [UIColor colorWithRed:40.f/255 green:40.f/255 blue:40.f/255 alpha:0.6];
+        self.loadingView.backgroundColor = [UIColor colorWithRed:80.f/255 green:80.f/255 blue:80.f/255 alpha:0.5];
         self.loadingView.layer.cornerRadius = 5;
         self.loadingView.layer.masksToBounds = YES;
         
-        self.loadingIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, 50, 30)];
+        self.loadingIV = [[UIImageView alloc]initWithFrame:CGRectMake(5, 5, 60, 40)];
         NSMutableArray* imgArr = [NSMutableArray array];
-        for (NSInteger i = 0; i < 7; i ++) {
+        for (NSInteger i = 0; i < 25; i ++) {
             NSString* imgStr = [NSString stringWithFormat:@"loading%ld", (long)i];
             UIImage* img = [UIImage imageNamed:imgStr];
             [imgArr addObject:img];
         }
         self.loadingIV.animationImages = imgArr;
-        self.loadingIV.animationDuration = 1;
+        self.loadingIV.animationDuration = 1.5;
         [self.loadingView addSubview:self.loadingIV];
         
         self.loadingLab = [[UILabel alloc]initWithFrame:CGRectMake(0, self.loadingView.frame.size.height - 25, self.loadingView.frame.size.height, 20)];
         self.loadingLab.textColor = [UIColor whiteColor];
         self.loadingLab.textAlignment = NSTextAlignmentCenter;
         self.loadingLab.font = [UIFont systemFontOfSize:14];
-        self.loadingLab.text = @"加载中···";
+        self.loadingLab.text = @"加载中";
         [self.loadingView addSubview:self.loadingLab];
         
         [self.view insertSubview:self.loadingView atIndex:999];
@@ -145,7 +145,7 @@
         self.selfReloadBtn = [[UIButton alloc]initWithFrame:CGRectMake((self.view.frame.size.width - 50)/2, (self.view.frame.size.height - 50 - 70)/2, 50, 50)];
         UIImage* img = [UIImage imageNamed:@"defaultRefresh"];
         UIImage* tintImg = [img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        [self.selfReloadBtn setTintColor:[UIColor grayColor]];
+        [self.selfReloadBtn setTintColor:[UIColor colorWithRed:80.f/255 green:80.f/255 blue:80.f/255 alpha:0.6]];
         [self.selfReloadBtn setImage:tintImg forState:UIControlStateNormal];
         [self.selfReloadBtn addTarget:self action:@selector(clickedSelfReloadButton:) forControlEvents:UIControlEventTouchUpInside];
         [self.view addSubview:self.selfReloadBtn];

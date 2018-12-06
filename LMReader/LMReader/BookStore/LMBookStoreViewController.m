@@ -16,6 +16,7 @@
 #import "LMBookStoreFilterListView.h"
 #import "LMTypeBookStoreViewController.h"
 #import "LMRightItemView.h"
+#import "LMBookStoreUserInstructionsView.h"
 
 @interface LMBookStoreViewController () <UICollectionViewDelegate, UICollectionViewDataSource, LMTypeBookStoreViewControllerDelegate, UIScrollViewDelegate>
 
@@ -47,16 +48,26 @@ static NSString* cellIdentifier = @"cellIdentifier";
         }
         tabBarController.tabBar.frame = CGRectMake(0, screenRect.size.height - tabBarHeight, screenRect.size.width, tabBarHeight);
     }
+    
+    //显示书城页用户指引
+    if ([LMTool shouldShowBookStoreUserInstructionsView]) {
+        CGFloat naviHeight = 20 + 44 - 10;
+        if ([LMTool isBangsScreen]) {
+            naviHeight = 44 + 44 - 10;
+        }
+        LMBookStoreUserInstructionsView* storeUIV = [[LMBookStoreUserInstructionsView alloc]init];
+        [storeUIV startShowWithFilterPoint:CGPointMake(self.view.frame.size.width - 15, naviHeight)];
+    }
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    UIView* filtView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 35, 30)];
+    UIView* filtView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 38, 30)];
     UIButton* filtItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, filtView.frame.size.width, filtView.frame.size.height)];
     [filtItemBtn setImage:[[UIImage imageNamed:@"bookStore_RightItem_Filter"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
     filtItemBtn.tintColor = UIColorFromRGB(0x656565);
-    [filtItemBtn setImageEdgeInsets:UIEdgeInsetsMake(0, 0, 0, 5)];
+    [filtItemBtn setImageEdgeInsets:UIEdgeInsetsMake(2, 0, 2, 12)];
     [filtItemBtn addTarget:self action:@selector(clickedFilterButton:) forControlEvents:UIControlEventTouchUpInside];
     [filtView addSubview:filtItemBtn];
     UIBarButtonItem* filtItem = [[UIBarButtonItem alloc]initWithCustomView:filtView];
@@ -65,7 +76,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     UILabel* emptyLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, emptyView.frame.size.width, emptyView.frame.size.height)];
     [emptyView addSubview:emptyLab];
     UIBarButtonItem* emptyItem = [[UIBarButtonItem alloc]initWithCustomView:emptyView];
-
+    
     self.navigationItem.rightBarButtonItems = @[filtItem, emptyItem];
     
     UIView* leftEmptyView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 5, 30)];

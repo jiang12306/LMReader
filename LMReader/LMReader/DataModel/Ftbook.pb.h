@@ -70,6 +70,10 @@
 @class ConverBuilder;
 @class ConverRes;
 @class ConverResBuilder;
+@class CorrelationReq;
+@class CorrelationReqBuilder;
+@class CorrelationRes;
+@class CorrelationResBuilder;
 @class Device;
 @class DeviceBuilder;
 @class DeviceSize;
@@ -132,6 +136,8 @@
 @class RegUserLoginResBuilder;
 @class ResetPwdReq;
 @class ResetPwdReqBuilder;
+@class SearchHelpReq;
+@class SearchHelpReqBuilder;
 @class SearchInitRes;
 @class SearchInitResBuilder;
 @class SelfDefinedHomeReq;
@@ -150,6 +156,16 @@
 @class SourceBuilder;
 @class SourceLastChapter;
 @class SourceLastChapterBuilder;
+@class SysMsg;
+@class SysMsgBuilder;
+@class SysMsgListReq;
+@class SysMsgListReqBuilder;
+@class SysMsgListRes;
+@class SysMsgListResBuilder;
+@class SysMsgReq;
+@class SysMsgReqBuilder;
+@class SysMsgRes;
+@class SysMsgResBuilder;
 @class ThirdRegUserExistReq;
 @class ThirdRegUserExistReqBuilder;
 @class ThirdRegUserLoginReq;
@@ -404,16 +420,16 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 #define KanapiJiaston_content_key @"contentKey"
 @interface KanapiJiaston : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
+  BOOL hasBid_:1;
   BOOL hasCidKey_:1;
   BOOL hasCtitleKey_:1;
   BOOL hasCurlStr_:1;
   BOOL hasContentKey_:1;
-  BOOL hasBid_:1;
+  NSString* bid;
   NSString* cidKey;
   NSString* ctitleKey;
   NSString* curlStr;
   NSString* contentKey;
-  UInt32 bid;
   NSMutableArray * listParseArray;
   NSMutableArray * contentParseArray;
 }
@@ -422,7 +438,7 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (BOOL) hasCtitleKey;
 - (BOOL) hasCurlStr;
 - (BOOL) hasContentKey;
-@property (readonly) UInt32 bid;
+@property (readonly, strong) NSString* bid;
 @property (readonly, strong) NSArray<JsonParse*> * listParse;
 @property (readonly, strong) NSString* cidKey;
 @property (readonly, strong) NSString* ctitleKey;
@@ -468,8 +484,8 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (KanapiJiastonBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
 
 - (BOOL) hasBid;
-- (UInt32) bid;
-- (KanapiJiastonBuilder*) setBid:(UInt32) value;
+- (NSString*) bid;
+- (KanapiJiastonBuilder*) setBid:(NSString*) value;
 - (KanapiJiastonBuilder*) clearBid;
 
 - (NSMutableArray<JsonParse*> *)listParse;
@@ -1331,6 +1347,7 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 #define UdId_mac @"mac"
 #define UdId_android_id @"androidId"
 #define UdId_custom_id @"customId"
+#define UdId_idfa @"idfa"
 @interface DeviceUdId : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
   BOOL hasUuid_:1;
@@ -1338,22 +1355,26 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
   BOOL hasMac_:1;
   BOOL hasAndroidId_:1;
   BOOL hasCustomId_:1;
+  BOOL hasIdfa_:1;
   NSString* uuid;
   NSString* imei;
   NSString* mac;
   NSString* androidId;
   NSString* customId;
+  NSString* idfa;
 }
 - (BOOL) hasUuid;
 - (BOOL) hasImei;
 - (BOOL) hasMac;
 - (BOOL) hasAndroidId;
 - (BOOL) hasCustomId;
+- (BOOL) hasIdfa;
 @property (readonly, strong) NSString* uuid;
 @property (readonly, strong) NSString* imei;
 @property (readonly, strong) NSString* mac;
 @property (readonly, strong) NSString* androidId;
 @property (readonly, strong) NSString* customId;
+@property (readonly, strong) NSString* idfa;
 
 + (instancetype) defaultInstance;
 - (instancetype) defaultInstance;
@@ -1414,6 +1435,11 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (NSString*) customId;
 - (DeviceUdIdBuilder*) setCustomId:(NSString*) value;
 - (DeviceUdIdBuilder*) clearCustomId;
+
+- (BOOL) hasIdfa;
+- (NSString*) idfa;
+- (DeviceUdIdBuilder*) setIdfa:(NSString*) value;
+- (DeviceUdIdBuilder*) clearIdfa;
 @end
 
 @interface DeviceBuilder : PBGeneratedMessageBuilder {
@@ -6709,19 +6735,24 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 #define InitSwitchRes_ad_control @"adControl"
 #define InitSwitchRes_skip_n @"skipN"
 #define InitSwitchRes_less_m @"lessM"
+#define InitSwitchRes_show_h @"showH"
 @interface InitSwitchRes : PBGeneratedMessage<GeneratedMessageProtocol> {
 @private
   BOOL hasSkipN_:1;
   BOOL hasLessM_:1;
+  BOOL hasShowH_:1;
   UInt32 skipN;
   UInt32 lessM;
+  UInt32 showH;
   NSMutableArray * adControlArray;
 }
 - (BOOL) hasSkipN;
 - (BOOL) hasLessM;
+- (BOOL) hasShowH;
 @property (readonly, strong) NSArray<AdControl*> * adControl;
 @property (readonly) UInt32 skipN;
 @property (readonly) UInt32 lessM;
+@property (readonly) UInt32 showH;
 - (AdControl*)adControlAtIndex:(NSUInteger)index;
 
 + (instancetype) defaultInstance;
@@ -6774,6 +6805,11 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (UInt32) lessM;
 - (InitSwitchResBuilder*) setLessM:(UInt32) value;
 - (InitSwitchResBuilder*) clearLessM;
+
+- (BOOL) hasShowH;
+- (UInt32) showH;
+- (InitSwitchResBuilder*) setShowH:(UInt32) value;
+- (InitSwitchResBuilder*) clearShowH;
 @end
 
 #define FtAdReq_adl_id @"adlId"
@@ -7324,6 +7360,508 @@ NSString *NSStringFromRegUserSetPw(RegUserSetPw value);
 - (UInt32) page;
 - (SelfDefinedMoreResBuilder*) setPage:(UInt32) value;
 - (SelfDefinedMoreResBuilder*) clearPage;
+@end
+
+#define SearchHelpReq_book_name @"bookName"
+#define SearchHelpReq_book_author @"bookAuthor"
+#define SearchHelpReq_web_str @"webStr"
+@interface SearchHelpReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasBookName_:1;
+  BOOL hasBookAuthor_:1;
+  BOOL hasWebStr_:1;
+  NSString* bookName;
+  NSString* bookAuthor;
+  NSString* webStr;
+}
+- (BOOL) hasBookName;
+- (BOOL) hasBookAuthor;
+- (BOOL) hasWebStr;
+@property (readonly, strong) NSString* bookName;
+@property (readonly, strong) NSString* bookAuthor;
+@property (readonly, strong) NSString* webStr;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SearchHelpReqBuilder*) builder;
++ (SearchHelpReqBuilder*) builder;
++ (SearchHelpReqBuilder*) builderWithPrototype:(SearchHelpReq*) prototype;
+- (SearchHelpReqBuilder*) toBuilder;
+
++ (SearchHelpReq*) parseFromData:(NSData*) data;
++ (SearchHelpReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SearchHelpReq*) parseFromInputStream:(NSInputStream*) input;
++ (SearchHelpReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SearchHelpReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SearchHelpReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SearchHelpReqBuilder : PBGeneratedMessageBuilder {
+@private
+  SearchHelpReq* resultSearchHelpReq;
+}
+
+- (SearchHelpReq*) defaultInstance;
+
+- (SearchHelpReqBuilder*) clear;
+- (SearchHelpReqBuilder*) clone;
+
+- (SearchHelpReq*) build;
+- (SearchHelpReq*) buildPartial;
+
+- (SearchHelpReqBuilder*) mergeFrom:(SearchHelpReq*) other;
+- (SearchHelpReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SearchHelpReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasBookName;
+- (NSString*) bookName;
+- (SearchHelpReqBuilder*) setBookName:(NSString*) value;
+- (SearchHelpReqBuilder*) clearBookName;
+
+- (BOOL) hasBookAuthor;
+- (NSString*) bookAuthor;
+- (SearchHelpReqBuilder*) setBookAuthor:(NSString*) value;
+- (SearchHelpReqBuilder*) clearBookAuthor;
+
+- (BOOL) hasWebStr;
+- (NSString*) webStr;
+- (SearchHelpReqBuilder*) setWebStr:(NSString*) value;
+- (SearchHelpReqBuilder*) clearWebStr;
+@end
+
+#define SysMsg_id @"id"
+#define SysMsg_title @"title"
+#define SysMsg_content @"content"
+#define SysMsg_s_t @"sT"
+#define SysMsg_is_read @"isRead"
+@interface SysMsg : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasTitle_:1;
+  BOOL hasContent_:1;
+  BOOL hasST_:1;
+  BOOL hasId_:1;
+  BOOL hasIsRead_:1;
+  NSString* title;
+  NSString* content;
+  NSString* sT;
+  UInt32 id;
+  UInt32 isRead;
+}
+- (BOOL) hasId;
+- (BOOL) hasTitle;
+- (BOOL) hasContent;
+- (BOOL) hasST;
+- (BOOL) hasIsRead;
+@property (readonly) UInt32 id;
+@property (readonly, strong) NSString* title;
+@property (readonly, strong) NSString* content;
+@property (readonly, strong) NSString* sT;
+@property (readonly) UInt32 isRead;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SysMsgBuilder*) builder;
++ (SysMsgBuilder*) builder;
++ (SysMsgBuilder*) builderWithPrototype:(SysMsg*) prototype;
+- (SysMsgBuilder*) toBuilder;
+
++ (SysMsg*) parseFromData:(NSData*) data;
++ (SysMsg*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsg*) parseFromInputStream:(NSInputStream*) input;
++ (SysMsg*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsg*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SysMsg*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SysMsgBuilder : PBGeneratedMessageBuilder {
+@private
+  SysMsg* resultSysMsg;
+}
+
+- (SysMsg*) defaultInstance;
+
+- (SysMsgBuilder*) clear;
+- (SysMsgBuilder*) clone;
+
+- (SysMsg*) build;
+- (SysMsg*) buildPartial;
+
+- (SysMsgBuilder*) mergeFrom:(SysMsg*) other;
+- (SysMsgBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SysMsgBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasId;
+- (UInt32) id;
+- (SysMsgBuilder*) setId:(UInt32) value;
+- (SysMsgBuilder*) clearId;
+
+- (BOOL) hasTitle;
+- (NSString*) title;
+- (SysMsgBuilder*) setTitle:(NSString*) value;
+- (SysMsgBuilder*) clearTitle;
+
+- (BOOL) hasContent;
+- (NSString*) content;
+- (SysMsgBuilder*) setContent:(NSString*) value;
+- (SysMsgBuilder*) clearContent;
+
+- (BOOL) hasST;
+- (NSString*) sT;
+- (SysMsgBuilder*) setST:(NSString*) value;
+- (SysMsgBuilder*) clearST;
+
+- (BOOL) hasIsRead;
+- (UInt32) isRead;
+- (SysMsgBuilder*) setIsRead:(UInt32) value;
+- (SysMsgBuilder*) clearIsRead;
+@end
+
+#define SysMsgListReq_page @"page"
+@interface SysMsgListReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasPage_:1;
+  UInt32 page;
+}
+- (BOOL) hasPage;
+@property (readonly) UInt32 page;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SysMsgListReqBuilder*) builder;
++ (SysMsgListReqBuilder*) builder;
++ (SysMsgListReqBuilder*) builderWithPrototype:(SysMsgListReq*) prototype;
+- (SysMsgListReqBuilder*) toBuilder;
+
++ (SysMsgListReq*) parseFromData:(NSData*) data;
++ (SysMsgListReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsgListReq*) parseFromInputStream:(NSInputStream*) input;
++ (SysMsgListReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsgListReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SysMsgListReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SysMsgListReqBuilder : PBGeneratedMessageBuilder {
+@private
+  SysMsgListReq* resultSysMsgListReq;
+}
+
+- (SysMsgListReq*) defaultInstance;
+
+- (SysMsgListReqBuilder*) clear;
+- (SysMsgListReqBuilder*) clone;
+
+- (SysMsgListReq*) build;
+- (SysMsgListReq*) buildPartial;
+
+- (SysMsgListReqBuilder*) mergeFrom:(SysMsgListReq*) other;
+- (SysMsgListReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SysMsgListReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasPage;
+- (UInt32) page;
+- (SysMsgListReqBuilder*) setPage:(UInt32) value;
+- (SysMsgListReqBuilder*) clearPage;
+@end
+
+#define SysMsgListRes_psize @"psize"
+#define SysMsgListRes_page @"page"
+#define SysMsgListRes_sysmsgs @"sysmsgs"
+#define SysMsgListRes_n_t @"nT"
+@interface SysMsgListRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasPsize_:1;
+  BOOL hasPage_:1;
+  BOOL hasNT_:1;
+  UInt32 psize;
+  UInt32 page;
+  UInt32 nT;
+  NSMutableArray * sysmsgsArray;
+}
+- (BOOL) hasPsize;
+- (BOOL) hasPage;
+- (BOOL) hasNT;
+@property (readonly) UInt32 psize;
+@property (readonly) UInt32 page;
+@property (readonly, strong) NSArray<SysMsg*> * sysmsgs;
+@property (readonly) UInt32 nT;
+- (SysMsg*)sysmsgsAtIndex:(NSUInteger)index;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SysMsgListResBuilder*) builder;
++ (SysMsgListResBuilder*) builder;
++ (SysMsgListResBuilder*) builderWithPrototype:(SysMsgListRes*) prototype;
+- (SysMsgListResBuilder*) toBuilder;
+
++ (SysMsgListRes*) parseFromData:(NSData*) data;
++ (SysMsgListRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsgListRes*) parseFromInputStream:(NSInputStream*) input;
++ (SysMsgListRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsgListRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SysMsgListRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SysMsgListResBuilder : PBGeneratedMessageBuilder {
+@private
+  SysMsgListRes* resultSysMsgListRes;
+}
+
+- (SysMsgListRes*) defaultInstance;
+
+- (SysMsgListResBuilder*) clear;
+- (SysMsgListResBuilder*) clone;
+
+- (SysMsgListRes*) build;
+- (SysMsgListRes*) buildPartial;
+
+- (SysMsgListResBuilder*) mergeFrom:(SysMsgListRes*) other;
+- (SysMsgListResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SysMsgListResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasPsize;
+- (UInt32) psize;
+- (SysMsgListResBuilder*) setPsize:(UInt32) value;
+- (SysMsgListResBuilder*) clearPsize;
+
+- (BOOL) hasPage;
+- (UInt32) page;
+- (SysMsgListResBuilder*) setPage:(UInt32) value;
+- (SysMsgListResBuilder*) clearPage;
+
+- (NSMutableArray<SysMsg*> *)sysmsgs;
+- (SysMsg*)sysmsgsAtIndex:(NSUInteger)index;
+- (SysMsgListResBuilder *)addSysmsgs:(SysMsg*)value;
+- (SysMsgListResBuilder *)setSysmsgsArray:(NSArray<SysMsg*> *)array;
+- (SysMsgListResBuilder *)clearSysmsgs;
+
+- (BOOL) hasNT;
+- (UInt32) nT;
+- (SysMsgListResBuilder*) setNT:(UInt32) value;
+- (SysMsgListResBuilder*) clearNT;
+@end
+
+#define SysMsgReq_id @"id"
+@interface SysMsgReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasId_:1;
+  UInt32 id;
+}
+- (BOOL) hasId;
+@property (readonly) UInt32 id;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SysMsgReqBuilder*) builder;
++ (SysMsgReqBuilder*) builder;
++ (SysMsgReqBuilder*) builderWithPrototype:(SysMsgReq*) prototype;
+- (SysMsgReqBuilder*) toBuilder;
+
++ (SysMsgReq*) parseFromData:(NSData*) data;
++ (SysMsgReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsgReq*) parseFromInputStream:(NSInputStream*) input;
++ (SysMsgReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsgReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SysMsgReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SysMsgReqBuilder : PBGeneratedMessageBuilder {
+@private
+  SysMsgReq* resultSysMsgReq;
+}
+
+- (SysMsgReq*) defaultInstance;
+
+- (SysMsgReqBuilder*) clear;
+- (SysMsgReqBuilder*) clone;
+
+- (SysMsgReq*) build;
+- (SysMsgReq*) buildPartial;
+
+- (SysMsgReqBuilder*) mergeFrom:(SysMsgReq*) other;
+- (SysMsgReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SysMsgReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasId;
+- (UInt32) id;
+- (SysMsgReqBuilder*) setId:(UInt32) value;
+- (SysMsgReqBuilder*) clearId;
+@end
+
+#define SysMsgRes_sysmsg @"sysmsg"
+@interface SysMsgRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasSysmsg_:1;
+  SysMsg* sysmsg;
+}
+- (BOOL) hasSysmsg;
+@property (readonly, strong) SysMsg* sysmsg;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (SysMsgResBuilder*) builder;
++ (SysMsgResBuilder*) builder;
++ (SysMsgResBuilder*) builderWithPrototype:(SysMsgRes*) prototype;
+- (SysMsgResBuilder*) toBuilder;
+
++ (SysMsgRes*) parseFromData:(NSData*) data;
++ (SysMsgRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsgRes*) parseFromInputStream:(NSInputStream*) input;
++ (SysMsgRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (SysMsgRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (SysMsgRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface SysMsgResBuilder : PBGeneratedMessageBuilder {
+@private
+  SysMsgRes* resultSysMsgRes;
+}
+
+- (SysMsgRes*) defaultInstance;
+
+- (SysMsgResBuilder*) clear;
+- (SysMsgResBuilder*) clone;
+
+- (SysMsgRes*) build;
+- (SysMsgRes*) buildPartial;
+
+- (SysMsgResBuilder*) mergeFrom:(SysMsgRes*) other;
+- (SysMsgResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (SysMsgResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasSysmsg;
+- (SysMsg*) sysmsg;
+- (SysMsgResBuilder*) setSysmsg:(SysMsg*) value;
+- (SysMsgResBuilder*) setSysmsgBuilder:(SysMsgBuilder*) builderForValue;
+- (SysMsgResBuilder*) mergeSysmsg:(SysMsg*) value;
+- (SysMsgResBuilder*) clearSysmsg;
+@end
+
+#define CorrelationReq_bookid @"bookid"
+@interface CorrelationReq : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  BOOL hasBookid_:1;
+  UInt32 bookid;
+}
+- (BOOL) hasBookid;
+@property (readonly) UInt32 bookid;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (CorrelationReqBuilder*) builder;
++ (CorrelationReqBuilder*) builder;
++ (CorrelationReqBuilder*) builderWithPrototype:(CorrelationReq*) prototype;
+- (CorrelationReqBuilder*) toBuilder;
+
++ (CorrelationReq*) parseFromData:(NSData*) data;
++ (CorrelationReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (CorrelationReq*) parseFromInputStream:(NSInputStream*) input;
++ (CorrelationReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (CorrelationReq*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (CorrelationReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface CorrelationReqBuilder : PBGeneratedMessageBuilder {
+@private
+  CorrelationReq* resultCorrelationReq;
+}
+
+- (CorrelationReq*) defaultInstance;
+
+- (CorrelationReqBuilder*) clear;
+- (CorrelationReqBuilder*) clone;
+
+- (CorrelationReq*) build;
+- (CorrelationReq*) buildPartial;
+
+- (CorrelationReqBuilder*) mergeFrom:(CorrelationReq*) other;
+- (CorrelationReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (CorrelationReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (BOOL) hasBookid;
+- (UInt32) bookid;
+- (CorrelationReqBuilder*) setBookid:(UInt32) value;
+- (CorrelationReqBuilder*) clearBookid;
+@end
+
+#define CorrelationRes_read @"read"
+#define CorrelationRes_author @"author"
+@interface CorrelationRes : PBGeneratedMessage<GeneratedMessageProtocol> {
+@private
+  NSMutableArray * readArray;
+  NSMutableArray * authorArray;
+}
+@property (readonly, strong) NSArray<Book*> * read;
+@property (readonly, strong) NSArray<Book*> * author;
+- (Book*)readAtIndex:(NSUInteger)index;
+- (Book*)authorAtIndex:(NSUInteger)index;
+
++ (instancetype) defaultInstance;
+- (instancetype) defaultInstance;
+
+- (BOOL) isInitialized;
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output;
+- (CorrelationResBuilder*) builder;
++ (CorrelationResBuilder*) builder;
++ (CorrelationResBuilder*) builderWithPrototype:(CorrelationRes*) prototype;
+- (CorrelationResBuilder*) toBuilder;
+
++ (CorrelationRes*) parseFromData:(NSData*) data;
++ (CorrelationRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (CorrelationRes*) parseFromInputStream:(NSInputStream*) input;
++ (CorrelationRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
++ (CorrelationRes*) parseFromCodedInputStream:(PBCodedInputStream*) input;
++ (CorrelationRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+@end
+
+@interface CorrelationResBuilder : PBGeneratedMessageBuilder {
+@private
+  CorrelationRes* resultCorrelationRes;
+}
+
+- (CorrelationRes*) defaultInstance;
+
+- (CorrelationResBuilder*) clear;
+- (CorrelationResBuilder*) clone;
+
+- (CorrelationRes*) build;
+- (CorrelationRes*) buildPartial;
+
+- (CorrelationResBuilder*) mergeFrom:(CorrelationRes*) other;
+- (CorrelationResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input;
+- (CorrelationResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry;
+
+- (NSMutableArray<Book*> *)read;
+- (Book*)readAtIndex:(NSUInteger)index;
+- (CorrelationResBuilder *)addRead:(Book*)value;
+- (CorrelationResBuilder *)setReadArray:(NSArray<Book*> *)array;
+- (CorrelationResBuilder *)clearRead;
+
+- (NSMutableArray<Book*> *)author;
+- (Book*)authorAtIndex:(NSUInteger)index;
+- (CorrelationResBuilder *)addAuthor:(Book*)value;
+- (CorrelationResBuilder *)setAuthorArray:(NSArray<Book*> *)array;
+- (CorrelationResBuilder *)clearAuthor;
 @end
 
 

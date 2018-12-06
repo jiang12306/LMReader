@@ -41,8 +41,13 @@
     UIColor* textColor = [UIColor colorWithRed:150.f/255 green:150.f/255 blue:150.f/255 alpha:1];
     UIColor* bgColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
     if (isClicked) {
-        textColor = [UIColor whiteColor];
-        bgColor = THEMEORANGECOLOR;
+        if (genderType == GenderTypeGenderFemale) {
+            textColor = [UIColor colorWithRed:250.f/255 green:90.f/255 blue:90.f/255 alpha:1];
+            bgColor = [UIColor colorWithRed:250.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+        }else {
+            textColor = [UIColor colorWithRed:110.f/255 green:140.f/255 blue:240.f/255 alpha:1];
+            bgColor = [UIColor colorWithRed:230.f/255 green:240.f/255 blue:250.f/255 alpha:1];
+        }
     }
     self.nameLab.textColor = textColor;
     self.backgroundColor = bgColor;

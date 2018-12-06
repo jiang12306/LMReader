@@ -53,8 +53,8 @@ static NSString* bottomCellIdentifier = @"bottomCellIdentifier";
         self.tableView.dataSource = self;
         self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         [self.tableView registerClass:[LMBookShelfBottomOperationTableViewCell class] forCellReuseIdentifier:bottomCellIdentifier];
+        self.tableView.scrollEnabled = NO;
         [self.contentView addSubview:self.tableView];
-        
     }
     return self;
 }

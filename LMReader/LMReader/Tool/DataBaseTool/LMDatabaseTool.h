@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "LMBookShelfModel.h"
+#import "LMBookShelfLastestReadBook.h"
 
 @interface LMDatabaseTool : NSObject
 
@@ -45,7 +46,7 @@
 //清空阅读记录
 -(BOOL )deleteAllReadRecord;
 //保存一条阅读记录
--(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(UInt32 )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset progressStr:(NSString* )progressStr;
+-(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(NSString* )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset progressStr:(NSString* )progressStr coverStr:(NSString* )coverStr;
 //删除一条阅读记录
 -(BOOL)deleteBookReadRecordWithBookId:(UInt32 )bookId;
 //删除过时的阅读记录
@@ -53,7 +54,7 @@
 //取过时的阅读记录
 -(NSArray* )queryBookReadRecordOver30Days;
 //根据bookId取阅读记录
--(void)queryBookReadRecordWithBookId:(UInt32 )bookId recordBlock:(void (^) (BOOL hasRecord, UInt32 chapterId, UInt32 sourceId, NSInteger offset))block;
+-(void)queryBookReadRecordWithBookId:(UInt32 )bookId recordBlock:(void (^) (BOOL hasRecord, NSString* chapterId, UInt32 sourceId, NSInteger offset))block;
 //根据bookId取阅读进度 标题
 -(NSString* )queryBookReadRecordProgressWithBookId:(UInt32 )bookId;
 //按照page、size取阅读记录
@@ -62,6 +63,8 @@
 -(BOOL)deleteLocalSurplusBooksWithArray:(NSArray *)booksArr;
 //取出所有阅读记录
 -(NSArray* )queryAllBookReadRecord;
+//取阅读记录中最近一本书 且书架不包含该书
+-(LMBookShelfLastestReadBook* )queryLastestBookReadRecordWithBookShelfExistIdStr:(NSString* )existIdStr;
 
 
 
@@ -109,7 +112,7 @@
 //取出 书架页面 书
 -(NSMutableArray* )queryAllBookShelfUserBooks;
 //取一本 书架页面 书
--(LMBookShelfModel* )queryBookShelfUserBooksWithBookId:(NSInteger )bookId;
+-(LMBookShelfModel* )queryBookShelfUserBookWithBookId:(NSInteger )bookId;
 //置顶/取消置顶 书架页面 书
 -(BOOL )setUpside:(BOOL )upside book:(Book* )book;
 

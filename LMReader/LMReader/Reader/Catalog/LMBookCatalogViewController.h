@@ -16,6 +16,7 @@ typedef void (^LMBookCatalogViewControllerBlock) (BOOL didChange, NSInteger sele
 @property (nonatomic, assign) BOOL isNew;
 
 @property (nonatomic, copy) NSString* bookNameStr;/**<书名*/
+@property (nonatomic, copy) NSString* bookCoverStr;/**<封面*/
 @property (nonatomic, assign) UInt32 bookId;
 
 @property (nonatomic, copy) LMBookCatalogViewControllerBlock callBack;

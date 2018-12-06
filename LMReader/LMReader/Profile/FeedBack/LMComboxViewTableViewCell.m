@@ -35,7 +35,7 @@
 -(void)layoutSubviews {
     [super layoutSubviews];
     
-    self.contentLab.frame = CGRectMake(10, 0, self.frame.size.width, 30);
+    self.contentLab.frame = CGRectMake(20, 0, self.frame.size.width, self.frame.size.height);
 }
 
 -(void)setClicked:(BOOL)clicked {

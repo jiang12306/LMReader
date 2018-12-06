@@ -7,13 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LMBaseAlertView.h"
 
 typedef void (^LMComboxViewBlock) (NSInteger selectedIndex);
+typedef void (^LMComboxViewCancelBlock) (BOOL didCancel);
 
-@interface LMComboxView : UIView
+@interface LMComboxView : LMBaseAlertView
 
--(instancetype )initWithFrame:(CGRect )frame titleArr:(NSArray* )titleArr cellHeight:(CGFloat )cellHeight;
+@property (nonatomic, copy) LMComboxViewBlock callBlock;
+@property (nonatomic, copy) LMComboxViewCancelBlock cancelBlock;
 
--(void)didSelectedIndex:(LMComboxViewBlock )callBlock;
+-(instancetype )initWithFrame:(CGRect )frame titleArr:(NSArray* )titleArr cellHeight:(CGFloat )cellHeight selectedIndex:(NSInteger )currentIndex;
+
+-(void)startShow;
+-(void)startHide;
 
 @end

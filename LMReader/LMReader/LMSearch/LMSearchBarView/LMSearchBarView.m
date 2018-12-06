@@ -92,8 +92,11 @@
 }
 
 -(void)textFieldDidChange:(NSNotification* )notify {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(searchBarDidChangeText:)]) {
-        [self.delegate searchBarDidChangeText:self.searchTF.text];
+    id obj = notify.object;
+    if (obj != nil && obj == self.searchTF) {
+        if (self.delegate && [self.delegate respondsToSelector:@selector(searchBarDidChangeText:)]) {
+            [self.delegate searchBarDidChangeText:self.searchTF.text];
+        }
     }
 }
 

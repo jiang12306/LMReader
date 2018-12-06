@@ -62,9 +62,9 @@
     conformLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
     [conformView addSubview:conformLineView];
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, conformView.frame.origin.y + conformView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 50)];
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, conformView.frame.origin.y + conformView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 45)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 25;
+    self.sendBtn.layer.cornerRadius = self.sendBtn.frame.size.height / 2;
     self.sendBtn.layer.masksToBounds = YES;
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];

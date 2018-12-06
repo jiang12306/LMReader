@@ -34,7 +34,7 @@ static NSString* footerCellIdentifier = @"footerCellIdentifier";
 -(instancetype)init {
     self = [super init];
     if (self) {
-        self.searchArray = [NSMutableArray array];//[NSMutableArray arrayWithObjects:@"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", @"ihwenfliwne", @"哦IE你覅文", nil];//
+        self.searchArray = [NSMutableArray array];
         self.dataArray = [NSMutableArray array];
         [self.dataArray addObject:self.searchArray];
         
@@ -283,8 +283,16 @@ static NSString* footerCellIdentifier = @"footerCellIdentifier";
             [tempView addSubview:bookView];
             
             UIImageView* coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(5, 5, self.bookCoverWidth, self.bookCoverHeight)];
+            coverIV.contentMode = UIViewContentModeScaleAspectFill;
+            coverIV.clipsToBounds = YES;
             NSString* coverUrlStr = [subBook0.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-            [coverIV sd_setImageWithURL:[NSURL URLWithString:coverUrlStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage"]];
+            [coverIV sd_setImageWithURL:[NSURL URLWithString:coverUrlStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage_Gray"] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+                if (image && error == nil) {
+                    
+                }else {
+                    coverIV.image = [UIImage imageNamed:@"defaultBookImage"];
+                }
+            }];
             [bookView addSubview:coverIV];
             
             CGFloat markIVWidth = 50;

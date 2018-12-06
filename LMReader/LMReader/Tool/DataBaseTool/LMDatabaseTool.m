@@ -319,6 +319,7 @@ static NSString* databaseName = @"book.db";
 #define Read_currentOffset @"ReadOffset"
 #define Read_time @"ReadTime"
 #define Read_progress @"ReadProgress"
+#define Read_book_coverUrl @"readBookCoverUrl"
 
 
 //创建
@@ -327,13 +328,57 @@ static NSString* databaseName = @"book.db";
     FMDatabase* db = [FMDatabase databaseWithPath:dbPath];
     BOOL res = [db open];
     if (res == YES) {
-        NSString* sql = [NSString stringWithFormat:@"create table if not exists %@ (%@ integer not null primary key autoincrement, %@ integer not null unique, %@ text, %@ integer, %@ integer, %@ text, %@ integer, %@ integer, %@ datetime)", Read_table_name, DatabaseId, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time];
-        NSLog(@"%s, sql = %@", __FUNCTION__, sql);
-        res = [db executeUpdate:sql];
-        
-        //插入 阅读进度 列
-        if (![db columnExists:Read_progress inTableWithName:Read_table_name]) {
-            NSString *alertStr = [NSString stringWithFormat:@"alter table %@ add %@ text", Read_table_name, Read_progress];
+        //阅读记录表升级：将Read_chapter_id的integer类型改成text
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        NSString* keyStr = @"didUpdateReadRecordTable";
+        if ([db tableExists:Read_table_name]) {
+            if ([userDefaults boolForKey:keyStr]) {//已经升级过
+                
+            }else {
+                //旧表插入 阅读进度 列
+                if (![db columnExists:Read_progress inTableWithName:Read_table_name]) {
+                    NSString *alertStr = [NSString stringWithFormat:@"alter table %@ add %@ text", Read_table_name, Read_progress];
+                    res = [db executeUpdate:alertStr];
+                }
+                
+                //1.将原阅读记录表临时改成tempTableName表
+                NSString* tempTableName = @"tempReadRecordName";
+                NSString* renameSql = [NSString stringWithFormat:@"alter table %@ rename to %@", Read_table_name, tempTableName];
+                res = [db executeUpdate:renameSql];
+                
+                //2.创建新表
+                NSString* sql = [NSString stringWithFormat:@"create table if not exists %@ (%@ integer not null primary key autoincrement, %@ integer not null unique, %@ text, %@ text, %@ integer, %@ text, %@ integer, %@ integer, %@ datetime, %@ text)", Read_table_name, DatabaseId, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time, Read_progress];
+                NSLog(@"%s, sql = %@", __FUNCTION__, sql);
+                res = [db executeUpdate:sql];
+                
+                
+                //3.将临时表数据复制到新表
+                NSString* copySql = [NSString stringWithFormat:@"insert into %@(%@, %@, %@, %@, %@, %@, %@, %@, %@) select %@, %@, %@, %@, %@, %@, %@, %@, %@ from %@", Read_table_name, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time, Read_progress, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time, Read_progress, tempTableName];
+                res = [db executeUpdate:copySql];
+                
+                //4.删除临时表tempTableName
+                NSString* dropSql = [NSString stringWithFormat:@"drop table %@", tempTableName];
+                res = [db executeUpdate:dropSql];
+                
+                if (res) {
+                    [userDefaults setBool:YES forKey:keyStr];
+                    [userDefaults synchronize];
+                }
+            }
+        }else {
+            //创建新表
+            NSString* sql = [NSString stringWithFormat:@"create table if not exists %@ (%@ integer not null primary key autoincrement, %@ integer not null unique, %@ text, %@ text, %@ integer, %@ text, %@ integer, %@ integer, %@ datetime, %@ text)", Read_table_name, DatabaseId, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time, Read_progress];
+            NSLog(@"%s, sql = %@", __FUNCTION__, sql);
+            res = [db executeUpdate:sql];
+            
+            if (res) {
+                [userDefaults setBool:YES forKey:keyStr];
+                [userDefaults synchronize];
+            }
+        }
+        //插入 Read_book_coverUrl 列
+        if (![db columnExists:Read_book_coverUrl inTableWithName:Read_table_name]) {
+            NSString *alertStr = [NSString stringWithFormat:@"alter table %@ add %@ text", Read_table_name, Read_book_coverUrl];
             res = [db executeUpdate:alertStr];
         }
     }
@@ -370,22 +415,33 @@ static NSString* databaseName = @"book.db";
 }
 
 //保存一条阅读记录
--(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(UInt32 )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset progressStr:(NSString* )progressStr {
+-(BOOL)saveBookReadRecordWithBookId:(UInt32 )bookId bookName:(NSString* )bookName chapterId:(NSString* )chapterId chapterNo:(UInt32 )chapterNo chapterTitle:(NSString* )chapterTitle sourceId:(UInt32 )sourceId offset:(NSInteger )offset progressStr:(NSString* )progressStr coverStr:(NSString* )coverStr {
     NSDate* currentDate = [self getCurrentDate];
     
     NSString* dbPath = [self getDatabasePath];
     FMDatabase* db = [FMDatabase databaseWithPath:dbPath];
     BOOL res = [db open];
     if (res == YES) {
-        NSNumber* bookNumber = [NSNumber numberWithUnsignedInt:bookId];
-        NSNumber* chapterIdNumber = [NSNumber numberWithUnsignedInt:chapterId];
+        NSNumber* bookIdNumber = [NSNumber numberWithUnsignedInt:bookId];
         NSNumber* chapterNoNumber = [NSNumber numberWithUnsignedInt:chapterNo];
         NSNumber* sourceIdNumber = [NSNumber numberWithUnsignedInt:sourceId];
         NSNumber* offsetNumber = [NSNumber numberWithInteger:offset];
+        NSString* bookCoverStr = coverStr;
         
-        NSString* sql = [NSString stringWithFormat:@"insert or replace into %@ (%@, %@, %@, %@, %@, %@, %@, %@, %@) values (?, ?, ?, ?, ?, ?, ?, ?, ?);", Read_table_name, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time, Read_progress];
+        if (bookCoverStr != nil && ![bookCoverStr isKindOfClass:[NSNull class]] && bookCoverStr.length > 0) {
+            
+        }else {//未获取到封面
+            NSString* selectSql = [NSString stringWithFormat:@"select * from %@ where %@ = ? ", Read_table_name, Read_book_id];
+            FMResultSet* rs = [db executeQuery:selectSql, bookIdNumber];
+            while ([rs next]) {//已存在封面，取原封面
+                bookCoverStr = [rs stringForColumn:Read_book_coverUrl];
+                break;
+            }
+        }
         
-        res = [db executeUpdate:sql, bookNumber, bookName, chapterIdNumber, chapterNoNumber, chapterTitle, sourceIdNumber, offsetNumber, currentDate, progressStr];
+        NSString* sql = [NSString stringWithFormat:@"insert or replace into %@ (%@, %@, %@, %@, %@, %@, %@, %@, %@, %@) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", Read_table_name, Read_book_id, Read_book_name, Read_chapter_id, Read_chapter_no, Read_chapter_title, Read_source_id, Read_currentOffset, Read_time, Read_progress, Read_book_coverUrl];
+        
+        res = [db executeUpdate:sql, bookIdNumber, bookName, chapterId, chapterNoNumber, chapterTitle, sourceIdNumber, offsetNumber, currentDate, progressStr, bookCoverStr];
     }
     [db close];
     return res;
@@ -447,9 +503,8 @@ static NSString* databaseName = @"book.db";
             }
             [dic setObject:name forKey:@"name"];
             
-            UInt32 chapterId = [rs intForColumn:Read_chapter_id];
-            NSNumber* chapterIdNum = [NSNumber numberWithInt:chapterId];
-            [dic setObject:chapterIdNum forKey:@"chapterId"];
+            NSString* chapterId = [rs stringForColumn:Read_chapter_id];
+            [dic setObject:chapterId forKey:@"chapterId"];
             
             UInt32 chapterNo = [rs intForColumn:Read_chapter_no];
             NSNumber* chapterNoNum = [NSNumber numberWithInt:chapterNo];
@@ -477,6 +532,11 @@ static NSString* databaseName = @"book.db";
                 [dic setObject:progressStr forKey:@"progress"];
             }
             
+            NSString* coverStr = [rs stringForColumn:Read_book_coverUrl];
+            if (coverStr != nil && ![coverStr isKindOfClass:[NSNull class]] && coverStr.length > 0) {
+                [dic setObject:coverStr forKey:@"cover"];
+            }
+            
             [arr addObject:dic];
         }
     }
@@ -486,8 +546,8 @@ static NSString* databaseName = @"book.db";
 }
 
 //根据bookId取阅读记录
--(void)queryBookReadRecordWithBookId:(UInt32 )bookId recordBlock:(void (^) (BOOL hasRecord, UInt32 chapterId, UInt32 sourceId, NSInteger offset))block {
-    UInt32 chapterId = 0;
+-(void)queryBookReadRecordWithBookId:(UInt32 )bookId recordBlock:(void (^) (BOOL hasRecord, NSString* chapterId, UInt32 sourceId, NSInteger offset))block {
+    NSString* chapterId = @"";
     UInt32 sourceId = 0;
     NSInteger offset = 0;
     BOOL hasRecord = NO;
@@ -501,7 +561,7 @@ static NSString* databaseName = @"book.db";
         FMResultSet* rs = [db executeQuery:sql, bookNumber];
         while ([rs next]) {
             hasRecord = YES;
-            chapterId = [rs intForColumn:Read_chapter_id];
+            chapterId = [rs stringForColumn:Read_chapter_id];
             sourceId = [rs intForColumn:Read_source_id];
             offset = [rs longLongIntForColumn:Read_currentOffset];
             break;
@@ -564,9 +624,8 @@ static NSString* databaseName = @"book.db";
             }
             [dic setObject:name forKey:@"name"];
             
-            UInt32 chapterId = [rs intForColumn:Read_chapter_id];
-            NSNumber* chapterIdNum = [NSNumber numberWithInt:chapterId];
-            [dic setObject:chapterIdNum forKey:@"chapterId"];
+            NSString* chapterId = [rs stringForColumn:Read_chapter_id];
+            [dic setObject:chapterId forKey:@"chapterId"];
             
             UInt32 chapterNo = [rs intForColumn:Read_chapter_no];
             NSNumber* chapterNoNum = [NSNumber numberWithInt:chapterNo];
@@ -592,6 +651,11 @@ static NSString* databaseName = @"book.db";
             NSString* progressStr = [rs stringForColumn:Read_progress];
             if (progressStr != nil && ![progressStr isKindOfClass:[NSNull class]] && progressStr.length > 0) {
                 [dic setObject:progressStr forKey:@"progress"];
+            }
+            
+            NSString* coverStr = [rs stringForColumn:Read_book_coverUrl];
+            if (coverStr != nil && ![coverStr isKindOfClass:[NSNull class]] && coverStr.length > 0) {
+                [dic setObject:coverStr forKey:@"cover"];
             }
             
             [arr addObject:dic];
@@ -624,9 +688,8 @@ static NSString* databaseName = @"book.db";
             }
             [dic setObject:name forKey:@"name"];
             
-            UInt32 chapterId = [rs intForColumn:Read_chapter_id];
-            NSNumber* chapterIdNum = [NSNumber numberWithInt:chapterId];
-            [dic setObject:chapterIdNum forKey:@"chapterId"];
+            NSString* chapterId = [rs stringForColumn:Read_chapter_id];
+            [dic setObject:chapterId forKey:@"chapterId"];
             
             UInt32 chapterNo = [rs intForColumn:Read_chapter_no];
             NSNumber* chapterNoNum = [NSNumber numberWithInt:chapterNo];
@@ -654,12 +717,51 @@ static NSString* databaseName = @"book.db";
                 [dic setObject:progressStr forKey:@"progress"];
             }
             
+            NSString* coverStr = [rs stringForColumn:Read_book_coverUrl];
+            if (coverStr != nil && ![coverStr isKindOfClass:[NSNull class]] && coverStr.length > 0) {
+                [dic setObject:coverStr forKey:@"cover"];
+            }
+            
             [arr addObject:dic];
         }
     }
     [db close];
     
     return arr;
+}
+
+//取阅读记录中最近一本书 且书架不包含该书
+-(LMBookShelfLastestReadBook* )queryLastestBookReadRecordWithBookShelfExistIdStr:(NSString* )existIdStr {
+    LMBookShelfLastestReadBook* lastestBook = [[LMBookShelfLastestReadBook alloc]init];
+    
+    NSString* dbPath = [self getDatabasePath];
+    FMDatabase* db = [FMDatabase databaseWithPath:dbPath];
+    BOOL res = [db open];
+    if (res == YES) {
+        NSString* sql = [NSString stringWithFormat:@"select * from %@ order by %@ desc limit %d,%d;", Read_table_name, Read_time, 0, 1];
+        if (existIdStr != nil && existIdStr.length > 0) {
+            sql = [NSString stringWithFormat:@"select * from %@ where %@ not in %@ order by %@ desc limit %d,%d;", Read_table_name, Read_book_id, existIdStr, Read_time, 0, 1];
+        }
+        FMResultSet* rs = [db executeQuery:sql];
+        while ([rs next]) {
+            UInt32 bookId = [rs intForColumn:Read_book_id];
+            NSString* bookCoverStr = [rs stringForColumn:Read_book_coverUrl];
+            NSString* bookNameStr = [rs stringForColumn:Read_book_name];
+            NSString* progressStr = [rs stringForColumn:Read_progress];
+            
+            lastestBook.bookId = bookId;
+            lastestBook.coverUrlStr = bookCoverStr;
+            lastestBook.bookName = bookNameStr;
+            lastestBook.readProgress = progressStr;
+            break;
+        }
+    }
+    [db close];
+    
+    if (lastestBook.bookId && lastestBook.bookName != nil) {
+        return lastestBook;
+    }
+    return nil;
 }
 
 
@@ -1212,7 +1314,7 @@ static NSString* databaseName = @"book.db";
 }
 
 //取一本 书架页面 书
--(LMBookShelfModel* )queryBookShelfUserBooksWithBookId:(NSInteger )bookId {
+-(LMBookShelfModel* )queryBookShelfUserBookWithBookId:(NSInteger )bookId {
     LMBookShelfModel* model = nil;
     NSString* dbPath = [self getDatabasePath];
     FMDatabase* db = [FMDatabase databaseWithPath:dbPath];

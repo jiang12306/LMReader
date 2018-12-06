@@ -10,6 +10,7 @@
 #import "LMSetPasswordViewController.h"
 #import "LMLoginAgreementView.h"
 #import "LMProfileProtocolViewController.h"
+#import "LMTool.h"
 
 @interface LMCheckVerifyCodeViewController ()
 
@@ -82,13 +83,24 @@
     codeLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
     [codeView addSubview:codeLineView];
     
-    CGFloat sendStartY = codeView.frame.origin.y + codeView.frame.size.height + 20;
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, codeView.frame.origin.y + codeView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 45)];
+    self.sendBtn.backgroundColor = THEMEORANGECOLOR;
+    self.sendBtn.layer.cornerRadius = self.sendBtn.frame.size.height / 2;
+    self.sendBtn.layer.masksToBounds = YES;
+    [self.sendBtn setTitle:@"下一步" forState:UIControlStateNormal];
+    [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
+    [self.scrollView addSubview:self.sendBtn];
+    
     if (self.type == SmsTypeSmsReg) {
-        
+        CGFloat naviHeight = 20 + 44;
+        CGFloat bottomY = 20;
+        if ([LMTool isBangsScreen]) {
+            naviHeight = 44 + 44;
+            bottomY = 30;
+        }
         self.agreeResult = YES;
         __weak LMCheckVerifyCodeViewController* weakSelf = self;
-        
-        self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake(20, codeView.frame.origin.y + codeView.frame.size.height + 20, 170, 15)];
+        self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake((self.scrollView.frame.size.width - 160) / 2,  self.scrollView.frame.size.height - naviHeight - bottomY - 15, 160, 15) agreeType:LMLoginAgreementViewTypeRegister];
         self.agreementView.agreeBlock = ^(BOOL didAgree) {
             weakSelf.agreeResult = didAgree;
         };
@@ -97,17 +109,7 @@
             [weakSelf.navigationController pushViewController:protocolVC animated:YES];
         };
         [self.scrollView addSubview:self.agreementView];
-        
-        sendStartY = self.agreementView.frame.origin.y + self.agreementView.frame.size.height + 20;
     }
-    
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, sendStartY, self.view.frame.size.width - 60 * 2, 50)];
-    self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 25;
-    self.sendBtn.layer.masksToBounds = YES;
-    [self.sendBtn setTitle:@"下一步" forState:UIControlStateNormal];
-    [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
-    [self.scrollView addSubview:self.sendBtn];
     
     UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapped:)];
     tap.cancelsTouchesInView = NO;

@@ -78,10 +78,12 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
     self.navigationItem.titleView = searchView;
     
     CGFloat naviHeight = 20 + 44;
+    CGFloat tabBarHeight = 49;
     if ([LMTool isBangsScreen]) {
         naviHeight = 44 + 44;
+        tabBarHeight = 83;
     }
-    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight) style:UITableViewStyleGrouped];
+    self.tableView = [[LMBaseRefreshTableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - naviHeight - tabBarHeight) style:UITableViewStyleGrouped];
     if (@available(ios 11.0, *)) {
         self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAlways;
     }
@@ -92,8 +94,8 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     [self.tableView registerClass:[LMChoiceListTableViewCell class] forCellReuseIdentifier:listCellIdentifier];
     [self.tableView registerClass:[LMChoiceCollectionTableViewCell class] forCellReuseIdentifier:collectionCellIdentifier];
-    [self.view addSubview:self.tableView];
     [self.tableView setupNoMoreData];
+    [self.view addSubview:self.tableView];
     
     self.topArr = [NSMutableArray array];
     self.dataArray = [NSMutableArray array];
@@ -103,7 +105,7 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
     [self loadChoiceData];
 }
 
--(void)viewDidAppear:(BOOL)animated {
+-(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
     //防止iOS11 刘海屏tabBar下移34
@@ -116,32 +118,6 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
         }
         tabBarController.tabBar.frame = CGRectMake(0, screenRect.size.height - tabBarHeight, screenRect.size.width, tabBarHeight);
     }
-    /*
-    if (self.firstLoad) {
-        [self loadChoiceData];
-    }else {
-        
-        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-        NSDate* saveDate = [userDefaults objectForKey:@"LMChoiceViewControllerDate"];
-        BOOL shouldReload = NO;
-        if (saveDate != nil && ![saveDate isKindOfClass:[NSNull class]]) {
-            NSInteger hour = [LMTool convertDateToHourTime:saveDate];
-            if (hour > 1 || hour < -1) {
-                shouldReload = YES;
-            }
-        }else {
-            shouldReload = YES;
-        }
-        
-        if (shouldReload == YES) {
-            [self loadChoiceData];
-        }
-    }
-    */
-}
-
--(void)viewDidDisappear:(BOOL)animated {
-    [self hideNetworkLoadingView];
 }
 
 -(void)setupTableHeaderView {
@@ -162,9 +138,10 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
     self.headerView.backgroundColor = [UIColor whiteColor];
     
     if (self.topArr != nil && self.topArr.count > 0) {
-        if (!self.scAdView) {
+        if (self.scAdView) {
             [self.scAdView pause];
             self.scAdView.delegate = nil;
+            [self.scAdView removeFromSuperview];
             self.scAdView = nil;
         }
         __weak LMChoiceViewController* weakSelf = self;
@@ -185,7 +162,7 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
         [self.headerView addSubview:self.scAdView];
         [self.scAdView play];
     }else {
-        if (!self.scAdView) {
+        if (self.scAdView) {
             [self.scAdView pause];
             self.scAdView.delegate = nil;
             [self.scAdView removeFromSuperview];
@@ -464,6 +441,7 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
         if (!cell) {
             cell = [[LMChoiceCollectionTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:collectionCellIdentifier];
         }
+        cell.delegate = self;
         
         UILabel* tempLab = [[UILabel alloc]initWithFrame:CGRectZero];
         tempLab.numberOfLines = 0;
@@ -517,8 +495,6 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
         CGFloat cellHeight = totalCollectionHeight + 20 * (lineCount + 1);
         [cell setupContentBookArray:booksArr cellHeight:cellHeight ivWidth:self.bookCoverWidth ivHeight:self.bookCoverHeight itemWidth:self.bookCoverWidth + 5 * 2 itemHeightArr:tempHeightArr nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
         
-        cell.delegate = self;
-        
         return cell;
     }else if (styleInteger == 3) {//一图+九宫格样式
         if (row == 0) {
@@ -535,6 +511,8 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
             if (!cell) {
                 cell = [[LMChoiceCollectionTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:collectionCellIdentifier];
             }
+            cell.delegate = self;
+            
             NSArray* subBooksArr = [booksArr subarrayWithRange:NSMakeRange(1, booksArr.count - 1)];
             
             UILabel* tempLab = [[UILabel alloc]initWithFrame:CGRectZero];
@@ -589,8 +567,6 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
             CGFloat cellHeight = totalCollectionHeight + 20 * (lineCount + 1);
             [cell setupContentBookArray:subBooksArr cellHeight:cellHeight ivWidth:self.bookCoverWidth ivHeight:self.bookCoverHeight itemWidth:self.bookCoverWidth + 5 * 2 itemHeightArr:tempHeightArr nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
             
-            cell.delegate = self;
-            
             return cell;
         }
     }else {//列表样式
@@ -598,7 +574,6 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
         if (!cell) {
             cell = [[LMChoiceListTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:listCellIdentifier];
         }
-        
         Book* book = [booksArr objectAtIndex:row];
         [cell setupContentBook:book cellHeight:self.bookCoverHeight + 20 * 2 ivWidth:self.bookCoverWidth nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
         
@@ -667,69 +642,27 @@ static NSString* collectionCellIdentifier = @"collectionCellIdentifier";
                         
                         [weakSelf.dataArray removeAllObjects];
                         [weakSelf.dataArray addObjectsFromArray:arr1];
-                        
-                        //保存
-                        [LMTool archiveChoiceData:apiRes.body];
                     }
-                    
-                    NSDate* date = [NSDate date];
-                    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-                    [userDefaults setObject:date forKey:@"LMChoiceViewControllerDate"];
-                    [userDefaults synchronize];
                 }
             }
-            
         } @catch (NSException *exception) {
-            /*
-            NSData* data = [LMTool unArchiveChoiceData];
-            if (data != nil && ![data isKindOfClass:[NSNull class]]) {
-                SelfDefinedHomeRes* res = [SelfDefinedHomeRes parseFromData:data];
-                NSArray* arr0 = res.ads;
-                if (arr0 != nil && arr0.count > 0) {
-                    [weakSelf.topArr removeAllObjects];
-                    [weakSelf.topArr addObjectsFromArray:arr0];
-                }
-                NSArray* arr1 = res.selfDefinedTopics;
-                if (arr1.count > 0) {
-                    self.firstLoad = NO;
-                    
-                    [weakSelf.dataArray removeAllObjects];
-                    [weakSelf.dataArray addObjectsFromArray:arr1];
-                }
-            }
-            */
             [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
         } @finally {
             
         }
+        if (weakSelf.dataArray.count == 0) {
+            [weakSelf showReloadButton];
+        }else {
+            [weakSelf hideReloadButton];
+        }
         weakSelf.isRefreshing = NO;
         [weakSelf.tableView stopRefresh];
-        [weakSelf hideReloadButton];
         [weakSelf hideNetworkLoadingView];
         
         [weakSelf setupTableHeaderView];
         [weakSelf.tableView reloadData];
         
     } failureBlock:^(NSError *failureError) {
-        /*
-        NSData* data = [LMTool unArchiveChoiceData];
-        if (data != nil && ![data isKindOfClass:[NSNull class]]) {
-            SelfDefinedHomeRes* res = [SelfDefinedHomeRes parseFromData:data];
-            NSArray* arr0 = res.ads;
-            if (arr0 != nil && arr0.count > 0) {
-                [weakSelf.topArr removeAllObjects];
-                [weakSelf.topArr addObjectsFromArray:arr0];
-            }
-            NSArray* arr1 = res.selfDefinedTopics;
-            if (arr1.count > 0) {
-                
-                self.firstLoad = NO;
-                
-                [weakSelf.dataArray removeAllObjects];
-                [weakSelf.dataArray addObjectsFromArray:arr1];
-            }
-        }
-        */
         weakSelf.isRefreshing = NO;
         [weakSelf.tableView stopRefresh];
         [weakSelf hideNetworkLoadingView];

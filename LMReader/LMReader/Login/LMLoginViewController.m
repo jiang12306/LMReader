@@ -139,22 +139,9 @@
     pwdLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
     [self.passwordView addSubview:pwdLineView];
     
-    self.agreeResult = YES;
-    __weak LMLoginViewController* weakSelf = self;
-    
-    self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake(20, self.codeView.frame.origin.y + self.codeView.frame.size.height + 20, 170, 15)];
-    self.agreementView.agreeBlock = ^(BOOL didAgree) {
-        weakSelf.agreeResult = didAgree;
-    };
-    self.agreementView.clickBlock = ^(BOOL didClick) {
-        LMProfileProtocolViewController* protocolVC = [[LMProfileProtocolViewController alloc]init];
-        [weakSelf.navigationController pushViewController:protocolVC animated:YES];
-    };
-    [self.scrollView addSubview:self.agreementView];
-    
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.agreementView.frame.origin.y + self.agreementView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 50)];
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.codeView.frame.origin.y + self.codeView.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 45)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 25;
+    self.sendBtn.layer.cornerRadius = self.sendBtn.frame.size.height / 2;
     self.sendBtn.layer.masksToBounds = YES;
     [self.sendBtn setTitle:@"登 录" forState:UIControlStateNormal];
     [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -184,17 +171,19 @@
     [self.scrollView addSubview:forgetPwdBtn];
     
     CGFloat naviHeight = 20 + 44;
+    CGFloat bottomY = 20;
     if ([LMTool isBangsScreen]) {
         naviHeight = 44 + 44;
+        bottomY = 30;
     }
     
     self.qqBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 50, 50)];
     [self.qqBtn addTarget:self action:@selector(clickedQQButton:) forControlEvents:UIControlEventTouchUpInside];
-    self.qqBtn.center = CGPointMake(self.view.frame.size.width * 2 / 3, self.view.frame.size.height - 80 - naviHeight);
+    self.qqBtn.center = CGPointMake(self.view.frame.size.width * 2 / 3, self.scrollView.frame.size.height - 100 - naviHeight);
     [self.scrollView addSubview:self.qqBtn];
     if (self.qqBtn.frame.origin.y + self.qqBtn.frame.size.height >= self.view.frame.size.height - 50) {
         self.qqBtn.center = CGPointMake(self.view.frame.size.width * 2 / 3, registerBtn.frame.origin.y + registerBtn.frame.size.height + 80);
-        self.scrollView.contentSize = CGSizeMake(0, self.qqBtn.frame.origin.y + self.qqBtn.frame.size.height + 50);
+        self.scrollView.contentSize = CGSizeMake(0, self.qqBtn.frame.origin.y + self.qqBtn.frame.size.height + 50 + 20);
     }
     
     UIImageView* qqIV = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 50, 50)];
@@ -213,6 +202,19 @@
     singleLab.text = @"更多登录方式";
     [self.scrollView addSubview:singleLab];
     singleLab.center = CGPointMake(self.scrollView.frame.size.width / 2, singleLineView.center.y);
+    
+    self.agreeResult = YES;
+    __weak LMLoginViewController* weakSelf = self;
+    self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake((self.scrollView.frame.size.width - 160) / 2, self.scrollView.frame.size.height - naviHeight - bottomY - 15, 160, 15) agreeType:LMLoginAgreementViewTypeLogin];
+    self.agreementView.agreeBlock = ^(BOOL didAgree) {
+        weakSelf.agreeResult = didAgree;
+    };
+    self.agreementView.clickBlock = ^(BOOL didClick) {
+        LMProfileProtocolViewController* protocolVC = [[LMProfileProtocolViewController alloc]init];
+        [weakSelf.navigationController pushViewController:protocolVC animated:YES];
+    };
+    [self.scrollView addSubview:self.agreementView];
+    
     
     BOOL installedWeChat = NO;//本地支持微信
     if ([WXApi isWXAppInstalled] && [WXApi isWXAppSupportApi]) {

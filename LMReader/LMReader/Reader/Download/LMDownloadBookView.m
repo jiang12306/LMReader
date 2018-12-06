@@ -59,88 +59,165 @@
     __weak LMDownloadBookView* weakSelf = self;
     self.isDownload = YES;
     __block CGFloat progress = 0;
-    NSArray* contentArr = [parse.contentParse componentsSeparatedByString:@","];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSInteger succeedCount = 0;
-        NSInteger failedCount = 0;
-        for (NSInteger i = 0; i < catalogList.count; i ++) {
-            LMReaderBookChapter* subChapter = [catalogList objectAtIndex:i];
-            if (![LMTool isExistBookTextWithBookId:bookId chapterId:(UInt32 )subChapter.chapterId]) {//若不存在该章节，则下载
-                NSString* chapterUrlStr = subChapter.url;
-                if (chapterUrlStr != nil && chapterUrlStr.length > 0) {
-                    NSString *encodedUrlStr = [chapterUrlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-                    NSData* successData = [NSData dataWithContentsOfURL:[NSURL URLWithString:encodedUrlStr]];
-                    
-                    if (successData != nil && ![successData isKindOfClass:[NSNull class]] && successData.length > 0) {
-                        @try {
-                            NSStringEncoding encoding = [LMTool convertEncodingStringWithEncoding:parse.source.htmlcharset];//转码
-                            NSString* originStr = [[NSString alloc]initWithData:successData encoding:encoding];
-                            originStr = [LMTool replaceBrCharacterWithReturnCharacter:originStr];
-                            NSData* changeData = [originStr dataUsingEncoding:NSUTF8StringEncoding];
-                            TFHpple* contentDoc = [[TFHpple alloc] initWithData:changeData isXML:NO];
-                            NSString* contentSearchStr = [LMTool convertToHTMLStringWithListArray:contentArr];
-                            TFHppleElement* contentElement = [contentDoc peekAtSearchWithXPathQuery:contentSearchStr];
-                            NSString* originalContent =  contentElement.content;
-                            originalContent = [LMTool filterUselessStringWithText:originalContent filterArr:parse.source.filter];
-                            NSString* totalContentStr = [LMTool replaceSeveralNewLineWithOneNewLineWithText:originalContent];
-                            if (totalContentStr != nil && ![totalContentStr isKindOfClass:[NSNull class]]) {
-                                [LMTool saveBookTextWithBookId:bookId chapterId:(UInt32 )subChapter.chapterId bookText:totalContentStr];
+    if ([parse hasApi]) {//json解析
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSInteger succeedCount = 0;
+            NSInteger failedCount = 0;
+            for (NSInteger i = 0; i < catalogList.count; i ++) {
+                LMReaderBookChapter* subChapter = [catalogList objectAtIndex:i];
+                if (![LMTool isExistBookTextWithBookId:bookId chapterId:subChapter.chapterId]) {//若不存在该章节，则下载
+                    NSString* chapterUrlStr = subChapter.url;
+                    if (chapterUrlStr != nil && chapterUrlStr.length > 0) {
+                        NSString *encodedUrlStr = [chapterUrlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+                        NSData* successData = [NSData dataWithContentsOfURL:[NSURL URLWithString:encodedUrlStr]];
+                        
+                        if (successData != nil && ![successData isKindOfClass:[NSNull class]] && successData.length > 0) {
+                            @try {
+                                NSError* jsonError = nil;
+                                NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:successData options:NSJSONReadingMutableLeaves error:&jsonError];
+                                if (jsonError != nil || dic == nil || [dic isKindOfClass:[NSNull class]] || dic.count == 0) {
+                                    failedCount ++;
+                                }
+                                NSString* totalContentStr = [LMTool jsonParseChapterContentWithParse:parse originalDic:dic];
+                                if (totalContentStr != nil && ![totalContentStr isKindOfClass:[NSNull class]]) {
+                                    [LMTool saveBookTextWithBookId:bookId chapterId:subChapter.chapterId bookText:totalContentStr];
+                                    
+                                    succeedCount ++;
+                                }else {
+                                    failedCount ++;
+                                }
+                                progress = ((CGFloat)i)/catalogList.count;
+                                if (i == catalogList.count - 1) {
+                                    progress = 1;
+                                    weakSelf.isDownload = NO;
+                                }
                                 
-                                succeedCount ++;
-                            }else {
+                            } @catch (NSException *exception) {
                                 failedCount ++;
+                            } @finally {
+                                
                             }
-                            progress = ((CGFloat)i)/catalogList.count;
-                            if (i == catalogList.count - 1) {
-                                progress = 1;
-                                weakSelf.isDownload = NO;
-                            }
-                            
-                        } @catch (NSException *exception) {
+                        }else {
                             failedCount ++;
-                        } @finally {
-                            
                         }
                     }else {
                         failedCount ++;
                     }
+                    if (failedCount > 0) {
+                        weakSelf.downloadCount ++;
+                        weakSelf.isDownload = NO;
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            weakSelf.progressView.progress = progress;
+                            weakSelf.stateLab.text = [NSString stringWithFormat:@"%.2f%% %@", progress * 100, @"部分下载失败，请重试"];//[NSString stringWithFormat:@"%.2f%% 下载失败", progress * 100];
+                            callBlock(!weakSelf.isDownload, YES, weakSelf.downloadCount, progress);
+                        });
+                        break;
+                    }
                 }else {
-                    failedCount ++;
+                    succeedCount ++;
                 }
-                if (failedCount > 0) {
+                if (succeedCount == catalogList.count) {
                     weakSelf.downloadCount ++;
                     weakSelf.isDownload = NO;
+                    progress = 1;
+                }
+                if (i % 10 == 0 || progress == 1) {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         weakSelf.progressView.progress = progress;
-                        weakSelf.stateLab.text = [NSString stringWithFormat:@"%.2f%% %@", progress * 100, @"部分下载失败，请重试"];//[NSString stringWithFormat:@"%.2f%% 下载失败", progress * 100];
-                        callBlock(!weakSelf.isDownload, YES, weakSelf.downloadCount, progress);
+                        NSString* stateStr = [NSString stringWithFormat:@"%.2f%%", progress * 100];
+                        if (progress == 1) {
+                            stateStr = @"100% 已完成";
+                        }
+                        weakSelf.stateLab.text = stateStr;
+                        callBlock(!weakSelf.isDownload, NO, weakSelf.downloadCount, progress);
                     });
-                    break;
                 }
-            }else {
-                succeedCount ++;
             }
-            if (succeedCount == catalogList.count) {
-                weakSelf.downloadCount ++;
-                weakSelf.isDownload = NO;
-                progress = 1;
-            }
-            if (i % 10 == 0 || progress == 1) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    weakSelf.progressView.progress = progress;
-                    NSString* stateStr = [NSString stringWithFormat:@"%.2f%%", progress * 100];
-                    if (progress == 1) {
-                        stateStr = @"100% 已完成";
+        });
+    }else {//html解析
+        NSArray* contentArr = [parse.contentParse componentsSeparatedByString:@","];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSInteger succeedCount = 0;
+            NSInteger failedCount = 0;
+            for (NSInteger i = 0; i < catalogList.count; i ++) {
+                LMReaderBookChapter* subChapter = [catalogList objectAtIndex:i];
+                if (![LMTool isExistBookTextWithBookId:bookId chapterId:subChapter.chapterId]) {//若不存在该章节，则下载
+                    NSString* chapterUrlStr = subChapter.url;
+                    if (chapterUrlStr != nil && chapterUrlStr.length > 0) {
+                        NSString *encodedUrlStr = [chapterUrlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+                        NSData* successData = [NSData dataWithContentsOfURL:[NSURL URLWithString:encodedUrlStr]];
+                        
+                        if (successData != nil && ![successData isKindOfClass:[NSNull class]] && successData.length > 0) {
+                            @try {
+                                NSStringEncoding encoding = [LMTool convertEncodingStringWithEncoding:parse.source.htmlcharset];//转码
+                                NSString* originStr = [[NSString alloc]initWithData:successData encoding:encoding];
+                                originStr = [LMTool replaceBrCharacterWithReturnCharacter:originStr];
+                                NSData* changeData = [originStr dataUsingEncoding:NSUTF8StringEncoding];
+                                TFHpple* contentDoc = [[TFHpple alloc] initWithData:changeData isXML:NO];
+                                NSString* contentSearchStr = [LMTool convertToHTMLStringWithListArray:contentArr];
+                                TFHppleElement* contentElement = [contentDoc peekAtSearchWithXPathQuery:contentSearchStr];
+                                NSString* originalContent =  contentElement.content;
+                                originalContent = [LMTool filterUselessStringWithText:originalContent filterArr:parse.source.filter];
+                                NSString* totalContentStr = [LMTool replaceSeveralNewLineWithOneNewLineWithText:originalContent];
+                                if (totalContentStr != nil && ![totalContentStr isKindOfClass:[NSNull class]]) {
+                                    [LMTool saveBookTextWithBookId:bookId chapterId:subChapter.chapterId bookText:totalContentStr];
+                                    
+                                    succeedCount ++;
+                                }else {
+                                    failedCount ++;
+                                }
+                                progress = ((CGFloat)i)/catalogList.count;
+                                if (i == catalogList.count - 1) {
+                                    progress = 1;
+                                    weakSelf.isDownload = NO;
+                                }
+                                
+                            } @catch (NSException *exception) {
+                                failedCount ++;
+                            } @finally {
+                                
+                            }
+                        }else {
+                            failedCount ++;
+                        }
+                    }else {
+                        failedCount ++;
                     }
-                    weakSelf.stateLab.text = stateStr;
-                    callBlock(!weakSelf.isDownload, NO, weakSelf.downloadCount, progress);
-                });
+                    if (failedCount > 0) {
+                        weakSelf.downloadCount ++;
+                        weakSelf.isDownload = NO;
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            weakSelf.progressView.progress = progress;
+                            weakSelf.stateLab.text = [NSString stringWithFormat:@"%.2f%% %@", progress * 100, @"部分下载失败，请重试"];//[NSString stringWithFormat:@"%.2f%% 下载失败", progress * 100];
+                            callBlock(!weakSelf.isDownload, YES, weakSelf.downloadCount, progress);
+                        });
+                        break;
+                    }
+                }else {
+                    succeedCount ++;
+                }
+                if (succeedCount == catalogList.count) {
+                    weakSelf.downloadCount ++;
+                    weakSelf.isDownload = NO;
+                    progress = 1;
+                }
+                if (i % 10 == 0 || progress == 1) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        weakSelf.progressView.progress = progress;
+                        NSString* stateStr = [NSString stringWithFormat:@"%.2f%%", progress * 100];
+                        if (progress == 1) {
+                            stateStr = @"100% 已完成";
+                        }
+                        weakSelf.stateLab.text = stateStr;
+                        callBlock(!weakSelf.isDownload, NO, weakSelf.downloadCount, progress);
+                    });
+                }
             }
-        }
-    });
+        });
+    }
 }
 
-//旧解析方式下 阅读器界面用
+//旧解析方式下 阅读器、书籍详情界面共用
 -(void)startDownloadOldParseBookWithBookId:(UInt32 )bookId catalogList:(NSArray* )catalogList block:(LMDownloadBookViewBlock)callBlock {
     
     //防止死循环
@@ -168,7 +245,7 @@
             BookChapterSourceReq* req = [builder build];
             NSData* reqData = [req data];
             
-            if (![LMTool isExistBookTextWithBookId:bookId chapterId:(UInt32 )subChapter.chapterId]) {//若不存在该章节，则下载
+            if (![LMTool isExistBookTextWithBookId:bookId chapterId:subChapter.chapterId]) {//若不存在该章节，则下载
                 
                 NSData* textData = [networkTool postSyncWithCmd:1 ReqData:reqData];
                 if (textData != nil && ![textData isKindOfClass:[NSNull class]] && textData.length > 0) {
@@ -180,7 +257,7 @@
                             BookChapterSourceRes* res = [BookChapterSourceRes parseFromData:apiRes.body];
                             NSString* originalContent = res.chapter.chapterContent;
                             NSString* textStr = [LMTool replaceSeveralNewLineWithOneNewLineWithText:originalContent];
-                            [LMTool saveBookTextWithBookId:bookId chapterId:(UInt32 )subChapter.chapterId bookText:textStr];
+                            [LMTool saveBookTextWithBookId:bookId chapterId:subChapter.chapterId bookText:textStr];
                         }else {
                             
                         }

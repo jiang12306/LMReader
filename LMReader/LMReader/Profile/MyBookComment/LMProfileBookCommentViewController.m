@@ -141,12 +141,14 @@ static NSString* cellIdentifier = @"cellIdentifier";
                             int day = timeInt / (3600 * 24);
                             
                             model.commentBook = commentBook;
-                            model.dayInteger = day;
-                            if (hour <= currentHour) {
+                            if (hour <= currentHour || day < 1) {
+                                model.dayInteger = 0;
                                 [todayArray addObject:model];
-                            }else if (hour > 24 && day == 1) {
+                            }else if (hour >= 24 && day == 1) {
+                                model.dayInteger = 1;
                                 [yesterdayArray addObject:model];
                             }else {
+                                model.dayInteger = 2;
                                 [earlyArray addObject:model];
                             }
                         }
@@ -168,6 +170,10 @@ static NSString* cellIdentifier = @"cellIdentifier";
                     self.page ++;
                     
                     [self.tableView reloadData];
+                    
+                    if (page == 0 && self.dataArray.count == 0) {
+                        [self showMBProgressHUDWithText:@"暂无评论"];
+                    }
                 }else if (err == ErrCodeErrNotlogined) {
                     [weakSelf showMBProgressHUDWithText:@"您尚未登录"];
                 }
@@ -388,7 +394,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
                         [weakSelf.dataArray removeObject:mutableArr];
                     }
                     
-                    [weakSelf.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationLeft];
+                    [weakSelf.tableView reloadData];
                 }
             }
             

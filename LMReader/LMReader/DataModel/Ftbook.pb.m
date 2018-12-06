@@ -529,7 +529,7 @@ static JsonParse* defaultJsonParseInstance = nil;
 @end
 
 @interface KanapiJiaston ()
-@property UInt32 bid;
+@property (strong) NSString* bid;
 @property (strong) NSMutableArray<JsonParse*> * listParseArray;
 @property (strong) NSString* cidKey;
 @property (strong) NSString* ctitleKey;
@@ -581,7 +581,7 @@ static JsonParse* defaultJsonParseInstance = nil;
 @synthesize contentKey;
 - (instancetype) init {
   if ((self = [super init])) {
-    self.bid = 0;
+    self.bid = @"";
     self.cidKey = @"";
     self.ctitleKey = @"";
     self.curlStr = @"";
@@ -637,7 +637,7 @@ static KanapiJiaston* defaultKanapiJiastonInstance = nil;
 }
 - (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
   if (self.hasBid) {
-    [output writeUInt32:1 value:self.bid];
+    [output writeString:1 value:self.bid];
   }
   [self.listParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
     [output writeMessage:2 value:element];
@@ -667,7 +667,7 @@ static KanapiJiaston* defaultKanapiJiastonInstance = nil;
 
   size_ = 0;
   if (self.hasBid) {
-    size_ += computeUInt32Size(1, self.bid);
+    size_ += computeStringSize(1, self.bid);
   }
   [self.listParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
     size_ += computeMessageSize(2, element);
@@ -723,7 +723,7 @@ static KanapiJiaston* defaultKanapiJiastonInstance = nil;
 }
 - (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
   if (self.hasBid) {
-    [output appendFormat:@"%@%@: %@\n", indent, @"bid", [NSNumber numberWithInteger:self.bid]];
+    [output appendFormat:@"%@%@: %@\n", indent, @"bid", self.bid];
   }
   [self.listParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
     [output appendFormat:@"%@%@ {\n", indent, @"listParse"];
@@ -753,7 +753,7 @@ static KanapiJiaston* defaultKanapiJiastonInstance = nil;
 }
 - (void) storeInDictionary:(NSMutableDictionary *)dictionary {
   if (self.hasBid) {
-    [dictionary setObject: [NSNumber numberWithInteger:self.bid] forKey: @"bid"];
+    [dictionary setObject: self.bid forKey: @"bid"];
   }
   for (JsonParse* element in self.listParseArray) {
     NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
@@ -789,7 +789,7 @@ static KanapiJiaston* defaultKanapiJiastonInstance = nil;
   KanapiJiaston *otherMessage = other;
   return
       self.hasBid == otherMessage.hasBid &&
-      (!self.hasBid || self.bid == otherMessage.bid) &&
+      (!self.hasBid || [self.bid isEqual:otherMessage.bid]) &&
       [self.listParseArray isEqualToArray:otherMessage.listParseArray] &&
       self.hasCidKey == otherMessage.hasCidKey &&
       (!self.hasCidKey || [self.cidKey isEqual:otherMessage.cidKey]) &&
@@ -805,7 +805,7 @@ static KanapiJiaston* defaultKanapiJiastonInstance = nil;
 - (NSUInteger) hash {
   __block NSUInteger hashCode = 7;
   if (self.hasBid) {
-    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.bid] hash];
+    hashCode = hashCode * 31 + [self.bid hash];
   }
   [self.listParseArray enumerateObjectsUsingBlock:^(JsonParse *element, NSUInteger idx, BOOL *stop) {
     hashCode = hashCode * 31 + [element hash];
@@ -918,8 +918,8 @@ static KanapiJiaston* defaultKanapiJiastonInstance = nil;
         }
         break;
       }
-      case 8: {
-        [self setBid:[input readUInt32]];
+      case 10: {
+        [self setBid:[input readString]];
         break;
       }
       case 18: {
@@ -956,17 +956,17 @@ static KanapiJiaston* defaultKanapiJiastonInstance = nil;
 - (BOOL) hasBid {
   return resultKanapiJiaston.hasBid;
 }
-- (UInt32) bid {
+- (NSString*) bid {
   return resultKanapiJiaston.bid;
 }
-- (KanapiJiastonBuilder*) setBid:(UInt32) value {
+- (KanapiJiastonBuilder*) setBid:(NSString*) value {
   resultKanapiJiaston.hasBid = YES;
   resultKanapiJiaston.bid = value;
   return self;
 }
 - (KanapiJiastonBuilder*) clearBid {
   resultKanapiJiaston.hasBid = NO;
-  resultKanapiJiaston.bid = 0;
+  resultKanapiJiaston.bid = @"";
   return self;
 }
 - (NSMutableArray<JsonParse*> *)listParse {
@@ -5175,6 +5175,7 @@ static DeviceSize* defaultDeviceSizeInstance = nil;
 @property (strong) NSString* mac;
 @property (strong) NSString* androidId;
 @property (strong) NSString* customId;
+@property (strong) NSString* idfa;
 @end
 
 @implementation DeviceUdId
@@ -5214,6 +5215,13 @@ static DeviceSize* defaultDeviceSizeInstance = nil;
   hasCustomId_ = !!_value_;
 }
 @synthesize customId;
+- (BOOL) hasIdfa {
+  return !!hasIdfa_;
+}
+- (void) setHasIdfa:(BOOL) _value_ {
+  hasIdfa_ = !!_value_;
+}
+@synthesize idfa;
 - (instancetype) init {
   if ((self = [super init])) {
     self.uuid = @"";
@@ -5221,6 +5229,7 @@ static DeviceSize* defaultDeviceSizeInstance = nil;
     self.mac = @"";
     self.androidId = @"";
     self.customId = @"";
+    self.idfa = @"";
   }
   return self;
 }
@@ -5255,6 +5264,9 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
   if (self.hasCustomId) {
     [output writeString:6 value:self.customId];
   }
+  if (self.hasIdfa) {
+    [output writeString:7 value:self.idfa];
+  }
   [self.unknownFields writeToCodedOutputStream:output];
 }
 - (SInt32) serializedSize {
@@ -5278,6 +5290,9 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
   }
   if (self.hasCustomId) {
     size_ += computeStringSize(6, self.customId);
+  }
+  if (self.hasIdfa) {
+    size_ += computeStringSize(7, self.idfa);
   }
   size_ += self.unknownFields.serializedSize;
   memoizedSerializedSize = size_;
@@ -5329,6 +5344,9 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
   if (self.hasCustomId) {
     [output appendFormat:@"%@%@: %@\n", indent, @"customId", self.customId];
   }
+  if (self.hasIdfa) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"idfa", self.idfa];
+  }
   [self.unknownFields writeDescriptionTo:output withIndent:indent];
 }
 - (void) storeInDictionary:(NSMutableDictionary *)dictionary {
@@ -5346,6 +5364,9 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
   }
   if (self.hasCustomId) {
     [dictionary setObject: self.customId forKey: @"customId"];
+  }
+  if (self.hasIdfa) {
+    [dictionary setObject: self.idfa forKey: @"idfa"];
   }
   [self.unknownFields storeInDictionary:dictionary];
 }
@@ -5368,6 +5389,8 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
       (!self.hasAndroidId || [self.androidId isEqual:otherMessage.androidId]) &&
       self.hasCustomId == otherMessage.hasCustomId &&
       (!self.hasCustomId || [self.customId isEqual:otherMessage.customId]) &&
+      self.hasIdfa == otherMessage.hasIdfa &&
+      (!self.hasIdfa || [self.idfa isEqual:otherMessage.idfa]) &&
       (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
 }
 - (NSUInteger) hash {
@@ -5386,6 +5409,9 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
   }
   if (self.hasCustomId) {
     hashCode = hashCode * 31 + [self.customId hash];
+  }
+  if (self.hasIdfa) {
+    hashCode = hashCode * 31 + [self.idfa hash];
   }
   hashCode = hashCode * 31 + [self.unknownFields hash];
   return hashCode;
@@ -5445,6 +5471,9 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
   if (other.hasCustomId) {
     [self setCustomId:other.customId];
   }
+  if (other.hasIdfa) {
+    [self setIdfa:other.idfa];
+  }
   [self mergeUnknownFields:other.unknownFields];
   return self;
 }
@@ -5484,6 +5513,10 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
       }
       case 50: {
         [self setCustomId:[input readString]];
+        break;
+      }
+      case 58: {
+        [self setIdfa:[input readString]];
         break;
       }
     }
@@ -5567,6 +5600,22 @@ static DeviceUdId* defaultDeviceUdIdInstance = nil;
 - (DeviceUdIdBuilder*) clearCustomId {
   resultUdId.hasCustomId = NO;
   resultUdId.customId = @"";
+  return self;
+}
+- (BOOL) hasIdfa {
+  return resultUdId.hasIdfa;
+}
+- (NSString*) idfa {
+  return resultUdId.idfa;
+}
+- (DeviceUdIdBuilder*) setIdfa:(NSString*) value {
+  resultUdId.hasIdfa = YES;
+  resultUdId.idfa = value;
+  return self;
+}
+- (DeviceUdIdBuilder*) clearIdfa {
+  resultUdId.hasIdfa = NO;
+  resultUdId.idfa = @"";
   return self;
 }
 @end
@@ -30090,6 +30139,7 @@ static AdControl* defaultAdControlInstance = nil;
 @property (strong) NSMutableArray<AdControl*> * adControlArray;
 @property UInt32 skipN;
 @property UInt32 lessM;
+@property UInt32 showH;
 @end
 
 @implementation InitSwitchRes
@@ -30110,10 +30160,18 @@ static AdControl* defaultAdControlInstance = nil;
   hasLessM_ = !!_value_;
 }
 @synthesize lessM;
+- (BOOL) hasShowH {
+  return !!hasShowH_;
+}
+- (void) setHasShowH:(BOOL) _value_ {
+  hasShowH_ = !!_value_;
+}
+@synthesize showH;
 - (instancetype) init {
   if ((self = [super init])) {
     self.skipN = 0;
     self.lessM = 0;
+    self.showH = 0;
   }
   return self;
 }
@@ -30156,6 +30214,9 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   if (self.hasLessM) {
     [output writeUInt32:3 value:self.lessM];
   }
+  if (self.hasShowH) {
+    [output writeUInt32:4 value:self.showH];
+  }
   [self.unknownFields writeToCodedOutputStream:output];
 }
 - (SInt32) serializedSize {
@@ -30173,6 +30234,9 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   }
   if (self.hasLessM) {
     size_ += computeUInt32Size(3, self.lessM);
+  }
+  if (self.hasShowH) {
+    size_ += computeUInt32Size(4, self.showH);
   }
   size_ += self.unknownFields.serializedSize;
   memoizedSerializedSize = size_;
@@ -30221,6 +30285,9 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   if (self.hasLessM) {
     [output appendFormat:@"%@%@: %@\n", indent, @"lessM", [NSNumber numberWithInteger:self.lessM]];
   }
+  if (self.hasShowH) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"showH", [NSNumber numberWithInteger:self.showH]];
+  }
   [self.unknownFields writeDescriptionTo:output withIndent:indent];
 }
 - (void) storeInDictionary:(NSMutableDictionary *)dictionary {
@@ -30234,6 +30301,9 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   }
   if (self.hasLessM) {
     [dictionary setObject: [NSNumber numberWithInteger:self.lessM] forKey: @"lessM"];
+  }
+  if (self.hasShowH) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.showH] forKey: @"showH"];
   }
   [self.unknownFields storeInDictionary:dictionary];
 }
@@ -30251,6 +30321,8 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
       (!self.hasSkipN || self.skipN == otherMessage.skipN) &&
       self.hasLessM == otherMessage.hasLessM &&
       (!self.hasLessM || self.lessM == otherMessage.lessM) &&
+      self.hasShowH == otherMessage.hasShowH &&
+      (!self.hasShowH || self.showH == otherMessage.showH) &&
       (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
 }
 - (NSUInteger) hash {
@@ -30263,6 +30335,9 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   }
   if (self.hasLessM) {
     hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.lessM] hash];
+  }
+  if (self.hasShowH) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.showH] hash];
   }
   hashCode = hashCode * 31 + [self.unknownFields hash];
   return hashCode;
@@ -30320,6 +30395,9 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
   if (other.hasLessM) {
     [self setLessM:other.lessM];
   }
+  if (other.hasShowH) {
+    [self setShowH:other.showH];
+  }
   [self mergeUnknownFields:other.unknownFields];
   return self;
 }
@@ -30353,6 +30431,10 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
       }
       case 24: {
         [self setLessM:[input readUInt32]];
+        break;
+      }
+      case 32: {
+        [self setShowH:[input readUInt32]];
         break;
       }
     }
@@ -30409,6 +30491,22 @@ static InitSwitchRes* defaultInitSwitchResInstance = nil;
 - (InitSwitchResBuilder*) clearLessM {
   resultInitSwitchRes.hasLessM = NO;
   resultInitSwitchRes.lessM = 0;
+  return self;
+}
+- (BOOL) hasShowH {
+  return resultInitSwitchRes.hasShowH;
+}
+- (UInt32) showH {
+  return resultInitSwitchRes.showH;
+}
+- (InitSwitchResBuilder*) setShowH:(UInt32) value {
+  resultInitSwitchRes.hasShowH = YES;
+  resultInitSwitchRes.showH = value;
+  return self;
+}
+- (InitSwitchResBuilder*) clearShowH {
+  resultInitSwitchRes.hasShowH = NO;
+  resultInitSwitchRes.showH = 0;
   return self;
 }
 @end
@@ -32921,6 +33019,2269 @@ static SelfDefinedMoreRes* defaultSelfDefinedMoreResInstance = nil;
 - (SelfDefinedMoreResBuilder*) clearPage {
   resultSelfDefinedMoreRes.hasPage = NO;
   resultSelfDefinedMoreRes.page = 0;
+  return self;
+}
+@end
+
+@interface SearchHelpReq ()
+@property (strong) NSString* bookName;
+@property (strong) NSString* bookAuthor;
+@property (strong) NSString* webStr;
+@end
+
+@implementation SearchHelpReq
+
+- (BOOL) hasBookName {
+  return !!hasBookName_;
+}
+- (void) setHasBookName:(BOOL) _value_ {
+  hasBookName_ = !!_value_;
+}
+@synthesize bookName;
+- (BOOL) hasBookAuthor {
+  return !!hasBookAuthor_;
+}
+- (void) setHasBookAuthor:(BOOL) _value_ {
+  hasBookAuthor_ = !!_value_;
+}
+@synthesize bookAuthor;
+- (BOOL) hasWebStr {
+  return !!hasWebStr_;
+}
+- (void) setHasWebStr:(BOOL) _value_ {
+  hasWebStr_ = !!_value_;
+}
+@synthesize webStr;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.bookName = @"";
+    self.bookAuthor = @"";
+    self.webStr = @"";
+  }
+  return self;
+}
+static SearchHelpReq* defaultSearchHelpReqInstance = nil;
++ (void) initialize {
+  if (self == [SearchHelpReq class]) {
+    defaultSearchHelpReqInstance = [[SearchHelpReq alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSearchHelpReqInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSearchHelpReqInstance;
+}
+- (BOOL) isInitialized {
+  if (!self.hasBookName) {
+    return NO;
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasBookName) {
+    [output writeString:1 value:self.bookName];
+  }
+  if (self.hasBookAuthor) {
+    [output writeString:2 value:self.bookAuthor];
+  }
+  if (self.hasWebStr) {
+    [output writeString:3 value:self.webStr];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasBookName) {
+    size_ += computeStringSize(1, self.bookName);
+  }
+  if (self.hasBookAuthor) {
+    size_ += computeStringSize(2, self.bookAuthor);
+  }
+  if (self.hasWebStr) {
+    size_ += computeStringSize(3, self.webStr);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SearchHelpReq*) parseFromData:(NSData*) data {
+  return (SearchHelpReq*)[[[SearchHelpReq builder] mergeFromData:data] build];
+}
++ (SearchHelpReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SearchHelpReq*)[[[SearchHelpReq builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SearchHelpReq*) parseFromInputStream:(NSInputStream*) input {
+  return (SearchHelpReq*)[[[SearchHelpReq builder] mergeFromInputStream:input] build];
+}
++ (SearchHelpReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SearchHelpReq*)[[[SearchHelpReq builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SearchHelpReq*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SearchHelpReq*)[[[SearchHelpReq builder] mergeFromCodedInputStream:input] build];
+}
++ (SearchHelpReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SearchHelpReq*)[[[SearchHelpReq builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SearchHelpReqBuilder*) builder {
+  return [[SearchHelpReqBuilder alloc] init];
+}
++ (SearchHelpReqBuilder*) builderWithPrototype:(SearchHelpReq*) prototype {
+  return [[SearchHelpReq builder] mergeFrom:prototype];
+}
+- (SearchHelpReqBuilder*) builder {
+  return [SearchHelpReq builder];
+}
+- (SearchHelpReqBuilder*) toBuilder {
+  return [SearchHelpReq builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasBookName) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"bookName", self.bookName];
+  }
+  if (self.hasBookAuthor) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"bookAuthor", self.bookAuthor];
+  }
+  if (self.hasWebStr) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"webStr", self.webStr];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasBookName) {
+    [dictionary setObject: self.bookName forKey: @"bookName"];
+  }
+  if (self.hasBookAuthor) {
+    [dictionary setObject: self.bookAuthor forKey: @"bookAuthor"];
+  }
+  if (self.hasWebStr) {
+    [dictionary setObject: self.webStr forKey: @"webStr"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SearchHelpReq class]]) {
+    return NO;
+  }
+  SearchHelpReq *otherMessage = other;
+  return
+      self.hasBookName == otherMessage.hasBookName &&
+      (!self.hasBookName || [self.bookName isEqual:otherMessage.bookName]) &&
+      self.hasBookAuthor == otherMessage.hasBookAuthor &&
+      (!self.hasBookAuthor || [self.bookAuthor isEqual:otherMessage.bookAuthor]) &&
+      self.hasWebStr == otherMessage.hasWebStr &&
+      (!self.hasWebStr || [self.webStr isEqual:otherMessage.webStr]) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasBookName) {
+    hashCode = hashCode * 31 + [self.bookName hash];
+  }
+  if (self.hasBookAuthor) {
+    hashCode = hashCode * 31 + [self.bookAuthor hash];
+  }
+  if (self.hasWebStr) {
+    hashCode = hashCode * 31 + [self.webStr hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SearchHelpReqBuilder()
+@property (strong) SearchHelpReq* resultSearchHelpReq;
+@end
+
+@implementation SearchHelpReqBuilder
+@synthesize resultSearchHelpReq;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSearchHelpReq = [[SearchHelpReq alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSearchHelpReq;
+}
+- (SearchHelpReqBuilder*) clear {
+  self.resultSearchHelpReq = [[SearchHelpReq alloc] init];
+  return self;
+}
+- (SearchHelpReqBuilder*) clone {
+  return [SearchHelpReq builderWithPrototype:resultSearchHelpReq];
+}
+- (SearchHelpReq*) defaultInstance {
+  return [SearchHelpReq defaultInstance];
+}
+- (SearchHelpReq*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SearchHelpReq*) buildPartial {
+  SearchHelpReq* returnMe = resultSearchHelpReq;
+  self.resultSearchHelpReq = nil;
+  return returnMe;
+}
+- (SearchHelpReqBuilder*) mergeFrom:(SearchHelpReq*) other {
+  if (other == [SearchHelpReq defaultInstance]) {
+    return self;
+  }
+  if (other.hasBookName) {
+    [self setBookName:other.bookName];
+  }
+  if (other.hasBookAuthor) {
+    [self setBookAuthor:other.bookAuthor];
+  }
+  if (other.hasWebStr) {
+    [self setWebStr:other.webStr];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SearchHelpReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SearchHelpReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 10: {
+        [self setBookName:[input readString]];
+        break;
+      }
+      case 18: {
+        [self setBookAuthor:[input readString]];
+        break;
+      }
+      case 26: {
+        [self setWebStr:[input readString]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasBookName {
+  return resultSearchHelpReq.hasBookName;
+}
+- (NSString*) bookName {
+  return resultSearchHelpReq.bookName;
+}
+- (SearchHelpReqBuilder*) setBookName:(NSString*) value {
+  resultSearchHelpReq.hasBookName = YES;
+  resultSearchHelpReq.bookName = value;
+  return self;
+}
+- (SearchHelpReqBuilder*) clearBookName {
+  resultSearchHelpReq.hasBookName = NO;
+  resultSearchHelpReq.bookName = @"";
+  return self;
+}
+- (BOOL) hasBookAuthor {
+  return resultSearchHelpReq.hasBookAuthor;
+}
+- (NSString*) bookAuthor {
+  return resultSearchHelpReq.bookAuthor;
+}
+- (SearchHelpReqBuilder*) setBookAuthor:(NSString*) value {
+  resultSearchHelpReq.hasBookAuthor = YES;
+  resultSearchHelpReq.bookAuthor = value;
+  return self;
+}
+- (SearchHelpReqBuilder*) clearBookAuthor {
+  resultSearchHelpReq.hasBookAuthor = NO;
+  resultSearchHelpReq.bookAuthor = @"";
+  return self;
+}
+- (BOOL) hasWebStr {
+  return resultSearchHelpReq.hasWebStr;
+}
+- (NSString*) webStr {
+  return resultSearchHelpReq.webStr;
+}
+- (SearchHelpReqBuilder*) setWebStr:(NSString*) value {
+  resultSearchHelpReq.hasWebStr = YES;
+  resultSearchHelpReq.webStr = value;
+  return self;
+}
+- (SearchHelpReqBuilder*) clearWebStr {
+  resultSearchHelpReq.hasWebStr = NO;
+  resultSearchHelpReq.webStr = @"";
+  return self;
+}
+@end
+
+@interface SysMsg ()
+@property UInt32 id;
+@property (strong) NSString* title;
+@property (strong) NSString* content;
+@property (strong) NSString* sT;
+@property UInt32 isRead;
+@end
+
+@implementation SysMsg
+
+- (BOOL) hasId {
+  return !!hasId_;
+}
+- (void) setHasId:(BOOL) _value_ {
+  hasId_ = !!_value_;
+}
+@synthesize id;
+- (BOOL) hasTitle {
+  return !!hasTitle_;
+}
+- (void) setHasTitle:(BOOL) _value_ {
+  hasTitle_ = !!_value_;
+}
+@synthesize title;
+- (BOOL) hasContent {
+  return !!hasContent_;
+}
+- (void) setHasContent:(BOOL) _value_ {
+  hasContent_ = !!_value_;
+}
+@synthesize content;
+- (BOOL) hasST {
+  return !!hasST_;
+}
+- (void) setHasST:(BOOL) _value_ {
+  hasST_ = !!_value_;
+}
+@synthesize sT;
+- (BOOL) hasIsRead {
+  return !!hasIsRead_;
+}
+- (void) setHasIsRead:(BOOL) _value_ {
+  hasIsRead_ = !!_value_;
+}
+@synthesize isRead;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.id = 0;
+    self.title = @"";
+    self.content = @"";
+    self.sT = @"";
+    self.isRead = 0;
+  }
+  return self;
+}
+static SysMsg* defaultSysMsgInstance = nil;
++ (void) initialize {
+  if (self == [SysMsg class]) {
+    defaultSysMsgInstance = [[SysMsg alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSysMsgInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSysMsgInstance;
+}
+- (BOOL) isInitialized {
+  if (!self.hasId) {
+    return NO;
+  }
+  if (!self.hasTitle) {
+    return NO;
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasId) {
+    [output writeUInt32:1 value:self.id];
+  }
+  if (self.hasTitle) {
+    [output writeString:2 value:self.title];
+  }
+  if (self.hasContent) {
+    [output writeString:3 value:self.content];
+  }
+  if (self.hasST) {
+    [output writeString:4 value:self.sT];
+  }
+  if (self.hasIsRead) {
+    [output writeUInt32:5 value:self.isRead];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasId) {
+    size_ += computeUInt32Size(1, self.id);
+  }
+  if (self.hasTitle) {
+    size_ += computeStringSize(2, self.title);
+  }
+  if (self.hasContent) {
+    size_ += computeStringSize(3, self.content);
+  }
+  if (self.hasST) {
+    size_ += computeStringSize(4, self.sT);
+  }
+  if (self.hasIsRead) {
+    size_ += computeUInt32Size(5, self.isRead);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SysMsg*) parseFromData:(NSData*) data {
+  return (SysMsg*)[[[SysMsg builder] mergeFromData:data] build];
+}
++ (SysMsg*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsg*)[[[SysMsg builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SysMsg*) parseFromInputStream:(NSInputStream*) input {
+  return (SysMsg*)[[[SysMsg builder] mergeFromInputStream:input] build];
+}
++ (SysMsg*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsg*)[[[SysMsg builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsg*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SysMsg*)[[[SysMsg builder] mergeFromCodedInputStream:input] build];
+}
++ (SysMsg*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsg*)[[[SysMsg builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgBuilder*) builder {
+  return [[SysMsgBuilder alloc] init];
+}
++ (SysMsgBuilder*) builderWithPrototype:(SysMsg*) prototype {
+  return [[SysMsg builder] mergeFrom:prototype];
+}
+- (SysMsgBuilder*) builder {
+  return [SysMsg builder];
+}
+- (SysMsgBuilder*) toBuilder {
+  return [SysMsg builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasId) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"id", [NSNumber numberWithInteger:self.id]];
+  }
+  if (self.hasTitle) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"title", self.title];
+  }
+  if (self.hasContent) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"content", self.content];
+  }
+  if (self.hasST) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"sT", self.sT];
+  }
+  if (self.hasIsRead) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"isRead", [NSNumber numberWithInteger:self.isRead]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasId) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.id] forKey: @"id"];
+  }
+  if (self.hasTitle) {
+    [dictionary setObject: self.title forKey: @"title"];
+  }
+  if (self.hasContent) {
+    [dictionary setObject: self.content forKey: @"content"];
+  }
+  if (self.hasST) {
+    [dictionary setObject: self.sT forKey: @"sT"];
+  }
+  if (self.hasIsRead) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.isRead] forKey: @"isRead"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SysMsg class]]) {
+    return NO;
+  }
+  SysMsg *otherMessage = other;
+  return
+      self.hasId == otherMessage.hasId &&
+      (!self.hasId || self.id == otherMessage.id) &&
+      self.hasTitle == otherMessage.hasTitle &&
+      (!self.hasTitle || [self.title isEqual:otherMessage.title]) &&
+      self.hasContent == otherMessage.hasContent &&
+      (!self.hasContent || [self.content isEqual:otherMessage.content]) &&
+      self.hasST == otherMessage.hasST &&
+      (!self.hasST || [self.sT isEqual:otherMessage.sT]) &&
+      self.hasIsRead == otherMessage.hasIsRead &&
+      (!self.hasIsRead || self.isRead == otherMessage.isRead) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasId) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.id] hash];
+  }
+  if (self.hasTitle) {
+    hashCode = hashCode * 31 + [self.title hash];
+  }
+  if (self.hasContent) {
+    hashCode = hashCode * 31 + [self.content hash];
+  }
+  if (self.hasST) {
+    hashCode = hashCode * 31 + [self.sT hash];
+  }
+  if (self.hasIsRead) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.isRead] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SysMsgBuilder()
+@property (strong) SysMsg* resultSysMsg;
+@end
+
+@implementation SysMsgBuilder
+@synthesize resultSysMsg;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSysMsg = [[SysMsg alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSysMsg;
+}
+- (SysMsgBuilder*) clear {
+  self.resultSysMsg = [[SysMsg alloc] init];
+  return self;
+}
+- (SysMsgBuilder*) clone {
+  return [SysMsg builderWithPrototype:resultSysMsg];
+}
+- (SysMsg*) defaultInstance {
+  return [SysMsg defaultInstance];
+}
+- (SysMsg*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SysMsg*) buildPartial {
+  SysMsg* returnMe = resultSysMsg;
+  self.resultSysMsg = nil;
+  return returnMe;
+}
+- (SysMsgBuilder*) mergeFrom:(SysMsg*) other {
+  if (other == [SysMsg defaultInstance]) {
+    return self;
+  }
+  if (other.hasId) {
+    [self setId:other.id];
+  }
+  if (other.hasTitle) {
+    [self setTitle:other.title];
+  }
+  if (other.hasContent) {
+    [self setContent:other.content];
+  }
+  if (other.hasST) {
+    [self setST:other.sT];
+  }
+  if (other.hasIsRead) {
+    [self setIsRead:other.isRead];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SysMsgBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SysMsgBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setId:[input readUInt32]];
+        break;
+      }
+      case 18: {
+        [self setTitle:[input readString]];
+        break;
+      }
+      case 26: {
+        [self setContent:[input readString]];
+        break;
+      }
+      case 34: {
+        [self setST:[input readString]];
+        break;
+      }
+      case 40: {
+        [self setIsRead:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasId {
+  return resultSysMsg.hasId;
+}
+- (UInt32) id {
+  return resultSysMsg.id;
+}
+- (SysMsgBuilder*) setId:(UInt32) value {
+  resultSysMsg.hasId = YES;
+  resultSysMsg.id = value;
+  return self;
+}
+- (SysMsgBuilder*) clearId {
+  resultSysMsg.hasId = NO;
+  resultSysMsg.id = 0;
+  return self;
+}
+- (BOOL) hasTitle {
+  return resultSysMsg.hasTitle;
+}
+- (NSString*) title {
+  return resultSysMsg.title;
+}
+- (SysMsgBuilder*) setTitle:(NSString*) value {
+  resultSysMsg.hasTitle = YES;
+  resultSysMsg.title = value;
+  return self;
+}
+- (SysMsgBuilder*) clearTitle {
+  resultSysMsg.hasTitle = NO;
+  resultSysMsg.title = @"";
+  return self;
+}
+- (BOOL) hasContent {
+  return resultSysMsg.hasContent;
+}
+- (NSString*) content {
+  return resultSysMsg.content;
+}
+- (SysMsgBuilder*) setContent:(NSString*) value {
+  resultSysMsg.hasContent = YES;
+  resultSysMsg.content = value;
+  return self;
+}
+- (SysMsgBuilder*) clearContent {
+  resultSysMsg.hasContent = NO;
+  resultSysMsg.content = @"";
+  return self;
+}
+- (BOOL) hasST {
+  return resultSysMsg.hasST;
+}
+- (NSString*) sT {
+  return resultSysMsg.sT;
+}
+- (SysMsgBuilder*) setST:(NSString*) value {
+  resultSysMsg.hasST = YES;
+  resultSysMsg.sT = value;
+  return self;
+}
+- (SysMsgBuilder*) clearST {
+  resultSysMsg.hasST = NO;
+  resultSysMsg.sT = @"";
+  return self;
+}
+- (BOOL) hasIsRead {
+  return resultSysMsg.hasIsRead;
+}
+- (UInt32) isRead {
+  return resultSysMsg.isRead;
+}
+- (SysMsgBuilder*) setIsRead:(UInt32) value {
+  resultSysMsg.hasIsRead = YES;
+  resultSysMsg.isRead = value;
+  return self;
+}
+- (SysMsgBuilder*) clearIsRead {
+  resultSysMsg.hasIsRead = NO;
+  resultSysMsg.isRead = 0;
+  return self;
+}
+@end
+
+@interface SysMsgListReq ()
+@property UInt32 page;
+@end
+
+@implementation SysMsgListReq
+
+- (BOOL) hasPage {
+  return !!hasPage_;
+}
+- (void) setHasPage:(BOOL) _value_ {
+  hasPage_ = !!_value_;
+}
+@synthesize page;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.page = 0;
+  }
+  return self;
+}
+static SysMsgListReq* defaultSysMsgListReqInstance = nil;
++ (void) initialize {
+  if (self == [SysMsgListReq class]) {
+    defaultSysMsgListReqInstance = [[SysMsgListReq alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSysMsgListReqInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSysMsgListReqInstance;
+}
+- (BOOL) isInitialized {
+  if (!self.hasPage) {
+    return NO;
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasPage) {
+    [output writeUInt32:1 value:self.page];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasPage) {
+    size_ += computeUInt32Size(1, self.page);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SysMsgListReq*) parseFromData:(NSData*) data {
+  return (SysMsgListReq*)[[[SysMsgListReq builder] mergeFromData:data] build];
+}
++ (SysMsgListReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgListReq*)[[[SysMsgListReq builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgListReq*) parseFromInputStream:(NSInputStream*) input {
+  return (SysMsgListReq*)[[[SysMsgListReq builder] mergeFromInputStream:input] build];
+}
++ (SysMsgListReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgListReq*)[[[SysMsgListReq builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgListReq*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SysMsgListReq*)[[[SysMsgListReq builder] mergeFromCodedInputStream:input] build];
+}
++ (SysMsgListReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgListReq*)[[[SysMsgListReq builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgListReqBuilder*) builder {
+  return [[SysMsgListReqBuilder alloc] init];
+}
++ (SysMsgListReqBuilder*) builderWithPrototype:(SysMsgListReq*) prototype {
+  return [[SysMsgListReq builder] mergeFrom:prototype];
+}
+- (SysMsgListReqBuilder*) builder {
+  return [SysMsgListReq builder];
+}
+- (SysMsgListReqBuilder*) toBuilder {
+  return [SysMsgListReq builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasPage) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"page", [NSNumber numberWithInteger:self.page]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasPage) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.page] forKey: @"page"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SysMsgListReq class]]) {
+    return NO;
+  }
+  SysMsgListReq *otherMessage = other;
+  return
+      self.hasPage == otherMessage.hasPage &&
+      (!self.hasPage || self.page == otherMessage.page) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasPage) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.page] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SysMsgListReqBuilder()
+@property (strong) SysMsgListReq* resultSysMsgListReq;
+@end
+
+@implementation SysMsgListReqBuilder
+@synthesize resultSysMsgListReq;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSysMsgListReq = [[SysMsgListReq alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSysMsgListReq;
+}
+- (SysMsgListReqBuilder*) clear {
+  self.resultSysMsgListReq = [[SysMsgListReq alloc] init];
+  return self;
+}
+- (SysMsgListReqBuilder*) clone {
+  return [SysMsgListReq builderWithPrototype:resultSysMsgListReq];
+}
+- (SysMsgListReq*) defaultInstance {
+  return [SysMsgListReq defaultInstance];
+}
+- (SysMsgListReq*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SysMsgListReq*) buildPartial {
+  SysMsgListReq* returnMe = resultSysMsgListReq;
+  self.resultSysMsgListReq = nil;
+  return returnMe;
+}
+- (SysMsgListReqBuilder*) mergeFrom:(SysMsgListReq*) other {
+  if (other == [SysMsgListReq defaultInstance]) {
+    return self;
+  }
+  if (other.hasPage) {
+    [self setPage:other.page];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SysMsgListReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SysMsgListReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setPage:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasPage {
+  return resultSysMsgListReq.hasPage;
+}
+- (UInt32) page {
+  return resultSysMsgListReq.page;
+}
+- (SysMsgListReqBuilder*) setPage:(UInt32) value {
+  resultSysMsgListReq.hasPage = YES;
+  resultSysMsgListReq.page = value;
+  return self;
+}
+- (SysMsgListReqBuilder*) clearPage {
+  resultSysMsgListReq.hasPage = NO;
+  resultSysMsgListReq.page = 0;
+  return self;
+}
+@end
+
+@interface SysMsgListRes ()
+@property UInt32 psize;
+@property UInt32 page;
+@property (strong) NSMutableArray<SysMsg*> * sysmsgsArray;
+@property UInt32 nT;
+@end
+
+@implementation SysMsgListRes
+
+- (BOOL) hasPsize {
+  return !!hasPsize_;
+}
+- (void) setHasPsize:(BOOL) _value_ {
+  hasPsize_ = !!_value_;
+}
+@synthesize psize;
+- (BOOL) hasPage {
+  return !!hasPage_;
+}
+- (void) setHasPage:(BOOL) _value_ {
+  hasPage_ = !!_value_;
+}
+@synthesize page;
+@synthesize sysmsgsArray;
+@dynamic sysmsgs;
+- (BOOL) hasNT {
+  return !!hasNT_;
+}
+- (void) setHasNT:(BOOL) _value_ {
+  hasNT_ = !!_value_;
+}
+@synthesize nT;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.psize = 0;
+    self.page = 0;
+    self.nT = 0;
+  }
+  return self;
+}
+static SysMsgListRes* defaultSysMsgListResInstance = nil;
++ (void) initialize {
+  if (self == [SysMsgListRes class]) {
+    defaultSysMsgListResInstance = [[SysMsgListRes alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSysMsgListResInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSysMsgListResInstance;
+}
+- (NSArray<SysMsg*> *)sysmsgs {
+  return sysmsgsArray;
+}
+- (SysMsg*)sysmsgsAtIndex:(NSUInteger)index {
+  return [sysmsgsArray objectAtIndex:index];
+}
+- (BOOL) isInitialized {
+  if (!self.hasPsize) {
+    return NO;
+  }
+  if (!self.hasPage) {
+    return NO;
+  }
+  if (!self.hasNT) {
+    return NO;
+  }
+  __block BOOL isInitsysmsgs = YES;
+   [self.sysmsgs enumerateObjectsUsingBlock:^(SysMsg *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitsysmsgs = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitsysmsgs) return isInitsysmsgs;
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasPsize) {
+    [output writeUInt32:1 value:self.psize];
+  }
+  if (self.hasPage) {
+    [output writeUInt32:3 value:self.page];
+  }
+  [self.sysmsgsArray enumerateObjectsUsingBlock:^(SysMsg *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:5 value:element];
+  }];
+  if (self.hasNT) {
+    [output writeUInt32:7 value:self.nT];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasPsize) {
+    size_ += computeUInt32Size(1, self.psize);
+  }
+  if (self.hasPage) {
+    size_ += computeUInt32Size(3, self.page);
+  }
+  [self.sysmsgsArray enumerateObjectsUsingBlock:^(SysMsg *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(5, element);
+  }];
+  if (self.hasNT) {
+    size_ += computeUInt32Size(7, self.nT);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SysMsgListRes*) parseFromData:(NSData*) data {
+  return (SysMsgListRes*)[[[SysMsgListRes builder] mergeFromData:data] build];
+}
++ (SysMsgListRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgListRes*)[[[SysMsgListRes builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgListRes*) parseFromInputStream:(NSInputStream*) input {
+  return (SysMsgListRes*)[[[SysMsgListRes builder] mergeFromInputStream:input] build];
+}
++ (SysMsgListRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgListRes*)[[[SysMsgListRes builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgListRes*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SysMsgListRes*)[[[SysMsgListRes builder] mergeFromCodedInputStream:input] build];
+}
++ (SysMsgListRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgListRes*)[[[SysMsgListRes builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgListResBuilder*) builder {
+  return [[SysMsgListResBuilder alloc] init];
+}
++ (SysMsgListResBuilder*) builderWithPrototype:(SysMsgListRes*) prototype {
+  return [[SysMsgListRes builder] mergeFrom:prototype];
+}
+- (SysMsgListResBuilder*) builder {
+  return [SysMsgListRes builder];
+}
+- (SysMsgListResBuilder*) toBuilder {
+  return [SysMsgListRes builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasPsize) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"psize", [NSNumber numberWithInteger:self.psize]];
+  }
+  if (self.hasPage) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"page", [NSNumber numberWithInteger:self.page]];
+  }
+  [self.sysmsgsArray enumerateObjectsUsingBlock:^(SysMsg *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"sysmsgs"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  if (self.hasNT) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"nT", [NSNumber numberWithInteger:self.nT]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasPsize) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.psize] forKey: @"psize"];
+  }
+  if (self.hasPage) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.page] forKey: @"page"];
+  }
+  for (SysMsg* element in self.sysmsgsArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"sysmsgs"];
+  }
+  if (self.hasNT) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.nT] forKey: @"nT"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SysMsgListRes class]]) {
+    return NO;
+  }
+  SysMsgListRes *otherMessage = other;
+  return
+      self.hasPsize == otherMessage.hasPsize &&
+      (!self.hasPsize || self.psize == otherMessage.psize) &&
+      self.hasPage == otherMessage.hasPage &&
+      (!self.hasPage || self.page == otherMessage.page) &&
+      [self.sysmsgsArray isEqualToArray:otherMessage.sysmsgsArray] &&
+      self.hasNT == otherMessage.hasNT &&
+      (!self.hasNT || self.nT == otherMessage.nT) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasPsize) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.psize] hash];
+  }
+  if (self.hasPage) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.page] hash];
+  }
+  [self.sysmsgsArray enumerateObjectsUsingBlock:^(SysMsg *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  if (self.hasNT) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.nT] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SysMsgListResBuilder()
+@property (strong) SysMsgListRes* resultSysMsgListRes;
+@end
+
+@implementation SysMsgListResBuilder
+@synthesize resultSysMsgListRes;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSysMsgListRes = [[SysMsgListRes alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSysMsgListRes;
+}
+- (SysMsgListResBuilder*) clear {
+  self.resultSysMsgListRes = [[SysMsgListRes alloc] init];
+  return self;
+}
+- (SysMsgListResBuilder*) clone {
+  return [SysMsgListRes builderWithPrototype:resultSysMsgListRes];
+}
+- (SysMsgListRes*) defaultInstance {
+  return [SysMsgListRes defaultInstance];
+}
+- (SysMsgListRes*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SysMsgListRes*) buildPartial {
+  SysMsgListRes* returnMe = resultSysMsgListRes;
+  self.resultSysMsgListRes = nil;
+  return returnMe;
+}
+- (SysMsgListResBuilder*) mergeFrom:(SysMsgListRes*) other {
+  if (other == [SysMsgListRes defaultInstance]) {
+    return self;
+  }
+  if (other.hasPsize) {
+    [self setPsize:other.psize];
+  }
+  if (other.hasPage) {
+    [self setPage:other.page];
+  }
+  if (other.sysmsgsArray.count > 0) {
+    if (resultSysMsgListRes.sysmsgsArray == nil) {
+      resultSysMsgListRes.sysmsgsArray = [[NSMutableArray alloc] initWithArray:other.sysmsgsArray];
+    } else {
+      [resultSysMsgListRes.sysmsgsArray addObjectsFromArray:other.sysmsgsArray];
+    }
+  }
+  if (other.hasNT) {
+    [self setNT:other.nT];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SysMsgListResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SysMsgListResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setPsize:[input readUInt32]];
+        break;
+      }
+      case 24: {
+        [self setPage:[input readUInt32]];
+        break;
+      }
+      case 42: {
+        SysMsgBuilder* subBuilder = [SysMsg builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addSysmsgs:[subBuilder buildPartial]];
+        break;
+      }
+      case 56: {
+        [self setNT:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasPsize {
+  return resultSysMsgListRes.hasPsize;
+}
+- (UInt32) psize {
+  return resultSysMsgListRes.psize;
+}
+- (SysMsgListResBuilder*) setPsize:(UInt32) value {
+  resultSysMsgListRes.hasPsize = YES;
+  resultSysMsgListRes.psize = value;
+  return self;
+}
+- (SysMsgListResBuilder*) clearPsize {
+  resultSysMsgListRes.hasPsize = NO;
+  resultSysMsgListRes.psize = 0;
+  return self;
+}
+- (BOOL) hasPage {
+  return resultSysMsgListRes.hasPage;
+}
+- (UInt32) page {
+  return resultSysMsgListRes.page;
+}
+- (SysMsgListResBuilder*) setPage:(UInt32) value {
+  resultSysMsgListRes.hasPage = YES;
+  resultSysMsgListRes.page = value;
+  return self;
+}
+- (SysMsgListResBuilder*) clearPage {
+  resultSysMsgListRes.hasPage = NO;
+  resultSysMsgListRes.page = 0;
+  return self;
+}
+- (NSMutableArray<SysMsg*> *)sysmsgs {
+  return resultSysMsgListRes.sysmsgsArray;
+}
+- (SysMsg*)sysmsgsAtIndex:(NSUInteger)index {
+  return [resultSysMsgListRes sysmsgsAtIndex:index];
+}
+- (SysMsgListResBuilder *)addSysmsgs:(SysMsg*)value {
+  if (resultSysMsgListRes.sysmsgsArray == nil) {
+    resultSysMsgListRes.sysmsgsArray = [[NSMutableArray alloc]init];
+  }
+  [resultSysMsgListRes.sysmsgsArray addObject:value];
+  return self;
+}
+- (SysMsgListResBuilder *)setSysmsgsArray:(NSArray<SysMsg*> *)array {
+  resultSysMsgListRes.sysmsgsArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (SysMsgListResBuilder *)clearSysmsgs {
+  resultSysMsgListRes.sysmsgsArray = nil;
+  return self;
+}
+- (BOOL) hasNT {
+  return resultSysMsgListRes.hasNT;
+}
+- (UInt32) nT {
+  return resultSysMsgListRes.nT;
+}
+- (SysMsgListResBuilder*) setNT:(UInt32) value {
+  resultSysMsgListRes.hasNT = YES;
+  resultSysMsgListRes.nT = value;
+  return self;
+}
+- (SysMsgListResBuilder*) clearNT {
+  resultSysMsgListRes.hasNT = NO;
+  resultSysMsgListRes.nT = 0;
+  return self;
+}
+@end
+
+@interface SysMsgReq ()
+@property UInt32 id;
+@end
+
+@implementation SysMsgReq
+
+- (BOOL) hasId {
+  return !!hasId_;
+}
+- (void) setHasId:(BOOL) _value_ {
+  hasId_ = !!_value_;
+}
+@synthesize id;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.id = 0;
+  }
+  return self;
+}
+static SysMsgReq* defaultSysMsgReqInstance = nil;
++ (void) initialize {
+  if (self == [SysMsgReq class]) {
+    defaultSysMsgReqInstance = [[SysMsgReq alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSysMsgReqInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSysMsgReqInstance;
+}
+- (BOOL) isInitialized {
+  if (!self.hasId) {
+    return NO;
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasId) {
+    [output writeUInt32:1 value:self.id];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasId) {
+    size_ += computeUInt32Size(1, self.id);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SysMsgReq*) parseFromData:(NSData*) data {
+  return (SysMsgReq*)[[[SysMsgReq builder] mergeFromData:data] build];
+}
++ (SysMsgReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgReq*)[[[SysMsgReq builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgReq*) parseFromInputStream:(NSInputStream*) input {
+  return (SysMsgReq*)[[[SysMsgReq builder] mergeFromInputStream:input] build];
+}
++ (SysMsgReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgReq*)[[[SysMsgReq builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgReq*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SysMsgReq*)[[[SysMsgReq builder] mergeFromCodedInputStream:input] build];
+}
++ (SysMsgReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgReq*)[[[SysMsgReq builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgReqBuilder*) builder {
+  return [[SysMsgReqBuilder alloc] init];
+}
++ (SysMsgReqBuilder*) builderWithPrototype:(SysMsgReq*) prototype {
+  return [[SysMsgReq builder] mergeFrom:prototype];
+}
+- (SysMsgReqBuilder*) builder {
+  return [SysMsgReq builder];
+}
+- (SysMsgReqBuilder*) toBuilder {
+  return [SysMsgReq builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasId) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"id", [NSNumber numberWithInteger:self.id]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasId) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.id] forKey: @"id"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SysMsgReq class]]) {
+    return NO;
+  }
+  SysMsgReq *otherMessage = other;
+  return
+      self.hasId == otherMessage.hasId &&
+      (!self.hasId || self.id == otherMessage.id) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasId) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.id] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SysMsgReqBuilder()
+@property (strong) SysMsgReq* resultSysMsgReq;
+@end
+
+@implementation SysMsgReqBuilder
+@synthesize resultSysMsgReq;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSysMsgReq = [[SysMsgReq alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSysMsgReq;
+}
+- (SysMsgReqBuilder*) clear {
+  self.resultSysMsgReq = [[SysMsgReq alloc] init];
+  return self;
+}
+- (SysMsgReqBuilder*) clone {
+  return [SysMsgReq builderWithPrototype:resultSysMsgReq];
+}
+- (SysMsgReq*) defaultInstance {
+  return [SysMsgReq defaultInstance];
+}
+- (SysMsgReq*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SysMsgReq*) buildPartial {
+  SysMsgReq* returnMe = resultSysMsgReq;
+  self.resultSysMsgReq = nil;
+  return returnMe;
+}
+- (SysMsgReqBuilder*) mergeFrom:(SysMsgReq*) other {
+  if (other == [SysMsgReq defaultInstance]) {
+    return self;
+  }
+  if (other.hasId) {
+    [self setId:other.id];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SysMsgReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SysMsgReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setId:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasId {
+  return resultSysMsgReq.hasId;
+}
+- (UInt32) id {
+  return resultSysMsgReq.id;
+}
+- (SysMsgReqBuilder*) setId:(UInt32) value {
+  resultSysMsgReq.hasId = YES;
+  resultSysMsgReq.id = value;
+  return self;
+}
+- (SysMsgReqBuilder*) clearId {
+  resultSysMsgReq.hasId = NO;
+  resultSysMsgReq.id = 0;
+  return self;
+}
+@end
+
+@interface SysMsgRes ()
+@property (strong) SysMsg* sysmsg;
+@end
+
+@implementation SysMsgRes
+
+- (BOOL) hasSysmsg {
+  return !!hasSysmsg_;
+}
+- (void) setHasSysmsg:(BOOL) _value_ {
+  hasSysmsg_ = !!_value_;
+}
+@synthesize sysmsg;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.sysmsg = [SysMsg defaultInstance];
+  }
+  return self;
+}
+static SysMsgRes* defaultSysMsgResInstance = nil;
++ (void) initialize {
+  if (self == [SysMsgRes class]) {
+    defaultSysMsgResInstance = [[SysMsgRes alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultSysMsgResInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultSysMsgResInstance;
+}
+- (BOOL) isInitialized {
+  if (self.hasSysmsg) {
+    if (!self.sysmsg.isInitialized) {
+      return NO;
+    }
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasSysmsg) {
+    [output writeMessage:1 value:self.sysmsg];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasSysmsg) {
+    size_ += computeMessageSize(1, self.sysmsg);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (SysMsgRes*) parseFromData:(NSData*) data {
+  return (SysMsgRes*)[[[SysMsgRes builder] mergeFromData:data] build];
+}
++ (SysMsgRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgRes*)[[[SysMsgRes builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgRes*) parseFromInputStream:(NSInputStream*) input {
+  return (SysMsgRes*)[[[SysMsgRes builder] mergeFromInputStream:input] build];
+}
++ (SysMsgRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgRes*)[[[SysMsgRes builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgRes*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (SysMsgRes*)[[[SysMsgRes builder] mergeFromCodedInputStream:input] build];
+}
++ (SysMsgRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (SysMsgRes*)[[[SysMsgRes builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (SysMsgResBuilder*) builder {
+  return [[SysMsgResBuilder alloc] init];
+}
++ (SysMsgResBuilder*) builderWithPrototype:(SysMsgRes*) prototype {
+  return [[SysMsgRes builder] mergeFrom:prototype];
+}
+- (SysMsgResBuilder*) builder {
+  return [SysMsgRes builder];
+}
+- (SysMsgResBuilder*) toBuilder {
+  return [SysMsgRes builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasSysmsg) {
+    [output appendFormat:@"%@%@ {\n", indent, @"sysmsg"];
+    [self.sysmsg writeDescriptionTo:output
+                         withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasSysmsg) {
+   NSMutableDictionary *messageDictionary = [NSMutableDictionary dictionary]; 
+   [self.sysmsg storeInDictionary:messageDictionary];
+   [dictionary setObject:[NSDictionary dictionaryWithDictionary:messageDictionary] forKey:@"sysmsg"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[SysMsgRes class]]) {
+    return NO;
+  }
+  SysMsgRes *otherMessage = other;
+  return
+      self.hasSysmsg == otherMessage.hasSysmsg &&
+      (!self.hasSysmsg || [self.sysmsg isEqual:otherMessage.sysmsg]) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasSysmsg) {
+    hashCode = hashCode * 31 + [self.sysmsg hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface SysMsgResBuilder()
+@property (strong) SysMsgRes* resultSysMsgRes;
+@end
+
+@implementation SysMsgResBuilder
+@synthesize resultSysMsgRes;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultSysMsgRes = [[SysMsgRes alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultSysMsgRes;
+}
+- (SysMsgResBuilder*) clear {
+  self.resultSysMsgRes = [[SysMsgRes alloc] init];
+  return self;
+}
+- (SysMsgResBuilder*) clone {
+  return [SysMsgRes builderWithPrototype:resultSysMsgRes];
+}
+- (SysMsgRes*) defaultInstance {
+  return [SysMsgRes defaultInstance];
+}
+- (SysMsgRes*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (SysMsgRes*) buildPartial {
+  SysMsgRes* returnMe = resultSysMsgRes;
+  self.resultSysMsgRes = nil;
+  return returnMe;
+}
+- (SysMsgResBuilder*) mergeFrom:(SysMsgRes*) other {
+  if (other == [SysMsgRes defaultInstance]) {
+    return self;
+  }
+  if (other.hasSysmsg) {
+    [self mergeSysmsg:other.sysmsg];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (SysMsgResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (SysMsgResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 10: {
+        SysMsgBuilder* subBuilder = [SysMsg builder];
+        if (self.hasSysmsg) {
+          [subBuilder mergeFrom:self.sysmsg];
+        }
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self setSysmsg:[subBuilder buildPartial]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasSysmsg {
+  return resultSysMsgRes.hasSysmsg;
+}
+- (SysMsg*) sysmsg {
+  return resultSysMsgRes.sysmsg;
+}
+- (SysMsgResBuilder*) setSysmsg:(SysMsg*) value {
+  resultSysMsgRes.hasSysmsg = YES;
+  resultSysMsgRes.sysmsg = value;
+  return self;
+}
+- (SysMsgResBuilder*) setSysmsgBuilder:(SysMsgBuilder*) builderForValue {
+  return [self setSysmsg:[builderForValue build]];
+}
+- (SysMsgResBuilder*) mergeSysmsg:(SysMsg*) value {
+  if (resultSysMsgRes.hasSysmsg &&
+      resultSysMsgRes.sysmsg != [SysMsg defaultInstance]) {
+    resultSysMsgRes.sysmsg =
+      [[[SysMsg builderWithPrototype:resultSysMsgRes.sysmsg] mergeFrom:value] buildPartial];
+  } else {
+    resultSysMsgRes.sysmsg = value;
+  }
+  resultSysMsgRes.hasSysmsg = YES;
+  return self;
+}
+- (SysMsgResBuilder*) clearSysmsg {
+  resultSysMsgRes.hasSysmsg = NO;
+  resultSysMsgRes.sysmsg = [SysMsg defaultInstance];
+  return self;
+}
+@end
+
+@interface CorrelationReq ()
+@property UInt32 bookid;
+@end
+
+@implementation CorrelationReq
+
+- (BOOL) hasBookid {
+  return !!hasBookid_;
+}
+- (void) setHasBookid:(BOOL) _value_ {
+  hasBookid_ = !!_value_;
+}
+@synthesize bookid;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.bookid = 0;
+  }
+  return self;
+}
+static CorrelationReq* defaultCorrelationReqInstance = nil;
++ (void) initialize {
+  if (self == [CorrelationReq class]) {
+    defaultCorrelationReqInstance = [[CorrelationReq alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultCorrelationReqInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultCorrelationReqInstance;
+}
+- (BOOL) isInitialized {
+  if (!self.hasBookid) {
+    return NO;
+  }
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  if (self.hasBookid) {
+    [output writeUInt32:1 value:self.bookid];
+  }
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  if (self.hasBookid) {
+    size_ += computeUInt32Size(1, self.bookid);
+  }
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (CorrelationReq*) parseFromData:(NSData*) data {
+  return (CorrelationReq*)[[[CorrelationReq builder] mergeFromData:data] build];
+}
++ (CorrelationReq*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (CorrelationReq*)[[[CorrelationReq builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (CorrelationReq*) parseFromInputStream:(NSInputStream*) input {
+  return (CorrelationReq*)[[[CorrelationReq builder] mergeFromInputStream:input] build];
+}
++ (CorrelationReq*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (CorrelationReq*)[[[CorrelationReq builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (CorrelationReq*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (CorrelationReq*)[[[CorrelationReq builder] mergeFromCodedInputStream:input] build];
+}
++ (CorrelationReq*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (CorrelationReq*)[[[CorrelationReq builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (CorrelationReqBuilder*) builder {
+  return [[CorrelationReqBuilder alloc] init];
+}
++ (CorrelationReqBuilder*) builderWithPrototype:(CorrelationReq*) prototype {
+  return [[CorrelationReq builder] mergeFrom:prototype];
+}
+- (CorrelationReqBuilder*) builder {
+  return [CorrelationReq builder];
+}
+- (CorrelationReqBuilder*) toBuilder {
+  return [CorrelationReq builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  if (self.hasBookid) {
+    [output appendFormat:@"%@%@: %@\n", indent, @"bookid", [NSNumber numberWithInteger:self.bookid]];
+  }
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  if (self.hasBookid) {
+    [dictionary setObject: [NSNumber numberWithInteger:self.bookid] forKey: @"bookid"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[CorrelationReq class]]) {
+    return NO;
+  }
+  CorrelationReq *otherMessage = other;
+  return
+      self.hasBookid == otherMessage.hasBookid &&
+      (!self.hasBookid || self.bookid == otherMessage.bookid) &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  if (self.hasBookid) {
+    hashCode = hashCode * 31 + [[NSNumber numberWithInteger:self.bookid] hash];
+  }
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface CorrelationReqBuilder()
+@property (strong) CorrelationReq* resultCorrelationReq;
+@end
+
+@implementation CorrelationReqBuilder
+@synthesize resultCorrelationReq;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultCorrelationReq = [[CorrelationReq alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultCorrelationReq;
+}
+- (CorrelationReqBuilder*) clear {
+  self.resultCorrelationReq = [[CorrelationReq alloc] init];
+  return self;
+}
+- (CorrelationReqBuilder*) clone {
+  return [CorrelationReq builderWithPrototype:resultCorrelationReq];
+}
+- (CorrelationReq*) defaultInstance {
+  return [CorrelationReq defaultInstance];
+}
+- (CorrelationReq*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (CorrelationReq*) buildPartial {
+  CorrelationReq* returnMe = resultCorrelationReq;
+  self.resultCorrelationReq = nil;
+  return returnMe;
+}
+- (CorrelationReqBuilder*) mergeFrom:(CorrelationReq*) other {
+  if (other == [CorrelationReq defaultInstance]) {
+    return self;
+  }
+  if (other.hasBookid) {
+    [self setBookid:other.bookid];
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (CorrelationReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (CorrelationReqBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 8: {
+        [self setBookid:[input readUInt32]];
+        break;
+      }
+    }
+  }
+}
+- (BOOL) hasBookid {
+  return resultCorrelationReq.hasBookid;
+}
+- (UInt32) bookid {
+  return resultCorrelationReq.bookid;
+}
+- (CorrelationReqBuilder*) setBookid:(UInt32) value {
+  resultCorrelationReq.hasBookid = YES;
+  resultCorrelationReq.bookid = value;
+  return self;
+}
+- (CorrelationReqBuilder*) clearBookid {
+  resultCorrelationReq.hasBookid = NO;
+  resultCorrelationReq.bookid = 0;
+  return self;
+}
+@end
+
+@interface CorrelationRes ()
+@property (strong) NSMutableArray<Book*> * readArray;
+@property (strong) NSMutableArray<Book*> * authorArray;
+@end
+
+@implementation CorrelationRes
+
+@synthesize readArray;
+@dynamic read;
+@synthesize authorArray;
+@dynamic author;
+- (instancetype) init {
+  if ((self = [super init])) {
+  }
+  return self;
+}
+static CorrelationRes* defaultCorrelationResInstance = nil;
++ (void) initialize {
+  if (self == [CorrelationRes class]) {
+    defaultCorrelationResInstance = [[CorrelationRes alloc] init];
+  }
+}
++ (instancetype) defaultInstance {
+  return defaultCorrelationResInstance;
+}
+- (instancetype) defaultInstance {
+  return defaultCorrelationResInstance;
+}
+- (NSArray<Book*> *)read {
+  return readArray;
+}
+- (Book*)readAtIndex:(NSUInteger)index {
+  return [readArray objectAtIndex:index];
+}
+- (NSArray<Book*> *)author {
+  return authorArray;
+}
+- (Book*)authorAtIndex:(NSUInteger)index {
+  return [authorArray objectAtIndex:index];
+}
+- (BOOL) isInitialized {
+  __block BOOL isInitread = YES;
+   [self.read enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitread = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitread) return isInitread;
+  __block BOOL isInitauthor = YES;
+   [self.author enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    if (!element.isInitialized) {
+      isInitauthor = NO;
+      *stop = YES;
+    }
+  }];
+  if (!isInitauthor) return isInitauthor;
+  return YES;
+}
+- (void) writeToCodedOutputStream:(PBCodedOutputStream*) output {
+  [self.readArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:1 value:element];
+  }];
+  [self.authorArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    [output writeMessage:2 value:element];
+  }];
+  [self.unknownFields writeToCodedOutputStream:output];
+}
+- (SInt32) serializedSize {
+  __block SInt32 size_ = memoizedSerializedSize;
+  if (size_ != -1) {
+    return size_;
+  }
+
+  size_ = 0;
+  [self.readArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(1, element);
+  }];
+  [self.authorArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    size_ += computeMessageSize(2, element);
+  }];
+  size_ += self.unknownFields.serializedSize;
+  memoizedSerializedSize = size_;
+  return size_;
+}
++ (CorrelationRes*) parseFromData:(NSData*) data {
+  return (CorrelationRes*)[[[CorrelationRes builder] mergeFromData:data] build];
+}
++ (CorrelationRes*) parseFromData:(NSData*) data extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (CorrelationRes*)[[[CorrelationRes builder] mergeFromData:data extensionRegistry:extensionRegistry] build];
+}
++ (CorrelationRes*) parseFromInputStream:(NSInputStream*) input {
+  return (CorrelationRes*)[[[CorrelationRes builder] mergeFromInputStream:input] build];
+}
++ (CorrelationRes*) parseFromInputStream:(NSInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (CorrelationRes*)[[[CorrelationRes builder] mergeFromInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (CorrelationRes*) parseFromCodedInputStream:(PBCodedInputStream*) input {
+  return (CorrelationRes*)[[[CorrelationRes builder] mergeFromCodedInputStream:input] build];
+}
++ (CorrelationRes*) parseFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  return (CorrelationRes*)[[[CorrelationRes builder] mergeFromCodedInputStream:input extensionRegistry:extensionRegistry] build];
+}
++ (CorrelationResBuilder*) builder {
+  return [[CorrelationResBuilder alloc] init];
+}
++ (CorrelationResBuilder*) builderWithPrototype:(CorrelationRes*) prototype {
+  return [[CorrelationRes builder] mergeFrom:prototype];
+}
+- (CorrelationResBuilder*) builder {
+  return [CorrelationRes builder];
+}
+- (CorrelationResBuilder*) toBuilder {
+  return [CorrelationRes builderWithPrototype:self];
+}
+- (void) writeDescriptionTo:(NSMutableString*) output withIndent:(NSString*) indent {
+  [self.readArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"read"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  [self.authorArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    [output appendFormat:@"%@%@ {\n", indent, @"author"];
+    [element writeDescriptionTo:output
+                     withIndent:[NSString stringWithFormat:@"%@  ", indent]];
+    [output appendFormat:@"%@}\n", indent];
+  }];
+  [self.unknownFields writeDescriptionTo:output withIndent:indent];
+}
+- (void) storeInDictionary:(NSMutableDictionary *)dictionary {
+  for (Book* element in self.readArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"read"];
+  }
+  for (Book* element in self.authorArray) {
+    NSMutableDictionary *elementDictionary = [NSMutableDictionary dictionary];
+    [element storeInDictionary:elementDictionary];
+    [dictionary setObject:[NSDictionary dictionaryWithDictionary:elementDictionary] forKey:@"author"];
+  }
+  [self.unknownFields storeInDictionary:dictionary];
+}
+- (BOOL) isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  }
+  if (![other isKindOfClass:[CorrelationRes class]]) {
+    return NO;
+  }
+  CorrelationRes *otherMessage = other;
+  return
+      [self.readArray isEqualToArray:otherMessage.readArray] &&
+      [self.authorArray isEqualToArray:otherMessage.authorArray] &&
+      (self.unknownFields == otherMessage.unknownFields || (self.unknownFields != nil && [self.unknownFields isEqual:otherMessage.unknownFields]));
+}
+- (NSUInteger) hash {
+  __block NSUInteger hashCode = 7;
+  [self.readArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  [self.authorArray enumerateObjectsUsingBlock:^(Book *element, NSUInteger idx, BOOL *stop) {
+    hashCode = hashCode * 31 + [element hash];
+  }];
+  hashCode = hashCode * 31 + [self.unknownFields hash];
+  return hashCode;
+}
+@end
+
+@interface CorrelationResBuilder()
+@property (strong) CorrelationRes* resultCorrelationRes;
+@end
+
+@implementation CorrelationResBuilder
+@synthesize resultCorrelationRes;
+- (instancetype) init {
+  if ((self = [super init])) {
+    self.resultCorrelationRes = [[CorrelationRes alloc] init];
+  }
+  return self;
+}
+- (PBGeneratedMessage*) internalGetResult {
+  return resultCorrelationRes;
+}
+- (CorrelationResBuilder*) clear {
+  self.resultCorrelationRes = [[CorrelationRes alloc] init];
+  return self;
+}
+- (CorrelationResBuilder*) clone {
+  return [CorrelationRes builderWithPrototype:resultCorrelationRes];
+}
+- (CorrelationRes*) defaultInstance {
+  return [CorrelationRes defaultInstance];
+}
+- (CorrelationRes*) build {
+  [self checkInitialized];
+  return [self buildPartial];
+}
+- (CorrelationRes*) buildPartial {
+  CorrelationRes* returnMe = resultCorrelationRes;
+  self.resultCorrelationRes = nil;
+  return returnMe;
+}
+- (CorrelationResBuilder*) mergeFrom:(CorrelationRes*) other {
+  if (other == [CorrelationRes defaultInstance]) {
+    return self;
+  }
+  if (other.readArray.count > 0) {
+    if (resultCorrelationRes.readArray == nil) {
+      resultCorrelationRes.readArray = [[NSMutableArray alloc] initWithArray:other.readArray];
+    } else {
+      [resultCorrelationRes.readArray addObjectsFromArray:other.readArray];
+    }
+  }
+  if (other.authorArray.count > 0) {
+    if (resultCorrelationRes.authorArray == nil) {
+      resultCorrelationRes.authorArray = [[NSMutableArray alloc] initWithArray:other.authorArray];
+    } else {
+      [resultCorrelationRes.authorArray addObjectsFromArray:other.authorArray];
+    }
+  }
+  [self mergeUnknownFields:other.unknownFields];
+  return self;
+}
+- (CorrelationResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input {
+  return [self mergeFromCodedInputStream:input extensionRegistry:[PBExtensionRegistry emptyRegistry]];
+}
+- (CorrelationResBuilder*) mergeFromCodedInputStream:(PBCodedInputStream*) input extensionRegistry:(PBExtensionRegistry*) extensionRegistry {
+  PBUnknownFieldSetBuilder* unknownFields = [PBUnknownFieldSet builderWithUnknownFields:self.unknownFields];
+  while (YES) {
+    SInt32 tag = [input readTag];
+    switch (tag) {
+      case 0:
+        [self setUnknownFields:[unknownFields build]];
+        return self;
+      default: {
+        if (![self parseUnknownField:input unknownFields:unknownFields extensionRegistry:extensionRegistry tag:tag]) {
+          [self setUnknownFields:[unknownFields build]];
+          return self;
+        }
+        break;
+      }
+      case 10: {
+        BookBuilder* subBuilder = [Book builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addRead:[subBuilder buildPartial]];
+        break;
+      }
+      case 18: {
+        BookBuilder* subBuilder = [Book builder];
+        [input readMessage:subBuilder extensionRegistry:extensionRegistry];
+        [self addAuthor:[subBuilder buildPartial]];
+        break;
+      }
+    }
+  }
+}
+- (NSMutableArray<Book*> *)read {
+  return resultCorrelationRes.readArray;
+}
+- (Book*)readAtIndex:(NSUInteger)index {
+  return [resultCorrelationRes readAtIndex:index];
+}
+- (CorrelationResBuilder *)addRead:(Book*)value {
+  if (resultCorrelationRes.readArray == nil) {
+    resultCorrelationRes.readArray = [[NSMutableArray alloc]init];
+  }
+  [resultCorrelationRes.readArray addObject:value];
+  return self;
+}
+- (CorrelationResBuilder *)setReadArray:(NSArray<Book*> *)array {
+  resultCorrelationRes.readArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (CorrelationResBuilder *)clearRead {
+  resultCorrelationRes.readArray = nil;
+  return self;
+}
+- (NSMutableArray<Book*> *)author {
+  return resultCorrelationRes.authorArray;
+}
+- (Book*)authorAtIndex:(NSUInteger)index {
+  return [resultCorrelationRes authorAtIndex:index];
+}
+- (CorrelationResBuilder *)addAuthor:(Book*)value {
+  if (resultCorrelationRes.authorArray == nil) {
+    resultCorrelationRes.authorArray = [[NSMutableArray alloc]init];
+  }
+  [resultCorrelationRes.authorArray addObject:value];
+  return self;
+}
+- (CorrelationResBuilder *)setAuthorArray:(NSArray<Book*> *)array {
+  resultCorrelationRes.authorArray = [[NSMutableArray alloc]initWithArray:array];
+  return self;
+}
+- (CorrelationResBuilder *)clearAuthor {
+  resultCorrelationRes.authorArray = nil;
   return self;
 }
 @end

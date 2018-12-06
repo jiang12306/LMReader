@@ -34,13 +34,6 @@ static dispatch_once_t onceToken;
     return sharedVC;
 }
 
-//-(instancetype)init {
-//    if (sharedVC == nil) {
-//        sharedVC = [super init];
-//    }
-//    return sharedVC;
-//}
-
 -(id)copyWithZone:(NSZone *)zone {
     return sharedVC;
 }
@@ -50,7 +43,7 @@ static dispatch_once_t onceToken;
 }
 
 +(instancetype)sharedRootViewController {
-    return [[self alloc]init];
+    return [[LMRootViewController alloc]init];
 }
 
 - (void)viewDidLoad {
@@ -183,6 +176,47 @@ static dispatch_once_t onceToken;
             }
         }
     }
+}
+
+//设置角标红点
+-(void)setupShowRedDot:(BOOL)showRedDot index:(NSInteger)index {
+    NSInteger targetIndex = index;
+    if (index > 3) {
+        targetIndex = 0;
+    }
+    LMBaseTabBarController* tabBarController;
+    for (UIViewController* vc in self.childViewControllers) {
+        if ([vc isKindOfClass:[LMBaseTabBarController class]]) {
+            tabBarController = (LMBaseTabBarController* )vc;
+            break;
+        }
+    }
+    if (tabBarController && targetIndex < tabBarController.viewControllers.count) {
+        if (showRedDot) {
+            [tabBarController showTabBarItemRedDotWithIndex:index];
+        }else {
+            [tabBarController hideTabBarItemRedDotWithIndex:index];
+        }
+    }
+}
+
+//获取是否有角标红点
+-(BOOL)getShowRedDotWithIndex:(NSInteger)index {
+    NSInteger targetIndex = index;
+    if (index > 3) {
+        targetIndex = 0;
+    }
+    LMBaseTabBarController* tabBarController;
+    for (UIViewController* vc in self.childViewControllers) {
+        if ([vc isKindOfClass:[LMBaseTabBarController class]]) {
+            tabBarController = (LMBaseTabBarController* )vc;
+            break;
+        }
+    }
+    if (tabBarController && targetIndex < tabBarController.viewControllers.count) {
+        return [tabBarController getTabBarItemRedDotWithIndex:index];
+    }
+    return NO;
 }
 
 - (void)didReceiveMemoryWarning {

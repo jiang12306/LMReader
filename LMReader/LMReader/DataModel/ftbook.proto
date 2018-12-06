@@ -45,6 +45,10 @@ package ftbook;
 //42. 广告展示上报
 //43. 自定义精选(精选首页)
 //44. 自定义精选(查看更多)
+//45. 帮用户找书
+//46. 系统消息列表
+//47. 一条系统消息的请求
+//48. 读完该书本的相关推荐
 // 调试地址 http://book.tkmob.com/api/index
 //*/
 
@@ -72,7 +76,7 @@ message JsonParse{
     required uint32 json_type = 2; // 0:键值对 1:数组
 }
 message KanapiJiaston{
-    required uint32 bid = 1; // 书本ID
+    required string bid = 1; // 书本ID
     repeated JsonParse list_parse = 2; // [ {k:data,t:0}, {k:list, t:1}, {k:list, t:1} ]
     optional string cid_key = 3; // 章节ID的json索引 'id'
     optional string ctitle_key = 4; // 章节标题的json索引 'name'
@@ -211,6 +215,7 @@ message Device{
         optional string mac = 3[default = ""];  // 可选，Android非手机设备的WiFi网卡MAC地址，格式要求[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}
         optional string android_id = 5[default = ""]; // 可选，Android手机设备系统ID，格式要求[0-9A-Za-z]{16}
         optional string custom_id = 6[default = ""]; //可选，Android手机用，前端同事自定义
+        optional string idfa = 7[default = ""]; //可选
     };
     optional DeviceType device_type = 1;  // 必填！设备类型
     optional OsType os_type = 2;  // 必填！操作系统类型
@@ -754,6 +759,7 @@ message InitSwitchRes{
     repeated AdControl ad_control = 1 ;
     optional uint32 skip_n = 2 ; // 广告跳过开头N个章节
     optional uint32 less_m = 3 ; // 章内容小于m页不显示
+    optional uint32 show_h = 4 [default = 0]; // 书架显示最近阅读
 }
 
 //41. 自家的具体广告
@@ -804,4 +810,47 @@ message SelfDefinedMoreRes{
     repeated Book books = 1;
     required uint32 psize = 3; // 一页多少条
     required uint32 page = 5; // 
+}
+
+//45. 帮用户找书
+message SearchHelpReq{
+    required string book_name = 1;//小说名称
+    optional string book_author = 2;//作者
+    optional string web_str = 3;//网站或app名称
+}
+// 以外层状态码判断之
+
+//46. 系统消息列表
+message SysMsg{
+    required uint32 id = 1;
+    required string title = 2; // 标题
+    optional string content = 3; // 内容
+    optional string s_t = 4; // 时间
+    optional uint32 is_read = 5; // 当前的客户端uid是否已读
+}
+message SysMsgListReq{
+    required uint32 page = 1; //
+}
+message SysMsgListRes{
+    required uint32 psize = 1; // 一页多少条 //每页20条
+    required uint32 page = 3; // 第几页 以0页为起点
+    repeated SysMsg sysmsgs = 5; //
+    required uint32 n_t = 7; // 下一次请求间隔 单位秒 默认 5*60=300秒
+}
+
+//47. 一条系统消息的请求
+message SysMsgReq{
+    required uint32 id = 1; //
+}
+message SysMsgRes{
+    optional SysMsg sysmsg = 1;
+}
+
+//48. 读完该书本的相关推荐
+message CorrelationReq{
+    required uint32 bookid = 1; //
+}
+message CorrelationRes{
+   repeated Book read = 1;   //10本,按阅读次数优先排序
+   repeated Book author = 2;   //最多10本,该作者写过
 }

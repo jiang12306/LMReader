@@ -79,11 +79,11 @@ static CGFloat cellHeight = 60;
     
     self.title = @"书籍详情";
     
-    UIView* moreItemView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 40, 40)];
+    UIView* moreItemView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 30, 30)];
     UIButton* moreItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, moreItemView.frame.size.width, moreItemView.frame.size.height)];
-    [moreItemBtn setImage:[[UIImage imageNamed:@"rightBarButtonItem_More_Black"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+    [moreItemBtn setImage:[[UIImage imageNamed:@"readerBook_More"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
     [moreItemBtn setTintColor:UIColorFromRGB(0x656565)];
-    [moreItemBtn setImageEdgeInsets:UIEdgeInsetsMake(5, 5, 5, 5)];
+    [moreItemBtn setImageEdgeInsets:UIEdgeInsetsMake(5, 5, 5, 13)];
     [moreItemBtn addTarget:self action:@selector(clickedMoreItemButton:) forControlEvents:UIControlEventTouchUpInside];
     [moreItemView addSubview:moreItemBtn];
     UIBarButtonItem* moreItem = [[UIBarButtonItem alloc]initWithCustomView:moreItemView];
@@ -92,7 +92,7 @@ static CGFloat cellHeight = 60;
     UIButton* shareItemBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, shareItemView.frame.size.width, shareItemView.frame.size.height)];
     [shareItemBtn setImage:[[UIImage imageNamed:@"rightBarButtonItem_Share"]imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
     [shareItemBtn setTintColor:UIColorFromRGB(0x656565)];
-    [shareItemBtn setImageEdgeInsets:UIEdgeInsetsMake(7, 7, 7, 7)];
+    [shareItemBtn setImageEdgeInsets:UIEdgeInsetsMake(7, 11, 9, 5)];
     [shareItemBtn addTarget:self action:@selector(clickedShareButton:) forControlEvents:UIControlEventTouchUpInside];
     [shareItemView addSubview:shareItemBtn];
     UIBarButtonItem* shareItem = [[UIBarButtonItem alloc]initWithCustomView:shareItemView];
@@ -298,11 +298,11 @@ static CGFloat cellHeight = 60;
 //
 -(void)clickedMoreItemButton:(UIButton* )sender {
     NSMutableArray* actionArray = [NSMutableArray array];
-    PopoverAction* briefAction = [PopoverAction actionWithTitle:@"书架" handler:^(PopoverAction *action) {
+    PopoverAction* shelfAction = [PopoverAction actionWithTitle:@"书架" handler:^(PopoverAction *action) {
         LMRootViewController* rootVC = [LMRootViewController sharedRootViewController];
         [rootVC backToTabBarControllerWithViewControllerIndex:0];
     }];
-    [actionArray addObject:briefAction];
+    [actionArray addObject:shelfAction];
     PopoverView *popoverView = [PopoverView popoverView];
     popoverView.style = PopoverViewStyleDefault;
     popoverView.hideAfterTouchOutside = YES;
@@ -396,7 +396,13 @@ static CGFloat cellHeight = 60;
     UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, self.bookCoverWidth, self.bookCoverHeight)];
     iv.contentMode = UIViewContentModeScaleAspectFill;
     iv.clipsToBounds = YES;
-    [iv sd_setImageWithURL:[NSURL URLWithString:picStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage"]];
+    [iv sd_setImageWithURL:[NSURL URLWithString:picStr] placeholderImage:[UIImage imageNamed:@"defaultBookImage_Gray"] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+        if (image && error == nil) {
+            
+        }else {
+            iv.image = [UIImage imageNamed:@"defaultBookImage"];
+        }
+    }];
     [self.headerView addSubview:iv];
     
     if ([self.book hasMarkUrl]) {
@@ -668,7 +674,7 @@ static CGFloat cellHeight = 60;
         __weak LMBookDetailViewController* weakSelf = self;
         //先加载章节列表，根据章节列表来判断解析方式
         LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-        [tool queryBookReadRecordWithBookId:self.bookId recordBlock:^(BOOL hasRecord, UInt32 chapterId, UInt32 sourceId, NSInteger offset) {
+        [tool queryBookReadRecordWithBookId:self.bookId recordBlock:^(BOOL hasRecord, NSString* chapterId, UInt32 sourceId, NSInteger offset) {
             NSInteger currentSourceId = 0;
             if (hasRecord) {
                 currentSourceId = sourceId;
@@ -725,26 +731,48 @@ static CGFloat cellHeight = 60;
                                 }
                                 if (bookParseArr.count > 0) {
                                     UrlReadParse* parse = [bookParseArr objectAtIndex:parseIndex];
-                                    [weakSelf loadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {//获取章节列表
-                                        //下载
-                                        [weakSelf.downloadView startDownloadNewParseBookWithBookId:weakSelf.bookId catalogList:listArray parse:parse block:^(BOOL isFinished, BOOL isFailed, NSInteger totalCount, CGFloat progress) {
-                                            
-                                            NSString* btnTitleStr = [NSString stringWithFormat:@"%.2f%%", progress * 100];
-                                            if (progress == 1) {
-                                                btnTitleStr = @"100%完成";
-                                            }else {
-                                                if (isFailed && totalCount < LMDownloadBookViewMaxCount) {
-                                                    [weakSelf clickedDownloadButton:weakSelf.downloadBtn];
-                                                }else if (isFailed && totalCount >= LMDownloadBookViewMaxCount) {
-                                                    btnTitleStr = @"部分下载失败，请重试";//[NSString stringWithFormat:@"%.2f%% %@", progress * 100, @"部分下载失败，请重试"];
+                                    if ([parse hasApi]) {//json解析
+                                        [weakSelf LoadJsonParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                            //下载
+                                            [weakSelf.downloadView startDownloadNewParseBookWithBookId:weakSelf.bookId catalogList:listArray parse:parse block:^(BOOL isFinished, BOOL isFailed, NSInteger totalCount, CGFloat progress) {
+                                                
+                                                NSString* btnTitleStr = [NSString stringWithFormat:@"%.2f%%", progress * 100];
+                                                if (progress == 1) {
+                                                    btnTitleStr = @"100%完成";
+                                                }else {
+                                                    if (isFailed && totalCount < LMDownloadBookViewMaxCount) {
+                                                        [weakSelf clickedDownloadButton:weakSelf.downloadBtn];
+                                                    }else if (isFailed && totalCount >= LMDownloadBookViewMaxCount) {
+                                                        btnTitleStr = @"部分下载失败，请重试";//[NSString stringWithFormat:@"%.2f%% %@", progress * 100, @"部分下载失败，请重试"];
+                                                    }
                                                 }
-                                            }
-                                            [weakSelf.downloadBtn setTitle:btnTitleStr forState:UIControlStateNormal];
+                                                [weakSelf.downloadBtn setTitle:btnTitleStr forState:UIControlStateNormal];
+                                            }];
+                                        } failureBlock:^(NSError *error) {
+                                            [weakSelf.downloadBtn setTitle:@"下载失败" forState:UIControlStateNormal];
                                         }];
-                                        
-                                    } failureBlock:^(NSError *error) {
-                                        [weakSelf.downloadBtn setTitle:@"下载失败" forState:UIControlStateNormal];
-                                    }];
+                                    }else {//html解析
+                                        [weakSelf loadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {//获取章节列表
+                                            //下载
+                                            [weakSelf.downloadView startDownloadNewParseBookWithBookId:weakSelf.bookId catalogList:listArray parse:parse block:^(BOOL isFinished, BOOL isFailed, NSInteger totalCount, CGFloat progress) {
+                                                
+                                                NSString* btnTitleStr = [NSString stringWithFormat:@"%.2f%%", progress * 100];
+                                                if (progress == 1) {
+                                                    btnTitleStr = @"100%完成";
+                                                }else {
+                                                    if (isFailed && totalCount < LMDownloadBookViewMaxCount) {
+                                                        [weakSelf clickedDownloadButton:weakSelf.downloadBtn];
+                                                    }else if (isFailed && totalCount >= LMDownloadBookViewMaxCount) {
+                                                        btnTitleStr = @"部分下载失败，请重试";//[NSString stringWithFormat:@"%.2f%% %@", progress * 100, @"部分下载失败，请重试"];
+                                                    }
+                                                }
+                                                [weakSelf.downloadBtn setTitle:btnTitleStr forState:UIControlStateNormal];
+                                            }];
+                                            
+                                        } failureBlock:^(NSError *error) {
+                                            [weakSelf.downloadBtn setTitle:@"下载失败" forState:UIControlStateNormal];
+                                        }];
+                                    }
                                 }else {
                                     [weakSelf.downloadBtn setTitle:@"下载失败" forState:UIControlStateNormal];
                                 }
@@ -770,8 +798,40 @@ static CGFloat cellHeight = 60;
     LMReaderBookViewController* readerBookVC = [[LMReaderBookViewController alloc]init];
     readerBookVC.bookId = self.book.bookId;
     readerBookVC.bookName = self.book.name;
+    readerBookVC.bookCover = self.book.pic;
     LMBaseNavigationController* bookNavi = [[LMBaseNavigationController alloc]initWithRootViewController:readerBookVC];
     [self presentViewController:bookNavi animated:YES completion:nil];
+}
+
+//Chiang json解析章节列表
+-(void)LoadJsonParseBookChaptersWithUrlReadParse:(UrlReadParse* )parse successBlock:(void (^) (NSArray* listArray))successBlock failureBlock:(void (^) (NSError* error))failureBlock {
+    __weak LMBookDetailViewController* weakSelf = self;
+    NSString* urlStr = parse.listUrl;
+    [[LMNetworkTool sharedNetworkTool]AFNetworkPostWithURLString:urlStr successBlock:^(NSData *successData) {
+        @try {
+            NSError* jsonError = nil;
+            NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:successData options:NSJSONReadingMutableLeaves error:&jsonError];
+            if (jsonError != nil || dic == nil || [dic isKindOfClass:[NSNull class]] || dic.count == 0) {
+                failureBlock(nil);
+            }
+            
+            NSArray* tempArr = [LMTool jsonParseChapterListWithParse:parse originalDic:dic];
+            
+            if (tempArr.count > 0) {
+                successBlock(tempArr);
+                //保存新解析方式下章节列表
+                [LMTool archiveNewParseBookCatalogListWithBookId:weakSelf.bookId catalogList:tempArr];
+            }else {
+                failureBlock(nil);
+            }
+        } @catch (NSException *exception) {
+            failureBlock(nil);
+        } @finally {
+            
+        }
+    } failureBlock:^(NSError *failureError) {
+        failureBlock(nil);
+    }];
 }
 
 //新解析方式 加载章节列表
@@ -805,7 +865,7 @@ static CGFloat cellHeight = 60;
                 
                 bookChapter.url = bookChapterUrlStr;
                 bookChapter.title = element.content;
-                bookChapter.chapterId = i - listOffset;
+                bookChapter.chapterId = [NSString stringWithFormat:@"%ld", i - listOffset];
                 [listArr addObject:bookChapter];
             }
             if (listArr.count > 0) {
@@ -1067,6 +1127,7 @@ static CGFloat cellHeight = 60;
             LMBookCatalogViewController* catalogVC = [[LMBookCatalogViewController alloc]init];
             catalogVC.bookId = self.bookId;
             catalogVC.bookNameStr = self.book.name;
+            catalogVC.bookCoverStr = self.book.pic;
             catalogVC.fromWhich = 2;
             [self.navigationController pushViewController:catalogVC animated:YES];
         }

@@ -139,24 +139,9 @@
         pwdLineView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
         [self.passwordView addSubview:pwdLineView];
         
-        self.agreeResult = YES;
-        __weak LMLoginAlertView* weakSelf = self;
-        
-        self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake(10, self.codeView.frame.origin.y + self.codeView.frame.size.height + spaceY, 170, 15)];
-        self.agreementView.agreeBlock = ^(BOOL didAgree) {
-            weakSelf.agreeResult = didAgree;
-        };
-        self.agreementView.clickBlock = ^(BOOL didClick) {
-            if (weakSelf.protocolBlock) {
-                weakSelf.protocolBlock(YES);
-            }
-            [weakSelf startHide];
-        };
-        [self.contentView addSubview:self.agreementView];
-        
-        self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.agreementView.frame.origin.y + self.agreementView.frame.size.height + 20, screenRect.size.width - 60 * 2, 50)];
+        self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.codeView.frame.origin.y + self.codeView.frame.size.height + 20, screenRect.size.width - 60 * 2, 45)];
         self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-        self.sendBtn.layer.cornerRadius = 25;
+        self.sendBtn.layer.cornerRadius = self.sendBtn.frame.size.height / 2;
         self.sendBtn.layer.masksToBounds = YES;
         [self.sendBtn setTitle:@"登 录" forState:UIControlStateNormal];
         [self.sendBtn addTarget:self action:@selector(clickedSendButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -179,6 +164,20 @@
         UIImageView* qqIV = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 50, 50)];
         qqIV.image = [UIImage imageNamed:@"qq_Gray"];
         [self.qqBtn addSubview:qqIV];
+        
+        self.agreeResult = YES;
+        __weak LMLoginAlertView* weakSelf = self;
+        self.agreementView = [[LMLoginAgreementView alloc]initWithFrame:CGRectMake((self.contentView.frame.size.width - 160) / 2, self.qqBtn.frame.origin.y + self.qqBtn.frame.size.height + spaceY, 160, 15) agreeType:LMLoginAgreementViewTypeLogin];
+        self.agreementView.agreeBlock = ^(BOOL didAgree) {
+            weakSelf.agreeResult = didAgree;
+        };
+        self.agreementView.clickBlock = ^(BOOL didClick) {
+            if (weakSelf.protocolBlock) {
+                weakSelf.protocolBlock(YES);
+            }
+            [weakSelf startHide];
+        };
+        [self.contentView addSubview:self.agreementView];
         
         BOOL installedWeChat = NO;//本地支持微信
         if ([WXApi isWXAppInstalled] && [WXApi isWXAppSupportApi]) {
@@ -258,7 +257,7 @@
     NSDictionary*info=[notify userInfo];
     CGFloat duration = [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey]floatValue];
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
-    CGFloat contentHeight = self.qqBtn.frame.origin.y + self.qqBtn.frame.size.height + 20;
+    CGFloat contentHeight = self.agreementView.frame.origin.y + self.agreementView.frame.size.height + 20;
     if ([LMTool isBangsScreen]) {
         contentHeight += 20;
     }
@@ -605,7 +604,7 @@
 
 -(void)startShow {
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
-    CGFloat contentHeight = self.qqBtn.frame.origin.y + self.qqBtn.frame.size.height + 20;
+    CGFloat contentHeight = self.agreementView.frame.origin.y + self.agreementView.frame.size.height + 20;
     if ([LMTool isBangsScreen]) {
         contentHeight += 20;
     }
@@ -749,26 +748,26 @@
     CGSize contentSize = [UIScreen mainScreen].bounds.size;
     if (!self.loadingView) {
         self.loadingView = [[UIView alloc]initWithFrame:CGRectMake((contentSize.width - 70)/2, (contentSize.height - 70)/2, 70, 70)];
-        self.loadingView.backgroundColor = [UIColor colorWithRed:40.f/255 green:40.f/255 blue:40.f/255 alpha:0.6];
+        self.loadingView.backgroundColor = [UIColor colorWithRed:80.f/255 green:80.f/255 blue:80.f/255 alpha:0.5];
         self.loadingView.layer.cornerRadius = 5;
         self.loadingView.layer.masksToBounds = YES;
         
         self.loadingIV = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, 50, 30)];
         NSMutableArray* imgArr = [NSMutableArray array];
-        for (NSInteger i = 0; i < 7; i ++) {
+        for (NSInteger i = 0; i < 25; i ++) {
             NSString* imgStr = [NSString stringWithFormat:@"loading%ld", (long)i];
             UIImage* img = [UIImage imageNamed:imgStr];
             [imgArr addObject:img];
         }
         self.loadingIV.animationImages = imgArr;
-        self.loadingIV.animationDuration = 1;
+        self.loadingIV.animationDuration = 1.5;
         [self.loadingView addSubview:self.loadingIV];
         
         self.loadingLab = [[UILabel alloc]initWithFrame:CGRectMake(0, self.loadingView.frame.size.height - 25, self.loadingView.frame.size.height, 20)];
         self.loadingLab.textColor = [UIColor whiteColor];
         self.loadingLab.textAlignment = NSTextAlignmentCenter;
         self.loadingLab.font = [UIFont systemFontOfSize:14];
-        self.loadingLab.text = @"加载中···";
+        self.loadingLab.text = @"加载中";
         [self.loadingView addSubview:self.loadingLab];
         
         [self insertSubview:self.loadingView aboveSubview:self.contentView];

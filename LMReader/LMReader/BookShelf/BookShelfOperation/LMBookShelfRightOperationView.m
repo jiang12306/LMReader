@@ -61,11 +61,11 @@ float LMBookShelfOperationDegreesToRadians(float angle) {
     _contentView.backgroundColor = [UIColor whiteColor];
     [self setShowShade:YES];
     
-    self.batchBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, kPopoverViewArrowHeight, 150, 65)];
+    self.batchBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, kPopoverViewArrowHeight, 150, 60)];
     [self.batchBtn addTarget:self action:@selector(clickedBatchButton:) forControlEvents:UIControlEventTouchUpInside];
     [_contentView addSubview:self.batchBtn];
     
-    self.batchIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, 22, 22)];
+    self.batchIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, 20, 20)];
     self.batchIV.image = [UIImage imageNamed:@"bookShelf_Operation_Batch"];
     [self.batchBtn addSubview:self.batchIV];
     
@@ -79,7 +79,7 @@ float LMBookShelfOperationDegreesToRadians(float angle) {
     [self.listBtn addTarget:self action:@selector(clickedListButton:) forControlEvents:UIControlEventTouchUpInside];
     [_contentView addSubview:self.listBtn];
     
-    self.listIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, 22, 22)];
+    self.listIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, self.listBtn.frame.size.height - 20 - 20, 20, 20)];
     self.listIV.image = [UIImage imageNamed:@"bookShelf_Operation_List"];
     [self.listBtn addSubview:self.listIV];
     

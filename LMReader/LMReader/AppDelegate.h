@@ -17,10 +17,10 @@
 //更新 夜间、日间模式
 -(void)updateSystemNightShift;
 
-//夜间模式时，将layer置顶
+//夜间模式时，将layer置顶  但凡在keyWindow上操作视图的时候要记得这一步
 -(void)bringSystemNightShiftToFront;
 
-//夜间模式时，将layer放底下 否则会覆盖广告
+//夜间模式时，将layer放底下 否则会覆盖广告  但凡在keyWindow上操作视图的时候要记得这一步
 -(void)sendSystemNightShiftToback;
 
 @end

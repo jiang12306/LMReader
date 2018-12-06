@@ -10,13 +10,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef enum {
+    LMLoginAgreementViewTypeRegister = 1,//注册
+    LMLoginAgreementViewTypeLogin = 2,//登录
+}LMLoginAgreementViewType;
+
 typedef void (^LMLoginAgreementViewAgreeBlock) (BOOL didAgree);
 typedef void (^LMLoginAgreementViewClickBlock) (BOOL didClick);
 
 @interface LMLoginAgreementView : LMBaseAlertView
 
+@property (nonatomic, assign) LMLoginAgreementViewType agreeType;
+
 @property (nonatomic, copy) LMLoginAgreementViewAgreeBlock agreeBlock;
 @property (nonatomic, copy) LMLoginAgreementViewClickBlock clickBlock;
+
+-(instancetype)initWithFrame:(CGRect)frame agreeType:(LMLoginAgreementViewType )agreeType;
 
 @end
 

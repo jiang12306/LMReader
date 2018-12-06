@@ -19,7 +19,7 @@
 
 static CGFloat agreeButtonHeight = 15;
 
--(instancetype)initWithFrame:(CGRect)frame {
+-(instancetype)initWithFrame:(CGRect)frame agreeType:(LMLoginAgreementViewType )agreeType {
     self = [super initWithFrame:frame];
     if (self) {
         self.agreeBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, (frame.size.height - agreeButtonHeight) / 2, agreeButtonHeight, agreeButtonHeight)];
@@ -27,13 +27,18 @@ static CGFloat agreeButtonHeight = 15;
         [self.agreeBtn setImage:[UIImage imageNamed:@"readPreferences_Selected"] forState:UIControlStateSelected];
         self.agreeBtn.selected = YES;
         [self.agreeBtn addTarget:self action:@selector(clickedAgreeButton:) forControlEvents:UIControlEventTouchUpInside];
-        [self addSubview:self.agreeBtn];
+//        [self addSubview:self.agreeBtn];
         
-        NSMutableAttributedString* attributedStr = [[NSMutableAttributedString alloc]initWithString:@"同意《用户隐私协议》"];
-        [attributedStr addAttributes:@{NSForegroundColorAttributeName : [UIColor grayColor], NSFontAttributeName : [UIFont systemFontOfSize:12]} range:NSMakeRange(0, 2)];
-        [attributedStr addAttributes:@{NSForegroundColorAttributeName : [UIColor blueColor], NSFontAttributeName : [UIFont systemFontOfSize:12], NSUnderlineStyleAttributeName : [NSNumber numberWithInteger:NSUnderlineStyleSingle]} range:NSMakeRange(2, attributedStr.length - 2)];
+        self.agreeType = agreeType;
+        NSString* agreeStr = @"登录即同意《用户隐私协议》";
+        if (self.agreeType == LMLoginAgreementViewTypeRegister) {
+            agreeStr = @"注册即同意《用户隐私协议》";
+        }
+        NSMutableAttributedString* attributedStr = [[NSMutableAttributedString alloc]initWithString:agreeStr];
+        [attributedStr addAttributes:@{NSForegroundColorAttributeName : [UIColor grayColor], NSFontAttributeName : [UIFont systemFontOfSize:12]} range:NSMakeRange(0, 5)];
+        [attributedStr addAttributes:@{NSForegroundColorAttributeName : [UIColor blueColor], NSFontAttributeName : [UIFont systemFontOfSize:12]} range:NSMakeRange(5, attributedStr.length - 5)];
         
-        self.protocolBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.agreeBtn.frame.origin.x + self.agreeBtn.frame.size.width, self.agreeBtn.frame.origin.y, frame.size.width - 20, agreeButtonHeight)];
+        self.protocolBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, agreeButtonHeight)];
         [self.protocolBtn setAttributedTitle:attributedStr forState:UIControlStateNormal];
         [self.protocolBtn addTarget:self action:@selector(clickedProtocolButton:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:self.protocolBtn];

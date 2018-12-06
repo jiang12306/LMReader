@@ -90,9 +90,9 @@ static NSInteger textCount = 300;
     self.alertLab.text = @"300/300字";
     [self.scrollView addSubview:self.alertLab];
     
-    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.alertLab.frame.origin.y + self.alertLab.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 50)];
+    self.sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(60, self.alertLab.frame.origin.y + self.alertLab.frame.size.height + 20, self.view.frame.size.width - 60 * 2, 45)];
     self.sendBtn.backgroundColor = THEMEORANGECOLOR;
-    self.sendBtn.layer.cornerRadius = 25;
+    self.sendBtn.layer.cornerRadius = self.sendBtn.frame.size.height / 2;
     self.sendBtn.layer.masksToBounds = YES;
     self.sendBtn.titleLabel.font = [UIFont systemFontOfSize:18];
     [self.sendBtn setTitle:@"提 交" forState:UIControlStateNormal];
@@ -227,14 +227,18 @@ static NSInteger textCount = 300;
             if (apiRes.cmd == 36) {
                 ErrCode err = apiRes.err;
                 if (err == ErrCodeErrNone) {
-                    
-                    [weakSelf showMBProgressHUDWithText:@"操作成功"];
-                    
-                    [[NSNotificationCenter defaultCenter]postNotificationName:@"refreshComment" object:nil userInfo:@{@"bookId" : [NSNumber numberWithUnsignedInt:self.bookId]}];
-                    
-                    dispatch_after(dispatch_walltime(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                        [weakSelf.navigationController popViewControllerAnimated:YES];
-                    });
+                    if (weakSelf.commentBlock) {
+                        [weakSelf.navigationController popViewControllerAnimated:NO];
+                        weakSelf.commentBlock(YES);
+                    }else {
+                        [weakSelf showMBProgressHUDWithText:@"操作成功"];
+                        
+                        [[NSNotificationCenter defaultCenter]postNotificationName:@"refreshComment" object:nil userInfo:@{@"bookId" : [NSNumber numberWithUnsignedInt:self.bookId]}];
+                        
+                        dispatch_after(dispatch_walltime(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                            [weakSelf.navigationController popViewControllerAnimated:YES];
+                        });
+                    }
                 }
             }
             

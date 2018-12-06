@@ -40,20 +40,6 @@
 		F2153B862175BEEE004DD621 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2153B852175BEEE004DD621 /* SafariServices.framework */; };
 		F2153B882175BEFD004DD621 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2153B872175BEFD004DD621 /* CoreMedia.framework */; };
 		F2153B8B2175CA76004DD621 /* LMBaiduSplashAdView.m in Sources */ = {isa = PBXBuildFile; fileRef = F2153B8A2175CA76004DD621 /* LMBaiduSplashAdView.m */; };
-		F21AF34220650CA60038C195 /* MOBFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF32920650CA60038C195 /* MOBFoundation.framework */; };
-		F21AF34320650CA60038C195 /* ShareSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF32B20650CA60038C195 /* ShareSDK.framework */; };
-		F21AF34420650CA60038C195 /* ShareSDKConfigFile.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F21AF32E20650CA60038C195 /* ShareSDKConfigFile.bundle */; };
-		F21AF34520650CA60038C195 /* ShareSDKConfigFile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF32F20650CA60038C195 /* ShareSDKConfigFile.framework */; };
-		F21AF34620650CA60038C195 /* ShareSDKExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF33020650CA60038C195 /* ShareSDKExtension.framework */; };
-		F21AF34720650CA60038C195 /* ShareSDKUI.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F21AF33120650CA60038C195 /* ShareSDKUI.bundle */; };
-		F21AF34820650CA60038C195 /* ShareSDKUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF33220650CA60038C195 /* ShareSDKUI.framework */; };
-		F21AF34920650CA60038C195 /* QQConnector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF33420650CA60038C195 /* QQConnector.framework */; };
-		F21AF34A20650CA60038C195 /* WechatConnector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF33520650CA60038C195 /* WechatConnector.framework */; };
-		F21AF34B20650CA60038C195 /* TencentOpenAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF33820650CA60038C195 /* TencentOpenAPI.framework */; };
-		F21AF34C20650CA60038C195 /* libWeChatSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF33A20650CA60038C195 /* libWeChatSDK.a */; };
-		F21AF34D20650CA60038C195 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = F21AF33B20650CA60038C195 /* README.txt */; };
-		F21AF34E20650CA60038C195 /* ShareSDK.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F21AF34020650CA60038C195 /* ShareSDK.bundle */; };
-		F21AF34F20650CA60038C195 /* ShareSDKConnector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF34120650CA60038C195 /* ShareSDKConnector.framework */; };
 		F21AF35120650D320038C195 /* libicucore.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF35020650D320038C195 /* libicucore.A.dylib */; };
 		F21AF35520650D950038C195 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F21AF35420650D950038C195 /* JavaScriptCore.framework */; };
 		F21CFB2A2180127F0089236A /* LMSearchTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = F21CFB292180127F0089236A /* LMSearchTitleView.m */; };
@@ -63,6 +49,24 @@
 		F21EF8752186B9FC0006C8D7 /* LMBookShelfEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F21EF8742186B9FC0006C8D7 /* LMBookShelfEditViewController.m */; };
 		F21EF8782186F6FE0006C8D7 /* bookShelf_Edit_Normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F21EF8762186F6FE0006C8D7 /* bookShelf_Edit_Normal@2x.png */; };
 		F21EF8792186F6FE0006C8D7 /* bookShelf_Edit_Selected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F21EF8772186F6FE0006C8D7 /* bookShelf_Edit_Selected@2x.png */; };
+		F22154D721A28E83004C60B5 /* loading11@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154C521A28E7F004C60B5 /* loading11@2x.png */; };
+		F22154D821A28E83004C60B5 /* loading21@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154C621A28E7F004C60B5 /* loading21@2x.png */; };
+		F22154D921A28E83004C60B5 /* loading7@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154C721A28E7F004C60B5 /* loading7@2x.png */; };
+		F22154DA21A28E83004C60B5 /* loading20@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154C821A28E80004C60B5 /* loading20@2x.png */; };
+		F22154DB21A28E83004C60B5 /* loading16@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154C921A28E80004C60B5 /* loading16@2x.png */; };
+		F22154DC21A28E83004C60B5 /* loading13@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154CA21A28E81004C60B5 /* loading13@2x.png */; };
+		F22154DD21A28E83004C60B5 /* loading18@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154CB21A28E81004C60B5 /* loading18@2x.png */; };
+		F22154DE21A28E83004C60B5 /* loading19@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154CC21A28E81004C60B5 /* loading19@2x.png */; };
+		F22154DF21A28E83004C60B5 /* loading17@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154CD21A28E81004C60B5 /* loading17@2x.png */; };
+		F22154E021A28E83004C60B5 /* loading23@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154CE21A28E81004C60B5 /* loading23@2x.png */; };
+		F22154E121A28E83004C60B5 /* loading24@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154CF21A28E82004C60B5 /* loading24@2x.png */; };
+		F22154E221A28E83004C60B5 /* loading14@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154D021A28E82004C60B5 /* loading14@2x.png */; };
+		F22154E321A28E83004C60B5 /* loading12@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154D121A28E82004C60B5 /* loading12@2x.png */; };
+		F22154E421A28E83004C60B5 /* loading10@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154D221A28E82004C60B5 /* loading10@2x.png */; };
+		F22154E521A28E83004C60B5 /* loading9@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154D321A28E82004C60B5 /* loading9@2x.png */; };
+		F22154E621A28E83004C60B5 /* loading22@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154D421A28E83004C60B5 /* loading22@2x.png */; };
+		F22154E721A28E83004C60B5 /* loading8@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154D521A28E83004C60B5 /* loading8@2x.png */; };
+		F22154E821A28E83004C60B5 /* loading15@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F22154D621A28E83004C60B5 /* loading15@2x.png */; };
 		F22D977C2027FB32007958D4 /* LMRangeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F22D977B2027FB32007958D4 /* LMRangeViewController.m */; };
 		F22D977F2027FB4C007958D4 /* LMSpecialChoiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F22D977E2027FB4C007958D4 /* LMSpecialChoiceViewController.m */; };
 		F22D97842027FCF4007958D4 /* LMBaseArrowTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F22D97832027FCF4007958D4 /* LMBaseArrowTableViewCell.m */; };
@@ -109,6 +113,23 @@
 		F23C397F20746F4100E5C109 /* LMLaunchImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = F23C397E20746F4100E5C109 /* LMLaunchImageView.m */; };
 		F23ED22D204660520039774D /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F23ED22C204660520039774D /* MobileCoreServices.framework */; };
 		F23ED22F2046605B0039774D /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F23ED22E2046605B0039774D /* AVFoundation.framework */; };
+		F24053E021B7A281002D977E /* readerRecommand_Top@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F24053DF21B7A281002D977E /* readerRecommand_Top@2x.png */; };
+		F24053E421B7B04A002D977E /* LMBookShelfUserInstructionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = F24053E321B7B04A002D977E /* LMBookShelfUserInstructionsView.m */; };
+		F24053E921B7B0A1002D977E /* LMBookStoreUserInstructionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = F24053E821B7B0A1002D977E /* LMBookStoreUserInstructionsView.m */; };
+		F24053EE21B7B0EA002D977E /* LMSearchUserInstructionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = F24053ED21B7B0EA002D977E /* LMSearchUserInstructionsView.m */; };
+		F24053FA21B7BDAA002D977E /* userInstructions_BookShelf@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F24053F821B7BDA9002D977E /* userInstructions_BookShelf@2x.png */; };
+		F24053FB21B7BDAA002D977E /* userInstructions_StepOver@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F24053F921B7BDA9002D977E /* userInstructions_StepOver@2x.png */; };
+		F24053FE21B7D3FF002D977E /* userInstructions_BookStore_Arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F24053FC21B7D3FF002D977E /* userInstructions_BookStore_Arrow@2x.png */; };
+		F24053FF21B7D3FF002D977E /* userInstructions_BookStore_Sex@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F24053FD21B7D3FF002D977E /* userInstructions_BookStore_Sex@2x.png */; };
+		F240540921B7D9B3002D977E /* userInstructions_Reader_Night@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540021B7D9B1002D977E /* userInstructions_Reader_Night@2x.png */; };
+		F240540A21B7D9B3002D977E /* userInstructions_Reader_RightArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540121B7D9B1002D977E /* userInstructions_Reader_RightArrow@2x.png */; };
+		F240540B21B7D9B3002D977E /* userInstructions_Reader_FeedBack@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540221B7D9B1002D977E /* userInstructions_Reader_FeedBack@2x.png */; };
+		F240540C21B7D9B3002D977E /* userInstructions_Reader_Source@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540321B7D9B2002D977E /* userInstructions_Reader_Source@2x.png */; };
+		F240540D21B7D9B3002D977E /* userInstructions_Search_Arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540421B7D9B2002D977E /* userInstructions_Search_Arrow@2x.png */; };
+		F240540E21B7D9B3002D977E /* userInstructions_Reader_LeftArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540521B7D9B2002D977E /* userInstructions_Reader_LeftArrow@2x.png */; };
+		F240540F21B7D9B3002D977E /* userInstructions_Reader_Setting@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540621B7D9B2002D977E /* userInstructions_Reader_Setting@2x.png */; };
+		F240541021B7D9B3002D977E /* userInstructions_Search_Help@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540721B7D9B2002D977E /* userInstructions_Search_Help@2x.png */; };
+		F240541121B7D9B3002D977E /* userInstructions_Reader_Comment@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F240540821B7D9B2002D977E /* userInstructions_Reader_Comment@2x.png */; };
 		F242E5342057B361003F95FD /* LMLaunchDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F242E5332057B361003F95FD /* LMLaunchDetailViewController.m */; };
 		F242E5372057BD32003F95FD /* register_Avator@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F242E5352057BD32003F95FD /* register_Avator@2x.png */; };
 		F242E5382057BD32003F95FD /* register_Password@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F242E5362057BD32003F95FD /* register_Password@2x.png */; };
@@ -137,7 +158,7 @@
 		F2512B352122A8C200C58A55 /* LMSearchBeforeCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2512B342122A8C200C58A55 /* LMSearchBeforeCollectionViewCell.m */; };
 		F2512B392122B7D200C58A55 /* LMAuthorBookViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2512B382122B7D200C58A55 /* LMAuthorBookViewController.m */; };
 		F2512B3C2122E7B200C58A55 /* LMSearchBeforeCollectionViewFlowLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = F2512B3B2122E7B200C58A55 /* LMSearchBeforeCollectionViewFlowLayout.m */; };
-		F251B943212EA5E0003DAF53 /* avator_Login@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F251B942212EA5DF003DAF53 /* avator_Login@2x.png */; };
+		F251B943212EA5E0003DAF53 /* avator_LoginIn@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F251B942212EA5DF003DAF53 /* avator_LoginIn@2x.png */; };
 		F251BE14212C164F00367F15 /* tabBar_BookStore@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F251BE13212C164F00367F15 /* tabBar_BookStore@2x.png */; };
 		F2520DEB21466E1C00966285 /* share_AppIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2520DE821466E1C00966285 /* share_AppIcon@2x.png */; };
 		F2520DEF21467F4500966285 /* LMBindPhoneNumberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2520DEE21467F4500966285 /* LMBindPhoneNumberViewController.m */; };
@@ -199,7 +220,7 @@
 		F25CA5E82184126400A8AFB6 /* bookStore_Male_Normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F25CA5E32184126300A8AFB6 /* bookStore_Male_Normal@2x.png */; };
 		F25CA5E92184126400A8AFB6 /* bookStore_Male_Selected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F25CA5E42184126300A8AFB6 /* bookStore_Male_Selected@2x.png */; };
 		F25CA5EA2184126400A8AFB6 /* bookStore_RightItem_Filter@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F25CA5E52184126400A8AFB6 /* bookStore_RightItem_Filter@2x.png */; };
-		F25CA5EB2184126400A8AFB6 /* bookStore_Feale_Selected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F25CA5E62184126400A8AFB6 /* bookStore_Feale_Selected@2x.png */; };
+		F25CA5EB2184126400A8AFB6 /* bookStore_Female_Selected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F25CA5E62184126400A8AFB6 /* bookStore_Female_Selected@2x.png */; };
 		F25CA5EC2184126400A8AFB6 /* bookStore_Female_Normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F25CA5E72184126400A8AFB6 /* bookStore_Female_Normal@2x.png */; };
 		F25CA5EF21846B2000A8AFB6 /* LMTypeBookStoreTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F25CA5EE21846B2000A8AFB6 /* LMTypeBookStoreTableViewCell.m */; };
 		F25CA5F12184760700A8AFB6 /* profile_Arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F25CA5F02184760700A8AFB6 /* profile_Arrow@2x.png */; };
@@ -266,6 +287,8 @@
 		F264456020738D170092EF44 /* UMCommonLog.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F264455E20738D170092EF44 /* UMCommonLog.bundle */; };
 		F264456120738D180092EF44 /* UMCommonLog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F264455F20738D170092EF44 /* UMCommonLog.framework */; };
 		F26475092068ED2A00F88CA9 /* LMWindowLoadingView.m in Sources */ = {isa = PBXBuildFile; fileRef = F26475082068ED2A00F88CA9 /* LMWindowLoadingView.m */; };
+		F2647C0521A7FB510093AFD6 /* LMSearchHelpBottomAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = F2647C0421A7FB510093AFD6 /* LMSearchHelpBottomAlertView.m */; };
+		F2647C0B21A80F6A0093AFD6 /* LMProfileMessageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2647C0A21A80F6A0093AFD6 /* LMProfileMessageViewController.m */; };
 		F2663C6F20EF0B0900F656E2 /* LMReaderRelatedBookCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2663C6E20EF0B0900F656E2 /* LMReaderRelatedBookCollectionViewCell.m */; };
 		F2663C7520EF217100F656E2 /* LMReaderFeedBackAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = F2663C7420EF217100F656E2 /* LMReaderFeedBackAlertView.m */; };
 		F2663C7820EF421E00F656E2 /* LMReaderFeedBackAlertViewTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2663C7720EF421E00F656E2 /* LMReaderFeedBackAlertViewTableViewCell.m */; };
@@ -348,6 +371,8 @@
 		F27D056B2109D37E00AED3CD /* profile_ReadPreferences@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F27D05652109D37E00AED3CD /* profile_ReadPreferences@2x.png */; };
 		F27D056C2109D37E00AED3CD /* profile_ReadRecord@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F27D05662109D37E00AED3CD /* profile_ReadRecord@2x.png */; };
 		F27D056D2109D37E00AED3CD /* profile_AboutUs@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F27D05672109D37E00AED3CD /* profile_AboutUs@2x.png */; };
+		F280769321A68DFC00D6961A /* defaultBookImage_Gray@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F280769221A68DFC00D6961A /* defaultBookImage_Gray@2x.png */; };
+		F280FAAC21A7A98500E69D59 /* LMSearchHelpBookAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = F280FAAB21A7A98500E69D59 /* LMSearchHelpBookAlertView.m */; };
 		F2868CA5202EA52400037C59 /* LMReaderSettingView.m in Sources */ = {isa = PBXBuildFile; fileRef = F2868CA4202EA52400037C59 /* LMReaderSettingView.m */; };
 		F2868CA8202F061C00037C59 /* LMSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2868CA7202F061C00037C59 /* LMSearchViewController.m */; };
 		F2877D46215F2C44002FD414 /* LMProfileProtocolViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2877D45215F2C44002FD414 /* LMProfileProtocolViewController.m */; };
@@ -364,9 +389,21 @@
 		F291FDDD20F3118400157339 /* readerSetting_Light_High@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F291FDD420F3118300157339 /* readerSetting_Light_High@2x.png */; };
 		F291FDDE20F3118400157339 /* toolBarItem_FeedBack@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F291FDD520F3118400157339 /* toolBarItem_FeedBack@2x.png */; };
 		F291FDDF20F3118400157339 /* readerSetting_Light_Low@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F291FDD620F3118400157339 /* readerSetting_Light_Low@2x.png */; };
+		F2973EEC21AFBDFD00A8BFC0 /* LMBookShelfCollectionReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = F2973EEB21AFBDFD00A8BFC0 /* LMBookShelfCollectionReusableView.m */; };
+		F2973EEE21AFDD3500A8BFC0 /* bookShelf_Operation_Add@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2973EED21AFDD3500A8BFC0 /* bookShelf_Operation_Add@2x.png */; };
 		F2979D08219D8CEF0086CCCA /* ftbook.proto in Sources */ = {isa = PBXBuildFile; fileRef = F2979D07219D8CEF0086CCCA /* ftbook.proto */; };
+		F298E62F21AE8BA800B3E9AB /* LMBookShelfLastestReadBook.m in Sources */ = {isa = PBXBuildFile; fileRef = F298E62E21AE8BA800B3E9AB /* LMBookShelfLastestReadBook.m */; };
+		F298E63121AE8EE200B3E9AB /* bookShelf_Record@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F298E63021AE8EE200B3E9AB /* bookShelf_Record@2x.png */; };
 		F29C8089205A5A5D00AD121B /* LMLeftItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = F29C8088205A5A5D00AD121B /* LMLeftItemView.m */; };
 		F29C808D205A5ACD00AD121B /* LMRightItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = F29C808C205A5ACD00AD121B /* LMRightItemView.m */; };
+		F29E05DF21B50DBE005CA1F0 /* LMReaderRecommandTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F29E05DE21B50DBE005CA1F0 /* LMReaderRecommandTableViewCell.m */; };
+		F29E05E521B50EA1005CA1F0 /* LMReaderRecommandCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F29E05E421B50EA1005CA1F0 /* LMReaderRecommandCollectionViewCell.m */; };
+		F29E40EB21B1126C00B34C90 /* LMReaderRecommandViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F29E40EA21B1126C00B34C90 /* LMReaderRecommandViewController.m */; };
+		F2AF0D3521AB90F10047D992 /* LMProfileMessageDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2AF0D3421AB90F10047D992 /* LMProfileMessageDetailViewController.m */; };
+		F2AF0D3A21AB94220047D992 /* LMProfileMessageTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2AF0D3921AB94220047D992 /* LMProfileMessageTableViewCell.m */; };
+		F2AF0D3E21AB993C0047D992 /* LMProfileMessageModel.m in Sources */ = {isa = PBXBuildFile; fileRef = F2AF0D3D21AB993C0047D992 /* LMProfileMessageModel.m */; };
+		F2AF0D4021ABD20C0047D992 /* profile_MyMessage@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2AF0D3F21ABD20B0047D992 /* profile_MyMessage@2x.png */; };
+		F2AF0D4B21ABF1A20047D992 /* UITabBar+LMBadge.m in Sources */ = {isa = PBXBuildFile; fileRef = F2AF0D4A21ABF1A20047D992 /* UITabBar+LMBadge.m */; };
 		F2B0D3F921940D3800596E33 /* settingView_Font_Big@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2B0D3F721940D3700596E33 /* settingView_Font_Big@2x.png */; };
 		F2B0D3FA21940D3800596E33 /* settingView_Font_Small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2B0D3F821940D3700596E33 /* settingView_Font_Small@2x.png */; };
 		F2B69EF32043AA7E00A7921B /* LMAboutUsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69EF22043AA7E00A7921B /* LMAboutUsViewController.m */; };
@@ -385,10 +422,11 @@
 		F2B69F1E204405E000A7921B /* LMCheckVerifyCodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F1D204405E000A7921B /* LMCheckVerifyCodeViewController.m */; };
 		F2B69F22204407F100A7921B /* LMLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F21204407F100A7921B /* LMLoginViewController.m */; };
 		F2B69F2520441B4500A7921B /* LMSetPasswordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2B69F2420441B4500A7921B /* LMSetPasswordViewController.m */; };
+		F2C057D221B8C00300B9C160 /* LMReaderUserInstructionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = F2C057D121B8C00300B9C160 /* LMReaderUserInstructionsView.m */; };
+		F2C057D621B8D48500B9C160 /* userInstructions_Reader_DownArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2C057D521B8D48400B9C160 /* userInstructions_Reader_DownArrow@2x.png */; };
 		F2D1D71121914039006346EC /* LMProfileBookCommentModel.m in Sources */ = {isa = PBXBuildFile; fileRef = F2D1D71021914039006346EC /* LMProfileBookCommentModel.m */; };
 		F2D1E9192151ECCA00FC4707 /* libc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F2D1E9182151ECCA00FC4707 /* libc.tbd */; };
 		F2D1E91D21521A6700FC4707 /* battary_Normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2D1E91B21521A6700FC4707 /* battary_Normal@2x.png */; };
-		F2E660FF2140D52700C8C75E /* rightBarButtonItem_More_Black@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2E660FE2140D52700C8C75E /* rightBarButtonItem_More_Black@2x.png */; };
 		F2E661012140D56C00C8C75E /* rightBarButtonItem_Share@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2E661002140D56C00C8C75E /* rightBarButtonItem_Share@2x.png */; };
 		F2E661092140D9FB00C8C75E /* fastLoginAlert_WeChat@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2E661022140D9FA00C8C75E /* fastLoginAlert_WeChat@2x.png */; };
 		F2E6610A2140D9FB00C8C75E /* share_Link@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2E661032140D9FA00C8C75E /* share_Link@2x.png */; };
@@ -520,23 +558,6 @@
 		F2153B872175BEFD004DD621 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		F2153B892175CA76004DD621 /* LMBaiduSplashAdView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBaiduSplashAdView.h; sourceTree = "<group>"; };
 		F2153B8A2175CA76004DD621 /* LMBaiduSplashAdView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBaiduSplashAdView.m; sourceTree = "<group>"; };
-		F21AF32920650CA60038C195 /* MOBFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MOBFoundation.framework; sourceTree = "<group>"; };
-		F21AF32B20650CA60038C195 /* ShareSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ShareSDK.framework; sourceTree = "<group>"; };
-		F21AF32E20650CA60038C195 /* ShareSDKConfigFile.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ShareSDKConfigFile.bundle; sourceTree = "<group>"; };
-		F21AF32F20650CA60038C195 /* ShareSDKConfigFile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ShareSDKConfigFile.framework; sourceTree = "<group>"; };
-		F21AF33020650CA60038C195 /* ShareSDKExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ShareSDKExtension.framework; sourceTree = "<group>"; };
-		F21AF33120650CA60038C195 /* ShareSDKUI.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ShareSDKUI.bundle; sourceTree = "<group>"; };
-		F21AF33220650CA60038C195 /* ShareSDKUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ShareSDKUI.framework; sourceTree = "<group>"; };
-		F21AF33420650CA60038C195 /* QQConnector.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = QQConnector.framework; sourceTree = "<group>"; };
-		F21AF33520650CA60038C195 /* WechatConnector.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WechatConnector.framework; sourceTree = "<group>"; };
-		F21AF33820650CA60038C195 /* TencentOpenAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TencentOpenAPI.framework; sourceTree = "<group>"; };
-		F21AF33A20650CA60038C195 /* libWeChatSDK.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libWeChatSDK.a; sourceTree = "<group>"; };
-		F21AF33B20650CA60038C195 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
-		F21AF33C20650CA60038C195 /* WechatAuthSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WechatAuthSDK.h; sourceTree = "<group>"; };
-		F21AF33D20650CA60038C195 /* WXApi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WXApi.h; sourceTree = "<group>"; };
-		F21AF33E20650CA60038C195 /* WXApiObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WXApiObject.h; sourceTree = "<group>"; };
-		F21AF34020650CA60038C195 /* ShareSDK.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ShareSDK.bundle; sourceTree = "<group>"; };
-		F21AF34120650CA60038C195 /* ShareSDKConnector.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ShareSDKConnector.framework; sourceTree = "<group>"; };
 		F21AF35020650D320038C195 /* libicucore.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.A.dylib; path = ../../../../../../../usr/lib/libicucore.A.dylib; sourceTree = "<group>"; };
 		F21AF35220650D870038C195 /* libstdc++.6.0.9.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.6.0.9.dylib"; path = "../../../../../../../usr/lib/libstdc++.6.0.9.dylib"; sourceTree = "<group>"; };
 		F21AF35420650D950038C195 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -553,6 +574,24 @@
 		F21EF8742186B9FC0006C8D7 /* LMBookShelfEditViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBookShelfEditViewController.m; sourceTree = "<group>"; };
 		F21EF8762186F6FE0006C8D7 /* bookShelf_Edit_Normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookShelf_Edit_Normal@2x.png"; sourceTree = "<group>"; };
 		F21EF8772186F6FE0006C8D7 /* bookShelf_Edit_Selected@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookShelf_Edit_Selected@2x.png"; sourceTree = "<group>"; };
+		F22154C521A28E7F004C60B5 /* loading11@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading11@2x.png"; sourceTree = "<group>"; };
+		F22154C621A28E7F004C60B5 /* loading21@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading21@2x.png"; sourceTree = "<group>"; };
+		F22154C721A28E7F004C60B5 /* loading7@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading7@2x.png"; sourceTree = "<group>"; };
+		F22154C821A28E80004C60B5 /* loading20@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading20@2x.png"; sourceTree = "<group>"; };
+		F22154C921A28E80004C60B5 /* loading16@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading16@2x.png"; sourceTree = "<group>"; };
+		F22154CA21A28E81004C60B5 /* loading13@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading13@2x.png"; sourceTree = "<group>"; };
+		F22154CB21A28E81004C60B5 /* loading18@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading18@2x.png"; sourceTree = "<group>"; };
+		F22154CC21A28E81004C60B5 /* loading19@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading19@2x.png"; sourceTree = "<group>"; };
+		F22154CD21A28E81004C60B5 /* loading17@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading17@2x.png"; sourceTree = "<group>"; };
+		F22154CE21A28E81004C60B5 /* loading23@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading23@2x.png"; sourceTree = "<group>"; };
+		F22154CF21A28E82004C60B5 /* loading24@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading24@2x.png"; sourceTree = "<group>"; };
+		F22154D021A28E82004C60B5 /* loading14@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading14@2x.png"; sourceTree = "<group>"; };
+		F22154D121A28E82004C60B5 /* loading12@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading12@2x.png"; sourceTree = "<group>"; };
+		F22154D221A28E82004C60B5 /* loading10@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading10@2x.png"; sourceTree = "<group>"; };
+		F22154D321A28E82004C60B5 /* loading9@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading9@2x.png"; sourceTree = "<group>"; };
+		F22154D421A28E83004C60B5 /* loading22@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading22@2x.png"; sourceTree = "<group>"; };
+		F22154D521A28E83004C60B5 /* loading8@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading8@2x.png"; sourceTree = "<group>"; };
+		F22154D621A28E83004C60B5 /* loading15@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loading15@2x.png"; sourceTree = "<group>"; };
 		F22D977A2027FB32007958D4 /* LMRangeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMRangeViewController.h; sourceTree = "<group>"; };
 		F22D977B2027FB32007958D4 /* LMRangeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMRangeViewController.m; sourceTree = "<group>"; };
 		F22D977D2027FB4C007958D4 /* LMSpecialChoiceViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSpecialChoiceViewController.h; sourceTree = "<group>"; };
@@ -635,6 +674,26 @@
 		F23ED2292046473D0039774D /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		F23ED22C204660520039774D /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		F23ED22E2046605B0039774D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		F24053DF21B7A281002D977E /* readerRecommand_Top@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "readerRecommand_Top@2x.png"; sourceTree = "<group>"; };
+		F24053E221B7B04A002D977E /* LMBookShelfUserInstructionsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookShelfUserInstructionsView.h; sourceTree = "<group>"; };
+		F24053E321B7B04A002D977E /* LMBookShelfUserInstructionsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBookShelfUserInstructionsView.m; sourceTree = "<group>"; };
+		F24053E721B7B0A1002D977E /* LMBookStoreUserInstructionsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookStoreUserInstructionsView.h; sourceTree = "<group>"; };
+		F24053E821B7B0A1002D977E /* LMBookStoreUserInstructionsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBookStoreUserInstructionsView.m; sourceTree = "<group>"; };
+		F24053EC21B7B0EA002D977E /* LMSearchUserInstructionsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSearchUserInstructionsView.h; sourceTree = "<group>"; };
+		F24053ED21B7B0EA002D977E /* LMSearchUserInstructionsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSearchUserInstructionsView.m; sourceTree = "<group>"; };
+		F24053F821B7BDA9002D977E /* userInstructions_BookShelf@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_BookShelf@2x.png"; sourceTree = "<group>"; };
+		F24053F921B7BDA9002D977E /* userInstructions_StepOver@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_StepOver@2x.png"; sourceTree = "<group>"; };
+		F24053FC21B7D3FF002D977E /* userInstructions_BookStore_Arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_BookStore_Arrow@2x.png"; sourceTree = "<group>"; };
+		F24053FD21B7D3FF002D977E /* userInstructions_BookStore_Sex@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_BookStore_Sex@2x.png"; sourceTree = "<group>"; };
+		F240540021B7D9B1002D977E /* userInstructions_Reader_Night@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Reader_Night@2x.png"; sourceTree = "<group>"; };
+		F240540121B7D9B1002D977E /* userInstructions_Reader_RightArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Reader_RightArrow@2x.png"; sourceTree = "<group>"; };
+		F240540221B7D9B1002D977E /* userInstructions_Reader_FeedBack@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Reader_FeedBack@2x.png"; sourceTree = "<group>"; };
+		F240540321B7D9B2002D977E /* userInstructions_Reader_Source@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Reader_Source@2x.png"; sourceTree = "<group>"; };
+		F240540421B7D9B2002D977E /* userInstructions_Search_Arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Search_Arrow@2x.png"; sourceTree = "<group>"; };
+		F240540521B7D9B2002D977E /* userInstructions_Reader_LeftArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Reader_LeftArrow@2x.png"; sourceTree = "<group>"; };
+		F240540621B7D9B2002D977E /* userInstructions_Reader_Setting@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Reader_Setting@2x.png"; sourceTree = "<group>"; };
+		F240540721B7D9B2002D977E /* userInstructions_Search_Help@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Search_Help@2x.png"; sourceTree = "<group>"; };
+		F240540821B7D9B2002D977E /* userInstructions_Reader_Comment@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Reader_Comment@2x.png"; sourceTree = "<group>"; };
 		F242E5322057B361003F95FD /* LMLaunchDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMLaunchDetailViewController.h; sourceTree = "<group>"; };
 		F242E5332057B361003F95FD /* LMLaunchDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMLaunchDetailViewController.m; sourceTree = "<group>"; };
 		F242E5352057BD32003F95FD /* register_Avator@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "register_Avator@2x.png"; sourceTree = "<group>"; };
@@ -676,7 +735,7 @@
 		F2512B382122B7D200C58A55 /* LMAuthorBookViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMAuthorBookViewController.m; sourceTree = "<group>"; };
 		F2512B3A2122E7B200C58A55 /* LMSearchBeforeCollectionViewFlowLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSearchBeforeCollectionViewFlowLayout.h; sourceTree = "<group>"; };
 		F2512B3B2122E7B200C58A55 /* LMSearchBeforeCollectionViewFlowLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSearchBeforeCollectionViewFlowLayout.m; sourceTree = "<group>"; };
-		F251B942212EA5DF003DAF53 /* avator_Login@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "avator_Login@2x.png"; sourceTree = "<group>"; };
+		F251B942212EA5DF003DAF53 /* avator_LoginIn@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "avator_LoginIn@2x.png"; sourceTree = "<group>"; };
 		F251BE13212C164F00367F15 /* tabBar_BookStore@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tabBar_BookStore@2x.png"; sourceTree = "<group>"; };
 		F2520DE821466E1C00966285 /* share_AppIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "share_AppIcon@2x.png"; sourceTree = "<group>"; };
 		F2520DED21467F4500966285 /* LMBindPhoneNumberViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBindPhoneNumberViewController.h; sourceTree = "<group>"; };
@@ -773,7 +832,7 @@
 		F25CA5E32184126300A8AFB6 /* bookStore_Male_Normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookStore_Male_Normal@2x.png"; sourceTree = "<group>"; };
 		F25CA5E42184126300A8AFB6 /* bookStore_Male_Selected@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookStore_Male_Selected@2x.png"; sourceTree = "<group>"; };
 		F25CA5E52184126400A8AFB6 /* bookStore_RightItem_Filter@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookStore_RightItem_Filter@2x.png"; sourceTree = "<group>"; };
-		F25CA5E62184126400A8AFB6 /* bookStore_Feale_Selected@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookStore_Feale_Selected@2x.png"; sourceTree = "<group>"; };
+		F25CA5E62184126400A8AFB6 /* bookStore_Female_Selected@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookStore_Female_Selected@2x.png"; sourceTree = "<group>"; };
 		F25CA5E72184126400A8AFB6 /* bookStore_Female_Normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookStore_Female_Normal@2x.png"; sourceTree = "<group>"; };
 		F25CA5ED21846B2000A8AFB6 /* LMTypeBookStoreTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMTypeBookStoreTableViewCell.h; sourceTree = "<group>"; };
 		F25CA5EE21846B2000A8AFB6 /* LMTypeBookStoreTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMTypeBookStoreTableViewCell.m; sourceTree = "<group>"; };
@@ -868,6 +927,10 @@
 		F264455F20738D170092EF44 /* UMCommonLog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UMCommonLog.framework; sourceTree = "<group>"; };
 		F26475072068ED2A00F88CA9 /* LMWindowLoadingView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMWindowLoadingView.h; sourceTree = "<group>"; };
 		F26475082068ED2A00F88CA9 /* LMWindowLoadingView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMWindowLoadingView.m; sourceTree = "<group>"; };
+		F2647C0321A7FB510093AFD6 /* LMSearchHelpBottomAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSearchHelpBottomAlertView.h; sourceTree = "<group>"; };
+		F2647C0421A7FB510093AFD6 /* LMSearchHelpBottomAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSearchHelpBottomAlertView.m; sourceTree = "<group>"; };
+		F2647C0921A80F6A0093AFD6 /* LMProfileMessageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileMessageViewController.h; sourceTree = "<group>"; };
+		F2647C0A21A80F6A0093AFD6 /* LMProfileMessageViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileMessageViewController.m; sourceTree = "<group>"; };
 		F26505142079F60900902A5A /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		F2663C6D20EF0B0900F656E2 /* LMReaderRelatedBookCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReaderRelatedBookCollectionViewCell.h; sourceTree = "<group>"; };
 		F2663C6E20EF0B0900F656E2 /* LMReaderRelatedBookCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMReaderRelatedBookCollectionViewCell.m; sourceTree = "<group>"; };
@@ -1020,6 +1083,9 @@
 		F27D05652109D37E00AED3CD /* profile_ReadPreferences@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile_ReadPreferences@2x.png"; sourceTree = "<group>"; };
 		F27D05662109D37E00AED3CD /* profile_ReadRecord@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile_ReadRecord@2x.png"; sourceTree = "<group>"; };
 		F27D05672109D37E00AED3CD /* profile_AboutUs@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile_AboutUs@2x.png"; sourceTree = "<group>"; };
+		F280769221A68DFC00D6961A /* defaultBookImage_Gray@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "defaultBookImage_Gray@2x.png"; sourceTree = "<group>"; };
+		F280FAAA21A7A98500E69D59 /* LMSearchHelpBookAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSearchHelpBookAlertView.h; sourceTree = "<group>"; };
+		F280FAAB21A7A98500E69D59 /* LMSearchHelpBookAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSearchHelpBookAlertView.m; sourceTree = "<group>"; };
 		F2868CA3202EA52400037C59 /* LMReaderSettingView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReaderSettingView.h; sourceTree = "<group>"; };
 		F2868CA4202EA52400037C59 /* LMReaderSettingView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMReaderSettingView.m; sourceTree = "<group>"; };
 		F2868CA6202F061C00037C59 /* LMSearchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSearchViewController.h; sourceTree = "<group>"; };
@@ -1040,11 +1106,32 @@
 		F291FDD420F3118300157339 /* readerSetting_Light_High@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "readerSetting_Light_High@2x.png"; sourceTree = "<group>"; };
 		F291FDD520F3118400157339 /* toolBarItem_FeedBack@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolBarItem_FeedBack@2x.png"; sourceTree = "<group>"; };
 		F291FDD620F3118400157339 /* readerSetting_Light_Low@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "readerSetting_Light_Low@2x.png"; sourceTree = "<group>"; };
+		F2973EEA21AFBDFD00A8BFC0 /* LMBookShelfCollectionReusableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookShelfCollectionReusableView.h; sourceTree = "<group>"; };
+		F2973EEB21AFBDFD00A8BFC0 /* LMBookShelfCollectionReusableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBookShelfCollectionReusableView.m; sourceTree = "<group>"; };
+		F2973EED21AFDD3500A8BFC0 /* bookShelf_Operation_Add@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookShelf_Operation_Add@2x.png"; sourceTree = "<group>"; };
 		F2979D07219D8CEF0086CCCA /* ftbook.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = ftbook.proto; sourceTree = "<group>"; };
+		F298E62D21AE8BA800B3E9AB /* LMBookShelfLastestReadBook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBookShelfLastestReadBook.h; sourceTree = "<group>"; };
+		F298E62E21AE8BA800B3E9AB /* LMBookShelfLastestReadBook.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBookShelfLastestReadBook.m; sourceTree = "<group>"; };
+		F298E63021AE8EE200B3E9AB /* bookShelf_Record@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bookShelf_Record@2x.png"; sourceTree = "<group>"; };
 		F29C8087205A5A5D00AD121B /* LMLeftItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMLeftItemView.h; sourceTree = "<group>"; };
 		F29C8088205A5A5D00AD121B /* LMLeftItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMLeftItemView.m; sourceTree = "<group>"; };
 		F29C808B205A5ACD00AD121B /* LMRightItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMRightItemView.h; sourceTree = "<group>"; };
 		F29C808C205A5ACD00AD121B /* LMRightItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMRightItemView.m; sourceTree = "<group>"; };
+		F29E05DD21B50DBE005CA1F0 /* LMReaderRecommandTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReaderRecommandTableViewCell.h; sourceTree = "<group>"; };
+		F29E05DE21B50DBE005CA1F0 /* LMReaderRecommandTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMReaderRecommandTableViewCell.m; sourceTree = "<group>"; };
+		F29E05E321B50EA1005CA1F0 /* LMReaderRecommandCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReaderRecommandCollectionViewCell.h; sourceTree = "<group>"; };
+		F29E05E421B50EA1005CA1F0 /* LMReaderRecommandCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMReaderRecommandCollectionViewCell.m; sourceTree = "<group>"; };
+		F29E40E921B1126C00B34C90 /* LMReaderRecommandViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReaderRecommandViewController.h; sourceTree = "<group>"; };
+		F29E40EA21B1126C00B34C90 /* LMReaderRecommandViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMReaderRecommandViewController.m; sourceTree = "<group>"; };
+		F2AF0D3321AB90F10047D992 /* LMProfileMessageDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileMessageDetailViewController.h; sourceTree = "<group>"; };
+		F2AF0D3421AB90F10047D992 /* LMProfileMessageDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileMessageDetailViewController.m; sourceTree = "<group>"; };
+		F2AF0D3821AB94220047D992 /* LMProfileMessageTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileMessageTableViewCell.h; sourceTree = "<group>"; };
+		F2AF0D3921AB94220047D992 /* LMProfileMessageTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileMessageTableViewCell.m; sourceTree = "<group>"; };
+		F2AF0D3C21AB993C0047D992 /* LMProfileMessageModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileMessageModel.h; sourceTree = "<group>"; };
+		F2AF0D3D21AB993C0047D992 /* LMProfileMessageModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileMessageModel.m; sourceTree = "<group>"; };
+		F2AF0D3F21ABD20B0047D992 /* profile_MyMessage@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "profile_MyMessage@2x.png"; sourceTree = "<group>"; };
+		F2AF0D4921ABF1A20047D992 /* UITabBar+LMBadge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UITabBar+LMBadge.h"; sourceTree = "<group>"; };
+		F2AF0D4A21ABF1A20047D992 /* UITabBar+LMBadge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UITabBar+LMBadge.m"; sourceTree = "<group>"; };
 		F2B0D3F721940D3700596E33 /* settingView_Font_Big@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "settingView_Font_Big@2x.png"; sourceTree = "<group>"; };
 		F2B0D3F821940D3700596E33 /* settingView_Font_Small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "settingView_Font_Small@2x.png"; sourceTree = "<group>"; };
 		F2B69EF12043AA7E00A7921B /* LMAboutUsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMAboutUsViewController.h; sourceTree = "<group>"; };
@@ -1077,11 +1164,13 @@
 		F2B69F21204407F100A7921B /* LMLoginViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMLoginViewController.m; sourceTree = "<group>"; };
 		F2B69F2320441B4500A7921B /* LMSetPasswordViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMSetPasswordViewController.h; sourceTree = "<group>"; };
 		F2B69F2420441B4500A7921B /* LMSetPasswordViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMSetPasswordViewController.m; sourceTree = "<group>"; };
+		F2C057D021B8C00300B9C160 /* LMReaderUserInstructionsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMReaderUserInstructionsView.h; sourceTree = "<group>"; };
+		F2C057D121B8C00300B9C160 /* LMReaderUserInstructionsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMReaderUserInstructionsView.m; sourceTree = "<group>"; };
+		F2C057D521B8D48400B9C160 /* userInstructions_Reader_DownArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "userInstructions_Reader_DownArrow@2x.png"; sourceTree = "<group>"; };
 		F2D1D70F21914039006346EC /* LMProfileBookCommentModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMProfileBookCommentModel.h; sourceTree = "<group>"; };
 		F2D1D71021914039006346EC /* LMProfileBookCommentModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMProfileBookCommentModel.m; sourceTree = "<group>"; };
 		F2D1E9182151ECCA00FC4707 /* libc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libc.tbd; path = usr/lib/libc.tbd; sourceTree = SDKROOT; };
 		F2D1E91B21521A6700FC4707 /* battary_Normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "battary_Normal@2x.png"; sourceTree = "<group>"; };
-		F2E660FE2140D52700C8C75E /* rightBarButtonItem_More_Black@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rightBarButtonItem_More_Black@2x.png"; sourceTree = "<group>"; };
 		F2E661002140D56C00C8C75E /* rightBarButtonItem_Share@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rightBarButtonItem_Share@2x.png"; sourceTree = "<group>"; };
 		F2E661022140D9FA00C8C75E /* fastLoginAlert_WeChat@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "fastLoginAlert_WeChat@2x.png"; sourceTree = "<group>"; };
 		F2E661032140D9FA00C8C75E /* share_Link@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "share_Link@2x.png"; sourceTree = "<group>"; };
@@ -1141,30 +1230,20 @@
 				F264455720738CE20092EF44 /* UMAnalytics.framework in Frameworks */,
 				F252E85620590C0B0038B171 /* libz.1.dylib in Frameworks */,
 				F21AF35120650D320038C195 /* libicucore.A.dylib in Frameworks */,
-				F21AF34A20650CA60038C195 /* WechatConnector.framework in Frameworks */,
-				F21AF34820650CA60038C195 /* ShareSDKUI.framework in Frameworks */,
 				F252E85420590BBF0038B171 /* Security.framework in Frameworks */,
 				F252E85220590BB70038B171 /* SystemConfiguration.framework in Frameworks */,
 				F264455C20738D0B0092EF44 /* SecurityEnvSDK.framework in Frameworks */,
-				F21AF34520650CA60038C195 /* ShareSDKConfigFile.framework in Frameworks */,
 				F23ED22F2046605B0039774D /* AVFoundation.framework in Frameworks */,
 				F26D118A207CBA9E00C9CB69 /* Bugly.framework in Frameworks */,
 				F23ED22D204660520039774D /* MobileCoreServices.framework in Frameworks */,
-				F21AF34F20650CA60038C195 /* ShareSDKConnector.framework in Frameworks */,
-				F21AF34920650CA60038C195 /* QQConnector.framework in Frameworks */,
-				F21AF34220650CA60038C195 /* MOBFoundation.framework in Frameworks */,
 				F2613C36202C36A700F21111 /* libsqlite3.dylib in Frameworks */,
 				F2545733202A931F00A9491C /* ProtocolBuffers.framework in Frameworks */,
 				F2679D6321533BE90069E30F /* libGDTMobSDK.a in Frameworks */,
-				F21AF34320650CA60038C195 /* ShareSDK.framework in Frameworks */,
 				F264455D20738D0B0092EF44 /* UTDID.framework in Frameworks */,
 				F2545732202A931900A9491C /* libProtocolBuffers.a in Frameworks */,
-				F21AF34620650CA60038C195 /* ShareSDKExtension.framework in Frameworks */,
-				F21AF34C20650CA60038C195 /* libWeChatSDK.a in Frameworks */,
 				F259E9262029B8D000C327A1 /* Foundation.framework in Frameworks */,
 				F259E9242029B8CA00C327A1 /* UIKit.framework in Frameworks */,
 				F259E9222029B8C200C327A1 /* CoreGraphics.framework in Frameworks */,
-				F21AF34B20650CA60038C195 /* TencentOpenAPI.framework in Frameworks */,
 				F264456120738D180092EF44 /* UMCommonLog.framework in Frameworks */,
 				F2E661192140DBAC00C8C75E /* TencentOpenAPI.framework in Frameworks */,
 				F27163942022C29E0095A2E3 /* ImageIO.framework in Frameworks */,
@@ -1211,110 +1290,6 @@
 				F2153B7E2175BE7C004DD621 /* BaiduMobAdSDK.framework */,
 			);
 			path = BaiduAd;
-			sourceTree = "<group>";
-		};
-		F21AF32420650C740038C195 /* ShareSDK */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF32720650CA60038C195 /* SDK */,
-			);
-			path = ShareSDK;
-			sourceTree = "<group>";
-		};
-		F21AF32720650CA60038C195 /* SDK */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF32820650CA60038C195 /* Required */,
-				F21AF32A20650CA60038C195 /* ShareSDK */,
-			);
-			path = SDK;
-			sourceTree = "<group>";
-		};
-		F21AF32820650CA60038C195 /* Required */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF32920650CA60038C195 /* MOBFoundation.framework */,
-			);
-			path = Required;
-			sourceTree = "<group>";
-		};
-		F21AF32A20650CA60038C195 /* ShareSDK */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF32B20650CA60038C195 /* ShareSDK.framework */,
-				F21AF32C20650CA60038C195 /* Support */,
-			);
-			path = ShareSDK;
-			sourceTree = "<group>";
-		};
-		F21AF32C20650CA60038C195 /* Support */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF32D20650CA60038C195 /* Optional */,
-				F21AF33320650CA60038C195 /* PlatformConnector */,
-				F21AF33620650CA60038C195 /* PlatformSDK */,
-				F21AF33F20650CA60038C195 /* Required */,
-			);
-			path = Support;
-			sourceTree = "<group>";
-		};
-		F21AF32D20650CA60038C195 /* Optional */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF32E20650CA60038C195 /* ShareSDKConfigFile.bundle */,
-				F21AF32F20650CA60038C195 /* ShareSDKConfigFile.framework */,
-				F21AF33020650CA60038C195 /* ShareSDKExtension.framework */,
-				F21AF33120650CA60038C195 /* ShareSDKUI.bundle */,
-				F21AF33220650CA60038C195 /* ShareSDKUI.framework */,
-			);
-			path = Optional;
-			sourceTree = "<group>";
-		};
-		F21AF33320650CA60038C195 /* PlatformConnector */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF33420650CA60038C195 /* QQConnector.framework */,
-				F21AF33520650CA60038C195 /* WechatConnector.framework */,
-			);
-			path = PlatformConnector;
-			sourceTree = "<group>";
-		};
-		F21AF33620650CA60038C195 /* PlatformSDK */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF33720650CA60038C195 /* QQSDK */,
-				F21AF33920650CA60038C195 /* WeChatSDK */,
-			);
-			path = PlatformSDK;
-			sourceTree = "<group>";
-		};
-		F21AF33720650CA60038C195 /* QQSDK */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF33820650CA60038C195 /* TencentOpenAPI.framework */,
-			);
-			path = QQSDK;
-			sourceTree = "<group>";
-		};
-		F21AF33920650CA60038C195 /* WeChatSDK */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF33A20650CA60038C195 /* libWeChatSDK.a */,
-				F21AF33B20650CA60038C195 /* README.txt */,
-				F21AF33C20650CA60038C195 /* WechatAuthSDK.h */,
-				F21AF33D20650CA60038C195 /* WXApi.h */,
-				F21AF33E20650CA60038C195 /* WXApiObject.h */,
-			);
-			path = WeChatSDK;
-			sourceTree = "<group>";
-		};
-		F21AF33F20650CA60038C195 /* Required */ = {
-			isa = PBXGroup;
-			children = (
-				F21AF34020650CA60038C195 /* ShareSDK.bundle */,
-				F21AF34120650CA60038C195 /* ShareSDKConnector.framework */,
-			);
-			path = Required;
 			sourceTree = "<group>";
 		};
 		F21CFB3321807B8D0089236A /* ChoiceHeaderAd */ = {
@@ -1520,6 +1495,53 @@
 			path = BookShelfOperation;
 			sourceTree = "<group>";
 		};
+		F24053E121B7AF1C002D977E /* UserInstructions */ = {
+			isa = PBXGroup;
+			children = (
+				F24053E521B7B06F002D977E /* BookShelfInstructions */,
+				F24053E621B7B085002D977E /* BookStoreInstructions */,
+				F24053EA21B7B0B4002D977E /* SearchInstructions */,
+				F24053EB21B7B0CA002D977E /* ReaderInstructions */,
+			);
+			path = UserInstructions;
+			sourceTree = "<group>";
+		};
+		F24053E521B7B06F002D977E /* BookShelfInstructions */ = {
+			isa = PBXGroup;
+			children = (
+				F24053E221B7B04A002D977E /* LMBookShelfUserInstructionsView.h */,
+				F24053E321B7B04A002D977E /* LMBookShelfUserInstructionsView.m */,
+			);
+			path = BookShelfInstructions;
+			sourceTree = "<group>";
+		};
+		F24053E621B7B085002D977E /* BookStoreInstructions */ = {
+			isa = PBXGroup;
+			children = (
+				F24053E721B7B0A1002D977E /* LMBookStoreUserInstructionsView.h */,
+				F24053E821B7B0A1002D977E /* LMBookStoreUserInstructionsView.m */,
+			);
+			path = BookStoreInstructions;
+			sourceTree = "<group>";
+		};
+		F24053EA21B7B0B4002D977E /* SearchInstructions */ = {
+			isa = PBXGroup;
+			children = (
+				F24053EC21B7B0EA002D977E /* LMSearchUserInstructionsView.h */,
+				F24053ED21B7B0EA002D977E /* LMSearchUserInstructionsView.m */,
+			);
+			path = SearchInstructions;
+			sourceTree = "<group>";
+		};
+		F24053EB21B7B0CA002D977E /* ReaderInstructions */ = {
+			isa = PBXGroup;
+			children = (
+				F2C057D021B8C00300B9C160 /* LMReaderUserInstructionsView.h */,
+				F2C057D121B8C00300B9C160 /* LMReaderUserInstructionsView.m */,
+			);
+			path = ReaderInstructions;
+			sourceTree = "<group>";
+		};
 		F242E52E20577AC1003F95FD /* Catalog */ = {
 			isa = PBXGroup;
 			children = (
@@ -1720,6 +1742,7 @@
 				F258CADC20F754E20098A31C /* LMReaderBook.m */,
 				F25893A420219CDA00CB2364 /* LMContentViewController.h */,
 				F25893A520219CDA00CB2364 /* LMContentViewController.m */,
+				F29E40E621B110A600B34C90 /* ReaderRecommand */,
 				F2E6611A2140DC1400C8C75E /* Share */,
 				F2668F3C2105D31F00E4B2AE /* SourceAlertView */,
 				F26C8BBD20FDF08100E730AA /* MoreListView */,
@@ -1910,6 +1933,7 @@
 				F2618966216C94F300992FF4 /* Ad */,
 				F24B865B2056543B00847C3E /* LaunchImage */,
 				F2627876201F070000D33722 /* FirstLaunch */,
+				F24053E121B7AF1C002D977E /* UserInstructions */,
 				F2627864201EF22D00D33722 /* Root */,
 				F262787C201F161300D33722 /* BookShelf */,
 				F262787B201F15F600D33722 /* Choice */,
@@ -1937,6 +1961,7 @@
 				F2627869201EF29200D33722 /* LMBaseNavigationController.m */,
 				F2627861201EF10500D33722 /* LMBaseViewController.h */,
 				F2627862201EF10500D33722 /* LMBaseViewController.m */,
+				F2AF0D4821ABF1310047D992 /* TabBarCategory */,
 				F247A1FE2101E21800261AC1 /* BaseAlertView */,
 				F26475062068EB5F00F88CA9 /* WindowLoadingView */,
 				F22D97D920284339007958D4 /* BaseTableView */,
@@ -1987,6 +2012,7 @@
 				F2877D41215F2BD1002FD414 /* AgreementProtocol */,
 				F26593132142755600075780 /* ProfileCenter */,
 				F2B69EF82043AD1400A7921B /* ReadRecord */,
+				F2647C0821A80F3C0093AFD6 /* ProfileMessage */,
 				F2B69EFA2043AD3200A7921B /* ReadPreferences */,
 				F2B69EFB2043AD4700A7921B /* SystemSetting */,
 				F255D7D0215CA57F00868AC8 /* MyBookComment */,
@@ -2019,6 +2045,7 @@
 				F262787E201F162F00D33722 /* LMBookShelfViewController.m */,
 				F255745521491FE100A942E8 /* LMBookShelfModel.h */,
 				F255745621491FE100A942E8 /* LMBookShelfModel.m */,
+				F2973EE721AFBD7300A8BFC0 /* LastestRecord */,
 				F21EF8702186B9710006C8D7 /* EditVC */,
 				F22E009C2185811500855E67 /* BookShelfOperation */,
 				F22E008C2185608100855E67 /* BookShelfCollectionViewCell */,
@@ -2030,6 +2057,21 @@
 		F2627887201F1C8E00D33722 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F240540821B7D9B2002D977E /* userInstructions_Reader_Comment@2x.png */,
+				F2C057D521B8D48400B9C160 /* userInstructions_Reader_DownArrow@2x.png */,
+				F240540221B7D9B1002D977E /* userInstructions_Reader_FeedBack@2x.png */,
+				F240540521B7D9B2002D977E /* userInstructions_Reader_LeftArrow@2x.png */,
+				F240540021B7D9B1002D977E /* userInstructions_Reader_Night@2x.png */,
+				F240540121B7D9B1002D977E /* userInstructions_Reader_RightArrow@2x.png */,
+				F240540621B7D9B2002D977E /* userInstructions_Reader_Setting@2x.png */,
+				F240540321B7D9B2002D977E /* userInstructions_Reader_Source@2x.png */,
+				F240540421B7D9B2002D977E /* userInstructions_Search_Arrow@2x.png */,
+				F240540721B7D9B2002D977E /* userInstructions_Search_Help@2x.png */,
+				F24053F821B7BDA9002D977E /* userInstructions_BookShelf@2x.png */,
+				F24053F921B7BDA9002D977E /* userInstructions_StepOver@2x.png */,
+				F24053FC21B7D3FF002D977E /* userInstructions_BookStore_Arrow@2x.png */,
+				F24053FD21B7D3FF002D977E /* userInstructions_BookStore_Sex@2x.png */,
+				F24053DF21B7A281002D977E /* readerRecommand_Top@2x.png */,
 				F2B0D3F721940D3700596E33 /* settingView_Font_Big@2x.png */,
 				F2B0D3F821940D3700596E33 /* settingView_Font_Small@2x.png */,
 				F288324A2192B7BD002CB641 /* feedBackAlertView_Normal@2x.png */,
@@ -2041,11 +2083,13 @@
 				F22E00AE2185E07400855E67 /* bookShelf_Operation_Delete@2x.png */,
 				F22E00AC2185E07400855E67 /* bookShelf_Operation_Detail@2x.png */,
 				F22E00AD2185E07400855E67 /* bookShelf_Operation_Top@2x.png */,
+				F2973EED21AFDD3500A8BFC0 /* bookShelf_Operation_Add@2x.png */,
 				F22E00A42185A38B00855E67 /* bookShelfSquareAdd@2x.png */,
 				F22E009A21856DF500855E67 /* bookShelf_Exchange@2x.png */,
 				F22E00A121858A1F00855E67 /* bookShelf_Operation_Batch@2x.png */,
 				F22E00A021858A1F00855E67 /* bookShelf_Operation_List@2x.png */,
-				F25CA5E62184126400A8AFB6 /* bookStore_Feale_Selected@2x.png */,
+				F298E63021AE8EE200B3E9AB /* bookShelf_Record@2x.png */,
+				F25CA5E62184126400A8AFB6 /* bookStore_Female_Selected@2x.png */,
 				F25CA5E72184126400A8AFB6 /* bookStore_Female_Normal@2x.png */,
 				F25CA5E32184126300A8AFB6 /* bookStore_Male_Normal@2x.png */,
 				F25CA5E42184126300A8AFB6 /* bookStore_Male_Selected@2x.png */,
@@ -2082,7 +2126,6 @@
 				F25D7DF8215B3ABF00ECCAD1 /* weChat_Gray@2x.png */,
 				F25D7DF3215B3ABE00ECCAD1 /* weChat_Moment_Gray@2x.png */,
 				F2E661002140D56C00C8C75E /* rightBarButtonItem_Share@2x.png */,
-				F2E660FE2140D52700C8C75E /* rightBarButtonItem_More_Black@2x.png */,
 				F24FA628212D462E002BE63A /* rightBarButtonItem_Filter@2x.png */,
 				F2626E0F2123FC46003505D8 /* search_Author@2x.png */,
 				F2626E122123FC47003505D8 /* search_Book@2x.png */,
@@ -2090,6 +2133,7 @@
 				F27D05672109D37E00AED3CD /* profile_AboutUs@2x.png */,
 				F27D05632109D37E00AED3CD /* profile_FeedBack@2x.png */,
 				F25D2CB1215A17820031656F /* profile_MyComment@2x.png */,
+				F2AF0D3F21ABD20B0047D992 /* profile_MyMessage@2x.png */,
 				F27D05652109D37E00AED3CD /* profile_ReadPreferences@2x.png */,
 				F27D05662109D37E00AED3CD /* profile_ReadRecord@2x.png */,
 				F27D05642109D37E00AED3CD /* profile_SystemSetting@2x.png */,
@@ -2118,13 +2162,14 @@
 				F291FDCC20F3118200157339 /* readerSetting_LineSpace2@2x.png */,
 				F291FDCF20F3118200157339 /* readerSetting_LineSpace3@2x.png */,
 				F291FDD520F3118400157339 /* toolBarItem_FeedBack@2x.png */,
-				F251B942212EA5DF003DAF53 /* avator_Login@2x.png */,
+				F251B942212EA5DF003DAF53 /* avator_LoginIn@2x.png */,
 				F249F96E20479F0100D879C0 /* avator_LoginOut@2x.png */,
 				F2B69F0C2043D80500A7921B /* comboxView_Down@2x.png */,
 				F2B69F0B2043D80500A7921B /* comboxView_Up@2x.png */,
 				F22D97DD20285887007958D4 /* cycleAddButton@2x.png */,
 				F271639E20230B400095A2E3 /* defaultFirstLaunch@2x.png */,
 				F253ADC420529E8E00D2E172 /* defaultBookImage@2x.png */,
+				F280769221A68DFC00D6961A /* defaultBookImage_Gray@2x.png */,
 				F262788E201F1F1D00D33722 /* navigationItem_Back@2x.png */,
 				F27163082022B8290095A2E3 /* navigationItem_More@2x.png */,
 				F2585D6C20246DF80017D773 /* choice_Range@2x.png */,
@@ -2155,6 +2200,24 @@
 				F24CEE6A205B92CF0033AFEF /* loading4@2x.png */,
 				F24CEE68205B92CF0033AFEF /* loading5@2x.png */,
 				F24CEE6B205B92D00033AFEF /* loading6@2x.png */,
+				F22154C721A28E7F004C60B5 /* loading7@2x.png */,
+				F22154D521A28E83004C60B5 /* loading8@2x.png */,
+				F22154D321A28E82004C60B5 /* loading9@2x.png */,
+				F22154D221A28E82004C60B5 /* loading10@2x.png */,
+				F22154C521A28E7F004C60B5 /* loading11@2x.png */,
+				F22154D121A28E82004C60B5 /* loading12@2x.png */,
+				F22154CA21A28E81004C60B5 /* loading13@2x.png */,
+				F22154D021A28E82004C60B5 /* loading14@2x.png */,
+				F22154D621A28E83004C60B5 /* loading15@2x.png */,
+				F22154C921A28E80004C60B5 /* loading16@2x.png */,
+				F22154CD21A28E81004C60B5 /* loading17@2x.png */,
+				F22154CB21A28E81004C60B5 /* loading18@2x.png */,
+				F22154CC21A28E81004C60B5 /* loading19@2x.png */,
+				F22154C821A28E80004C60B5 /* loading20@2x.png */,
+				F22154C621A28E7F004C60B5 /* loading21@2x.png */,
+				F22154D421A28E83004C60B5 /* loading22@2x.png */,
+				F22154CE21A28E81004C60B5 /* loading23@2x.png */,
+				F22154CF21A28E82004C60B5 /* loading24@2x.png */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -2179,6 +2242,20 @@
 				F26475082068ED2A00F88CA9 /* LMWindowLoadingView.m */,
 			);
 			path = WindowLoadingView;
+			sourceTree = "<group>";
+		};
+		F2647C0821A80F3C0093AFD6 /* ProfileMessage */ = {
+			isa = PBXGroup;
+			children = (
+				F2647C0921A80F6A0093AFD6 /* LMProfileMessageViewController.h */,
+				F2647C0A21A80F6A0093AFD6 /* LMProfileMessageViewController.m */,
+				F2AF0D3821AB94220047D992 /* LMProfileMessageTableViewCell.h */,
+				F2AF0D3921AB94220047D992 /* LMProfileMessageTableViewCell.m */,
+				F2AF0D3C21AB993C0047D992 /* LMProfileMessageModel.h */,
+				F2AF0D3D21AB993C0047D992 /* LMProfileMessageModel.m */,
+				F2AF0D3B21AB99050047D992 /* ProfileMessageDetail */,
+			);
+			path = ProfileMessage;
 			sourceTree = "<group>";
 		};
 		F26593132142755600075780 /* ProfileCenter */ = {
@@ -2273,7 +2350,6 @@
 				F25F92F420EB1EAA00D4D755 /* JPush */,
 				F26D1186207CB91C00C9CB69 /* Bugly */,
 				F264455520738BBA0092EF44 /* UMeng */,
-				F21AF32420650C740038C195 /* ShareSDK */,
 				F2545743202B0C8000A9491C /* MBProgressHUD */,
 				F22D979620283D3C007958D4 /* MJRefresh */,
 				F271637F2022C0840095A2E3 /* fmdb */,
@@ -2455,6 +2531,7 @@
 				F25B0CCD2125112900FB0C3B /* SearchMatch */,
 				F25758002032C7EE0054961B /* LMSearchBarView */,
 				F25BFA2621197BE400D35150 /* SearchTool */,
+				F280FAA721A7A88900E69D59 /* SearchHelp */,
 			);
 			path = LMSearch;
 			sourceTree = "<group>";
@@ -2477,6 +2554,17 @@
 			path = Download;
 			sourceTree = "<group>";
 		};
+		F280FAA721A7A88900E69D59 /* SearchHelp */ = {
+			isa = PBXGroup;
+			children = (
+				F2647C0321A7FB510093AFD6 /* LMSearchHelpBottomAlertView.h */,
+				F2647C0421A7FB510093AFD6 /* LMSearchHelpBottomAlertView.m */,
+				F280FAAA21A7A98500E69D59 /* LMSearchHelpBookAlertView.h */,
+				F280FAAB21A7A98500E69D59 /* LMSearchHelpBookAlertView.m */,
+			);
+			path = SearchHelp;
+			sourceTree = "<group>";
+		};
 		F2868CA2202EA50900037C59 /* SettingView */ = {
 			isa = PBXGroup;
 			children = (
@@ -2495,6 +2583,17 @@
 			path = AgreementProtocol;
 			sourceTree = "<group>";
 		};
+		F2973EE721AFBD7300A8BFC0 /* LastestRecord */ = {
+			isa = PBXGroup;
+			children = (
+				F2973EEA21AFBDFD00A8BFC0 /* LMBookShelfCollectionReusableView.h */,
+				F2973EEB21AFBDFD00A8BFC0 /* LMBookShelfCollectionReusableView.m */,
+				F298E62D21AE8BA800B3E9AB /* LMBookShelfLastestReadBook.h */,
+				F298E62E21AE8BA800B3E9AB /* LMBookShelfLastestReadBook.m */,
+			);
+			path = LastestRecord;
+			sourceTree = "<group>";
+		};
 		F29C808A205A5A6B00AD121B /* NavigationItem */ = {
 			isa = PBXGroup;
 			children = (
@@ -2506,6 +2605,45 @@
 				F21CFB292180127F0089236A /* LMSearchTitleView.m */,
 			);
 			path = NavigationItem;
+			sourceTree = "<group>";
+		};
+		F29E05E221B50E5A005CA1F0 /* CollectionViewCell */ = {
+			isa = PBXGroup;
+			children = (
+				F29E05E321B50EA1005CA1F0 /* LMReaderRecommandCollectionViewCell.h */,
+				F29E05E421B50EA1005CA1F0 /* LMReaderRecommandCollectionViewCell.m */,
+			);
+			path = CollectionViewCell;
+			sourceTree = "<group>";
+		};
+		F29E40E621B110A600B34C90 /* ReaderRecommand */ = {
+			isa = PBXGroup;
+			children = (
+				F29E40E921B1126C00B34C90 /* LMReaderRecommandViewController.h */,
+				F29E40EA21B1126C00B34C90 /* LMReaderRecommandViewController.m */,
+				F29E05DD21B50DBE005CA1F0 /* LMReaderRecommandTableViewCell.h */,
+				F29E05DE21B50DBE005CA1F0 /* LMReaderRecommandTableViewCell.m */,
+				F29E05E221B50E5A005CA1F0 /* CollectionViewCell */,
+			);
+			path = ReaderRecommand;
+			sourceTree = "<group>";
+		};
+		F2AF0D3B21AB99050047D992 /* ProfileMessageDetail */ = {
+			isa = PBXGroup;
+			children = (
+				F2AF0D3321AB90F10047D992 /* LMProfileMessageDetailViewController.h */,
+				F2AF0D3421AB90F10047D992 /* LMProfileMessageDetailViewController.m */,
+			);
+			path = ProfileMessageDetail;
+			sourceTree = "<group>";
+		};
+		F2AF0D4821ABF1310047D992 /* TabBarCategory */ = {
+			isa = PBXGroup;
+			children = (
+				F2AF0D4921ABF1A20047D992 /* UITabBar+LMBadge.h */,
+				F2AF0D4A21ABF1A20047D992 /* UITabBar+LMBadge.m */,
+			);
+			path = TabBarCategory;
 			sourceTree = "<group>";
 		};
 		F2B69EEE2043AA4F00A7921B /* AboutUs */ = {
@@ -2736,24 +2874,30 @@
 				F25D7E08215B831B00ECCAD1 /* commentUnlike_Selected@2x.png in Resources */,
 				F20E19CD2182BE2600DF7868 /* tabBar_Choice@3x.png in Resources */,
 				F20E19D62182BE2600DF7868 /* tabBar_BookStore@3x.png in Resources */,
+				F2AF0D4021ABD20C0047D992 /* profile_MyMessage@2x.png in Resources */,
 				F24CEE72205B92D00033AFEF /* loading6@2x.png in Resources */,
+				F240540921B7D9B3002D977E /* userInstructions_Reader_Night@2x.png in Resources */,
 				F2B69F0D2043D80500A7921B /* comboxView_Up@2x.png in Resources */,
 				F291FDDB20F3118400157339 /* readerSetting_LineSpace1@2x.png in Resources */,
 				F28973A1218BF7400038E8BE /* starView_Normal@2x.png in Resources */,
 				F20BA545204FBC83008CD68E /* toolBarItem_Catalog@2x.png in Resources */,
 				F20E19CC2182BE2600DF7868 /* tabBar_Choice_Selected@2x.png in Resources */,
 				F25D2CB2215A17820031656F /* profile_MyComment@2x.png in Resources */,
+				F22154D921A28E83004C60B5 /* loading7@2x.png in Resources */,
 				F2E6610A2140D9FB00C8C75E /* share_Link@2x.png in Resources */,
 				F2585D6E20246DF80017D773 /* choice_Range@2x.png in Resources */,
 				F2627857201EEFE700D33722 /* LaunchScreen.storyboard in Resources */,
-				F25CA5EB2184126400A8AFB6 /* bookStore_Feale_Selected@2x.png in Resources */,
+				F25CA5EB2184126400A8AFB6 /* bookStore_Female_Selected@2x.png in Resources */,
+				F240541021B7D9B3002D977E /* userInstructions_Search_Help@2x.png in Resources */,
 				F2153B7F2175BE7C004DD621 /* baidumobadsdk.bundle in Resources */,
 				F262788C201F1CBA00D33722 /* tabBar_Profile@2x.png in Resources */,
 				F24CEE6E205B92D00033AFEF /* loading3@2x.png in Resources */,
+				F240540F21B7D9B3002D977E /* userInstructions_Reader_Setting@2x.png in Resources */,
 				F20E19D12182BE2600DF7868 /* tabBar_BookStore_Selected@2x.png in Resources */,
 				F242E5382057BD32003F95FD /* register_Password@2x.png in Resources */,
 				F20E19CB2182BE2600DF7868 /* tabBar_BookStore_Selected@3x.png in Resources */,
 				F25A3E46205A19B70044A4C5 /* defaultRefresh@2x.png in Resources */,
+				F240540E21B7D9B3002D977E /* userInstructions_Reader_LeftArrow@2x.png in Resources */,
 				F2626E132123FC47003505D8 /* search_Author@2x.png in Resources */,
 				F2E6610F2140D9FB00C8C75E /* qq_Zone@2x.png in Resources */,
 				F2E661092140D9FB00C8C75E /* fastLoginAlert_WeChat@2x.png in Resources */,
@@ -2766,11 +2910,15 @@
 				F291FDDE20F3118400157339 /* toolBarItem_FeedBack@2x.png in Resources */,
 				F25D7DFA215B3ABF00ECCAD1 /* qq_Gray@2x.png in Resources */,
 				F253ADC520529E8F00D2E172 /* defaultBookImage@2x.png in Resources */,
+				F22154E321A28E83004C60B5 /* loading12@2x.png in Resources */,
 				F25E6444211D40DA005EC599 /* bookAuthor@2x.png in Resources */,
 				F27163092022B82A0095A2E3 /* navigationItem_More@2x.png in Resources */,
 				F262788F201F1F1D00D33722 /* navigationItem_Back@2x.png in Resources */,
+				F240540C21B7D9B3002D977E /* userInstructions_Reader_Source@2x.png in Resources */,
 				F2153B7921757C8D004DD621 /* ad_Close@2x.png in Resources */,
+				F22154E621A28E83004C60B5 /* loading22@2x.png in Resources */,
 				F22E00A52185A38B00855E67 /* bookShelfSquareAdd@2x.png in Resources */,
+				F22154D821A28E83004C60B5 /* loading21@2x.png in Resources */,
 				F288324C2192B7BE002CB641 /* feedBackAlertView_Normal@2x.png in Resources */,
 				F26C8BBC20FDF03A00E730AA /* readerBook_More@2x.png in Resources */,
 				F2D1E91D21521A6700FC4707 /* battary_Normal@2x.png in Resources */,
@@ -2780,57 +2928,75 @@
 				F22E00B12185E07400855E67 /* bookShelf_Operation_Delete@2x.png in Resources */,
 				F22D97CF20283D7E007958D4 /* MJRefresh.bundle in Resources */,
 				F2B0D3FA21940D3800596E33 /* settingView_Font_Small@2x.png in Resources */,
+				F22154DB21A28E83004C60B5 /* loading16@2x.png in Resources */,
 				F25CA5E82184126400A8AFB6 /* bookStore_Male_Normal@2x.png in Resources */,
+				F2973EEE21AFDD3500A8BFC0 /* bookShelf_Operation_Add@2x.png in Resources */,
 				F24CEE6D205B92D00033AFEF /* loading2@2x.png in Resources */,
 				F249F97220479F0200D879C0 /* avator_LoginOut@2x.png in Resources */,
 				F24CEE73205B92D00033AFEF /* loading0@2x.png in Resources */,
 				F21EF8792186F6FE0006C8D7 /* bookShelf_Edit_Selected@2x.png in Resources */,
 				F20E19D02182BE2600DF7868 /* tabBar_Choice_Selected@3x.png in Resources */,
+				F24053FB21B7BDAA002D977E /* userInstructions_StepOver@2x.png in Resources */,
+				F22154DD21A28E83004C60B5 /* loading18@2x.png in Resources */,
 				F291FDDF20F3118400157339 /* readerSetting_Light_Low@2x.png in Resources */,
 				F25CA5F12184760700A8AFB6 /* profile_Arrow@2x.png in Resources */,
 				F20BA544204FBC83008CD68E /* toolBarItem_Night_Selected@2x.png in Resources */,
 				F25332C2205FCAFC00740B81 /* female@2x.png in Resources */,
 				F25D2A70214F808D002DC252 /* choice_Over@2x.png in Resources */,
 				F22E00AF2185E07400855E67 /* bookShelf_Operation_Detail@2x.png in Resources */,
-				F21AF34D20650CA60038C195 /* README.txt in Resources */,
+				F22154DF21A28E83004C60B5 /* loading17@2x.png in Resources */,
+				F22154E821A28E83004C60B5 /* loading15@2x.png in Resources */,
 				F24CEE6F205B92D00033AFEF /* loading5@2x.png in Resources */,
-				F21AF34720650CA60038C195 /* ShareSDKUI.bundle in Resources */,
 				F25D2CB4215A17900031656F /* editComment@2x.png in Resources */,
 				F2663C7A20EF7AEB00F656E2 /* toolBarItem_Setting@2x.png in Resources */,
+				F24053FA21B7BDAA002D977E /* userInstructions_BookShelf@2x.png in Resources */,
 				F20E19CF2182BE2600DF7868 /* tabBar_BookShelf@3x.png in Resources */,
 				F20BA542204FBC83008CD68E /* toolBarItem_Night_Normal@2x.png in Resources */,
 				F27D05692109D37E00AED3CD /* profile_FeedBack@2x.png in Resources */,
 				F2E661012140D56C00C8C75E /* rightBarButtonItem_Share@2x.png in Resources */,
 				F2E6610C2140D9FB00C8C75E /* fastLoginAlert_QQ@2x.png in Resources */,
 				F2B69F0E2043D80500A7921B /* comboxView_Down@2x.png in Resources */,
+				F24053FF21B7D3FF002D977E /* userInstructions_BookStore_Sex@2x.png in Resources */,
 				F25D7E06215B831B00ECCAD1 /* commentLike_Selected@2x.png in Resources */,
 				F25CA5EC2184126400A8AFB6 /* bookStore_Female_Normal@2x.png in Resources */,
+				F22154E121A28E83004C60B5 /* loading24@2x.png in Resources */,
+				F22154DC21A28E83004C60B5 /* loading13@2x.png in Resources */,
 				F20E19D42182BE2600DF7868 /* tabBar_Profile@3x.png in Resources */,
 				F27C6A0D21607533004523B6 /* fastLoginAlert_QQ_Color@2x.png in Resources */,
 				F2E6610D2140D9FB00C8C75E /* weChat@2x.png in Resources */,
 				F22D9789202804EB007958D4 /* cell_Arrow@2x.png in Resources */,
 				F2E6610E2140D9FB00C8C75E /* qq@2x.png in Resources */,
 				F2627854201EEFE700D33722 /* Assets.xcassets in Resources */,
+				F280769321A68DFC00D6961A /* defaultBookImage_Gray@2x.png in Resources */,
 				F276EA682154E2BC005C0DB2 /* appIcon@2x.png in Resources */,
 				F2626E142123FC47003505D8 /* search_Book@2x.png in Resources */,
+				F22154DE21A28E83004C60B5 /* loading19@2x.png in Resources */,
 				F24CEE71205B92D00033AFEF /* loading4@2x.png in Resources */,
 				F27A79A921510396000F119B /* bookDetail_Show_Selected@2x.png in Resources */,
-				F21AF34E20650CA60038C195 /* ShareSDK.bundle in Resources */,
+				F22154DA21A28E83004C60B5 /* loading20@2x.png in Resources */,
 				F25332C3205FCAFC00740B81 /* male@2x.png in Resources */,
 				F210CA8221917E8500EB4F73 /* systemSetting_Night@2x.png in Resources */,
 				F2153B7B21758C71004DD621 /* ad_Close_White@2x.png in Resources */,
 				F27A79A821510396000F119B /* bookDetail_Show_Normal@2x.png in Resources */,
-				F251B943212EA5E0003DAF53 /* avator_Login@2x.png in Resources */,
+				F251B943212EA5E0003DAF53 /* avator_LoginIn@2x.png in Resources */,
 				F25CA5EA2184126400A8AFB6 /* bookStore_RightItem_Filter@2x.png in Resources */,
 				F25D7DFC215B3ABF00ECCAD1 /* weChat_Gray@2x.png in Resources */,
-				F21AF34420650CA60038C195 /* ShareSDKConfigFile.bundle in Resources */,
+				F22154E521A28E83004C60B5 /* loading9@2x.png in Resources */,
+				F22154E221A28E83004C60B5 /* loading14@2x.png in Resources */,
+				F298E63121AE8EE200B3E9AB /* bookShelf_Record@2x.png in Resources */,
 				F251BE14212C164F00367F15 /* tabBar_BookStore@2x.png in Resources */,
 				F2438DC22060AE060088FE48 /* readPreferences_Selected@2x.png in Resources */,
 				F22E00A321858A1F00855E67 /* bookShelf_Operation_Batch@2x.png in Resources */,
+				F24053FE21B7D3FF002D977E /* userInstructions_BookStore_Arrow@2x.png in Resources */,
+				F22154E021A28E83004C60B5 /* loading23@2x.png in Resources */,
+				F22154E421A28E83004C60B5 /* loading10@2x.png in Resources */,
 				F291FDD820F3118400157339 /* readerSetting_LineSpace3@2x.png in Resources */,
+				F240540A21B7D9B3002D977E /* userInstructions_Reader_RightArrow@2x.png in Resources */,
 				F242E5372057BD32003F95FD /* register_Avator@2x.png in Resources */,
 				F291FDDD20F3118400157339 /* readerSetting_Light_High@2x.png in Resources */,
 				F288324B2192B7BE002CB641 /* feedBackAlertView_Selected@2x.png in Resources */,
+				F22154E721A28E83004C60B5 /* loading8@2x.png in Resources */,
+				F240541121B7D9B3002D977E /* userInstructions_Reader_Comment@2x.png in Resources */,
 				F25CA5E92184126400A8AFB6 /* bookStore_Male_Selected@2x.png in Resources */,
 				F2877D4A215F925C002FD414 /* catalog_Index@2x.png in Resources */,
 				F214B6B1217837B7004426B6 /* ad_Close_Background@2x.png in Resources */,
@@ -2840,29 +3006,33 @@
 				F25BFA3D21197E4B00D35150 /* unicode_to_hanyu_pinyin.txt in Resources */,
 				F26445522073661E0092EF44 /* shortcutItem_Choice.png in Resources */,
 				F25D7DFB215B3ABF00ECCAD1 /* qq_Zone_Gray@2x.png in Resources */,
+				F240540B21B7D9B3002D977E /* userInstructions_Reader_FeedBack@2x.png in Resources */,
 				F27D056D2109D37E00AED3CD /* profile_AboutUs@2x.png in Resources */,
 				F2877D48215F6AE9002FD414 /* catalog_Decend@2x.png in Resources */,
 				F2E6610B2140D9FB00C8C75E /* weChat_Moment@2x.png in Resources */,
 				F27D056C2109D37E00AED3CD /* profile_ReadRecord@2x.png in Resources */,
 				F24FA62A212D462E002BE63A /* rightBarButtonItem_Filter@2x.png in Resources */,
 				F20E19D22182BE2600DF7868 /* tabBar_BookShelf_Selected@2x.png in Resources */,
+				F24053E021B7A281002D977E /* readerRecommand_Top@2x.png in Resources */,
 				F2438DC12060AE060088FE48 /* readPreferences_Normal@2x.png in Resources */,
 				F24B865920561EE100847C3E /* defaultChoice@2x.png in Resources */,
 				F20E19CE2182BE2600DF7868 /* tabBar_Profile_Selected@3x.png in Resources */,
 				F24B865A20561EE100847C3E /* defaultChoiceDetail@2x.png in Resources */,
+				F240540D21B7D9B3002D977E /* userInstructions_Search_Arrow@2x.png in Resources */,
 				F27163912022C0840095A2E3 /* Info.plist in Resources */,
+				F2C057D621B8D48500B9C160 /* userInstructions_Reader_DownArrow@2x.png in Resources */,
 				F27D056A2109D37E00AED3CD /* profile_SystemSetting@2x.png in Resources */,
 				F24CEE70205B92D00033AFEF /* loading1@2x.png in Resources */,
 				F20FE32621816AD700D5B413 /* choice_Recommand@2x.png in Resources */,
 				F20E19D52182BE2600DF7868 /* tabBar_BookShelf_Selected@3x.png in Resources */,
 				F2627893201F274300D33722 /* tabBar_Choice@2x.png in Resources */,
-				F2E660FF2140D52700C8C75E /* rightBarButtonItem_More_Black@2x.png in Resources */,
 				F271639F20230B400095A2E3 /* defaultFirstLaunch@2x.png in Resources */,
 				F27A79A52150FEA3000F119B /* rightItem_Search@2x.png in Resources */,
 				F27D056B2109D37E00AED3CD /* profile_ReadPreferences@2x.png in Resources */,
 				F2520DEB21466E1C00966285 /* share_AppIcon@2x.png in Resources */,
 				F27C6A0E21607533004523B6 /* fastLoginAlert_WeChat_Color@2x.png in Resources */,
 				F21EF8782186F6FE0006C8D7 /* bookShelf_Edit_Normal@2x.png in Resources */,
+				F22154D721A28E83004C60B5 /* loading11@2x.png in Resources */,
 				F25D7E07215B831B00ECCAD1 /* commentLike@2x.png in Resources */,
 				F2585D6D20246DF80017D773 /* choice_Special@2x.png in Resources */,
 				F2B0D3F921940D3800596E33 /* settingView_Font_Big@2x.png in Resources */,
@@ -2899,6 +3069,7 @@
 				F253ADC320525EB800D2E172 /* UINavigation+SXFixSpace.m in Sources */,
 				F25D2CB0215A107D0031656F /* LMCommentStarView.m in Sources */,
 				F27163202022C0300095A2E3 /* AFNetworkReachabilityManager.m in Sources */,
+				F280FAAC21A7A98500E69D59 /* LMSearchHelpBookAlertView.m in Sources */,
 				F2663C6F20EF0B0900F656E2 /* LMReaderRelatedBookCollectionViewCell.m in Sources */,
 				F271636E2022C06C0095A2E3 /* SDWebImageDownloaderOperation.m in Sources */,
 				F21CFB3E21808CE80089236A /* SCAdView.m in Sources */,
@@ -2916,6 +3087,7 @@
 				F27163702022C06C0095A2E3 /* SDWebImageGIFCoder.m in Sources */,
 				F258CADD20F754E20098A31C /* LMReaderBook.m in Sources */,
 				F2B69EF32043AA7E00A7921B /* LMAboutUsViewController.m in Sources */,
+				F2647C0B21A80F6A0093AFD6 /* LMProfileMessageViewController.m in Sources */,
 				F25758052032CA780054961B /* LMSearchBarView.m in Sources */,
 				F2668F442105D40500E4B2AE /* LMSourceTitleView.m in Sources */,
 				F2B69F112043DAEA00A7921B /* LMComboxViewTableViewCell.m in Sources */,
@@ -2931,11 +3103,13 @@
 				F2E6611F2140DC3D00C8C75E /* LMShareMessage.m in Sources */,
 				F25BFA2321197B4600D35150 /* LMPinYinSearch.m in Sources */,
 				F27163682022C06C0095A2E3 /* SDImageCacheConfig.m in Sources */,
+				F2647C0521A7FB510093AFD6 /* LMSearchHelpBottomAlertView.m in Sources */,
 				F2F4A32F218FEA0700B6771C /* LMRangeRightTableViewCell.m in Sources */,
 				F262787F201F162F00D33722 /* LMBookShelfViewController.m in Sources */,
 				F2B69F0A2043BC5900A7921B /* LMComboxView.m in Sources */,
 				F27163792022C06C0095A2E3 /* UIImage+MultiFormat.m in Sources */,
 				F2545746202B0CAE00A9491C /* MBProgressHUD.m in Sources */,
+				F2973EEC21AFBDFD00A8BFC0 /* LMBookShelfCollectionReusableView.m in Sources */,
 				F259E8CF202999D300C327A1 /* Ftbook.pb.m in Sources */,
 				F21CFB2F21807A230089236A /* LMChoiceAdCollectionViewCell.m in Sources */,
 				F22D97D320283D7E007958D4 /* MJRefreshAutoFooter.m in Sources */,
@@ -2957,35 +3131,43 @@
 				F2B69F012043AD8500A7921B /* LMSystemSettingViewController.m in Sources */,
 				F2B69F172043F23600A7921B /* LMProfileCenterTableViewCell.m in Sources */,
 				F24FA624212CFB26002BE63A /* LMBookStoreTitleCollectionViewCell.m in Sources */,
+				F298E62F21AE8BA800B3E9AB /* LMBookShelfLastestReadBook.m in Sources */,
 				F2979D08219D8CEF0086CCCA /* ftbook.proto in Sources */,
 				F259E8D320299EB700C327A1 /* LMNetworkTool.m in Sources */,
 				F2B69F142043EC9300A7921B /* LMProfileCenterViewController.m in Sources */,
+				F29E05E521B50EA1005CA1F0 /* LMReaderRecommandCollectionViewCell.m in Sources */,
 				F22D978C20280C15007958D4 /* LMInterestOrEndViewController.m in Sources */,
 				F21EF8752186B9FC0006C8D7 /* LMBookShelfEditViewController.m in Sources */,
+				F29E05DF21B50DBE005CA1F0 /* LMReaderRecommandTableViewCell.m in Sources */,
 				F255D7D3215CA5CE00868AC8 /* LMProfileBookCommentViewController.m in Sources */,
 				F25B03A620F60F11008B6945 /* TFHppleElement.m in Sources */,
 				F253ADC220525EB800D2E172 /* NSObject+SXRuntime.m in Sources */,
 				F2512B3C2122E7B200C58A55 /* LMSearchBeforeCollectionViewFlowLayout.m in Sources */,
 				F27163782022C06C0095A2E3 /* UIImage+GIF.m in Sources */,
+				F24053EE21B7B0EA002D977E /* LMSearchUserInstructionsView.m in Sources */,
 				F27163732022C06C0095A2E3 /* SDWebImagePrefetcher.m in Sources */,
 				F22D97C920283D7E007958D4 /* MJRefreshBackGifFooter.m in Sources */,
 				F2663C7520EF217100F656E2 /* LMReaderFeedBackAlertView.m in Sources */,
 				F20FE3302181B81E00D5B413 /* LMChoiceTableViewCellCollectionViewCell.m in Sources */,
+				F24053E421B7B04A002D977E /* LMBookShelfUserInstructionsView.m in Sources */,
 				F22E00892185607800855E67 /* LMBookShelfSquareCollectionViewCell.m in Sources */,
 				F25D2CBB215A32300031656F /* LMBookCommentTableViewCell.m in Sources */,
 				F2512B392122B7D200C58A55 /* LMAuthorBookViewController.m in Sources */,
+				F2AF0D4B21ABF1A20047D992 /* UITabBar+LMBadge.m in Sources */,
 				F2585D63202413380017D773 /* LMBookStoreViewController.m in Sources */,
 				F271636C2022C06C0095A2E3 /* SDWebImageCompat.m in Sources */,
 				F22D97CB20283D7E007958D4 /* MJRefreshBackStateFooter.m in Sources */,
 				F22D97C720283D7E007958D4 /* MJRefreshAutoNormalFooter.m in Sources */,
 				F255F8E02041736B00A1ED95 /* LMChangeSourceTableViewCell.m in Sources */,
 				F25B0CD521251A0C00FB0C3B /* LMSearchAuthorTableViewCell.m in Sources */,
+				F2AF0D3521AB90F10047D992 /* LMProfileMessageDetailViewController.m in Sources */,
 				F27163212022C0300095A2E3 /* AFSecurityPolicy.m in Sources */,
 				F22D97C520283D7E007958D4 /* UIScrollView+MJRefresh.m in Sources */,
 				F27163242022C0300095A2E3 /* AFURLSessionManager.m in Sources */,
 				F22D97D720283D7E007958D4 /* MJRefreshHeader.m in Sources */,
 				F27163642022C06C0095A2E3 /* NSButton+WebCache.m in Sources */,
 				F20FE32921816B2E00D5B413 /* LMChoiceListTableViewCell.m in Sources */,
+				F24053E921B7B0A1002D977E /* LMBookStoreUserInstructionsView.m in Sources */,
 				F25033E920FED723007A62D3 /* PopoverViewCell.m in Sources */,
 				F25BFA2C21197C7400D35150 /* PinYinForObjc.m in Sources */,
 				F22D97D120283D7E007958D4 /* MJRefreshConst.m in Sources */,
@@ -2999,12 +3181,14 @@
 				F2520DEF21467F4500966285 /* LMBindPhoneNumberViewController.m in Sources */,
 				F262785A201EEFE800D33722 /* main.m in Sources */,
 				F262786A201EF29200D33722 /* LMBaseNavigationController.m in Sources */,
+				F2AF0D3E21AB993C0047D992 /* LMProfileMessageModel.m in Sources */,
 				F255D7D6215CA65400868AC8 /* LMProfileBookCommentTableViewCell.m in Sources */,
 				F27A18AC204E8E480071DEA7 /* LMDownloadBookView.m in Sources */,
 				F2668F412105D37B00E4B2AE /* LMSourceAlertView.m in Sources */,
 				F24CCDE1211C43A500E95A7D /* UINavigationController+FDFullscreenPopGesture.m in Sources */,
 				F271630F2022BE630095A2E3 /* LMChangeSourceViewController.m in Sources */,
 				F25033EA20FED723007A62D3 /* PopoverAction.m in Sources */,
+				F29E40EB21B1126C00B34C90 /* LMReaderRecommandViewController.m in Sources */,
 				F27163692022C06C0095A2E3 /* SDWebImageCoder.m in Sources */,
 				F255AE30204D2998008E441C /* LMReadRecordTableViewCell.m in Sources */,
 				F22D9793202810A6007958D4 /* LMSpecialChoiceDetailViewController.m in Sources */,
@@ -3021,9 +3205,11 @@
 				F21CFB2A2180127F0089236A /* LMSearchTitleView.m in Sources */,
 				F27163652022C06C0095A2E3 /* NSData+ImageContentType.m in Sources */,
 				F2B69F1E204405E000A7921B /* LMCheckVerifyCodeViewController.m in Sources */,
+				F2AF0D3A21AB94220047D992 /* LMProfileMessageTableViewCell.m in Sources */,
 				F271637C2022C06C0095A2E3 /* UIImageView+WebCache.m in Sources */,
 				F271638C2022C0840095A2E3 /* FMDatabase.m in Sources */,
 				F247A2032101E23800261AC1 /* LMBaseAlertView.m in Sources */,
+				F2C057D221B8C00300B9C160 /* LMReaderUserInstructionsView.m in Sources */,
 				F26272B6214B65BA00A2791B /* LMBookDetailTableViewCell.m in Sources */,
 				F2627871201EF89E00D33722 /* LMBaseTabBarController.m in Sources */,
 				F271636D2022C06C0095A2E3 /* SDWebImageDownloader.m in Sources */,

@@ -123,23 +123,39 @@ static NSString* cellIdentifier = @"cellIdentifier";
                         }
                         
                         UrlReadParse* parse = [self.parseArray firstObject];
-                        
-                        //章节列表
-                        [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
-                            [weakSelf hideNetworkLoadingView];
-                            
-                            [weakSelf.dataArray addObjectsFromArray:listArray];
-                            
-                            if (weakSelf.tableView != nil) {
-                                [weakSelf.tableView reloadData];
-                            }else {
-                                [weakSelf setupTableView];
-                            }
-                            
-                        } failureBlock:^(NSError *error) {
-                            [weakSelf hideNetworkLoadingView];
-                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                        }];
+                        if ([parse hasApi]) {//json解析
+                            [self initLoadJsonParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                [weakSelf hideNetworkLoadingView];
+                                
+                                [weakSelf.dataArray addObjectsFromArray:listArray];
+                                
+                                if (weakSelf.tableView != nil) {
+                                    [weakSelf.tableView reloadData];
+                                }else {
+                                    [weakSelf setupTableView];
+                                }
+                            } failureBlock:^(NSError *error) {
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                            }];
+                        }else {//html解析
+                            //章节列表
+                            [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                [weakSelf hideNetworkLoadingView];
+                                
+                                [weakSelf.dataArray addObjectsFromArray:listArray];
+                                
+                                if (weakSelf.tableView != nil) {
+                                    [weakSelf.tableView reloadData];
+                                }else {
+                                    [weakSelf setupTableView];
+                                }
+                                
+                            } failureBlock:^(NSError *error) {
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                            }];
+                        }
                     }
                 }
             }
@@ -156,7 +172,39 @@ static NSString* cellIdentifier = @"cellIdentifier";
     }];
 }
 
-//新解析方式 加载章节列表
+//Chiang json解析章节列表
+-(void)initLoadJsonParseBookChaptersWithUrlReadParse:(UrlReadParse* )parse successBlock:(void (^) (NSArray* listArray))successBlock failureBlock:(void (^) (NSError* error))failureBlock {
+    [self showNetworkLoadingView];
+    __weak LMBookCatalogViewController* weakSelf = self;
+    NSString* urlStr = parse.listUrl;
+    [[LMNetworkTool sharedNetworkTool]AFNetworkPostWithURLString:urlStr successBlock:^(NSData *successData) {
+        @try {
+            NSError* jsonError = nil;
+            NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:successData options:NSJSONReadingMutableLeaves error:&jsonError];
+            if (jsonError != nil || dic == nil || [dic isKindOfClass:[NSNull class]] || dic.count == 0) {
+                failureBlock(nil);
+            }
+            
+            NSArray* tempArr = [LMTool jsonParseChapterListWithParse:parse originalDic:dic];
+            
+            if (tempArr.count > 0) {
+                successBlock(tempArr);
+                //保存新解析方式下章节列表
+                [LMTool archiveNewParseBookCatalogListWithBookId:weakSelf.bookId catalogList:tempArr];
+            }else {
+                failureBlock(nil);
+            }
+        } @catch (NSException *exception) {
+            failureBlock(nil);
+        } @finally {
+            
+        }
+    } failureBlock:^(NSError *failureError) {
+        failureBlock(nil);
+    }];
+}
+
+//html解析方式 加载章节列表
 -(void)initLoadNewParseBookChaptersWithUrlReadParse:(UrlReadParse* )parse successBlock:(void (^) (NSArray* listArray))successBlock failureBlock:(void (^) (NSError* error))failureBlock {
     [self showNetworkLoadingView];
     __weak LMBookCatalogViewController* weakSelf = self;
@@ -188,7 +236,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
                 
                 bookChapter.url = bookChapterUrlStr;
                 bookChapter.title = element.content;
-                bookChapter.chapterId = i - listOffset;
+                bookChapter.chapterId = [NSString stringWithFormat:@"%ld", i - listOffset];
                 bookChapter.sourceId = parse.source.id;
                 [listArr addObject:bookChapter];
             }
@@ -528,6 +576,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
             LMReaderBookViewController* readerBookVC = [[LMReaderBookViewController alloc]init];
             readerBookVC.bookId = self.bookId;
             readerBookVC.bookName = self.bookNameStr;
+            readerBookVC.bookCover = self.bookCoverStr;
             readerBookVC.readerBook = readerBook;
             LMBaseNavigationController* bookNavi = [[LMBaseNavigationController alloc]initWithRootViewController:readerBookVC];
             [self presentViewController:bookNavi animated:YES completion:nil];

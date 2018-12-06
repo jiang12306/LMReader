@@ -180,7 +180,13 @@ static CGFloat spaceY = 7;
     
     NSString* picStr = [book.pic stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
     NSURL* picUrl = [NSURL URLWithString:picStr];
-    [self.bookCover sd_setImageWithURL:picUrl placeholderImage:[UIImage imageNamed:@"defaultBookImage"] options:SDWebImageRefreshCached];
+    [self.bookCover sd_setImageWithURL:picUrl placeholderImage:[UIImage imageNamed:@"defaultBookImage_Gray"] completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+        if (image && error == nil) {
+            
+        }else {
+            self.bookCover.image = [UIImage imageNamed:@"defaultBookImage"];
+        }
+    }];
     
     self.nameLab.text = book.name;
     CGSize nameSize = [self caculateLabelSizeWithText:book.name width:maxLabWidth font:[UIFont boldSystemFontOfSize:18] lines:0];

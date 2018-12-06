@@ -27,7 +27,7 @@
 @property (nonatomic, copy) NSArray<SourceLastChapter* >* sourcesArr;/**<旧解析方式中 章节源数组*/
 @property (nonatomic, assign) UInt64 updateTime;
 @property (nonatomic, assign) NSInteger chapterNo;
-@property (nonatomic, assign) NSInteger chapterId;
+@property (nonatomic, copy) NSString* chapterId;
 @property (nonatomic, assign) NSInteger sourceId;/**<*/
 @property (nonatomic, copy) NSString* title;/**<章节标题*/
 
@@ -53,7 +53,7 @@
 @property (nonatomic, copy) NSArray<LMReaderBookChapter* >* chaptersArr;/**<*/
 @property (nonatomic, strong) LMReaderBookChapter* currentChapter;/**<*/
 //@property (nonatomic, assign) CGFloat progress;/**<*/
-@property (nonatomic, assign) BOOL isNew;/**<*/
+@property (nonatomic, assign) BOOL isNew;/**<YES：第三方来源；NO：默认自家服务器返回数据解析，见pb文件*/
 @property (nonatomic, copy) NSArray<UrlReadParse* >* parseArr;/**<书本源及解析方法，用于换源*/
 @property (nonatomic, assign) NSInteger currentParseIndex;/**<当前书本源 角标*/
 

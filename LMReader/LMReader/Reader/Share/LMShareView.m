@@ -41,7 +41,7 @@ CGFloat shareBtnWidth = 60;
         }
         
         self.bgView = [[UIView alloc]initWithFrame:CGRectMake(0, screenRect.size.height - totalHeight, screenRect.size.width, totalHeight)];
-        self.bgView.backgroundColor = [UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
+        self.bgView.backgroundColor = [UIColor whiteColor];//[UIColor colorWithRed:230.f/255 green:230.f/255 blue:230.f/255 alpha:1];
         [self addSubview:self.bgView];
         
         UILabel* titleLab = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.bgView.frame.size.width, 80)];
@@ -89,7 +89,8 @@ CGFloat shareBtnWidth = 60;
             ivView.layer.masksToBounds = YES;
             [btn addSubview:ivView];
             
-            UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, shareBtnWidth - 20, shareBtnWidth - 20)];
+            UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, shareBtnWidth, shareBtnWidth)];
+//            UIImageView* iv = [[UIImageView alloc]initWithFrame:CGRectMake(10, 10, shareBtnWidth - 20, shareBtnWidth - 20)];
             iv.contentMode = UIViewContentModeScaleAspectFit;
             UIImage* ivImage = [UIImage imageNamed:imageArr[i]];
             [ivView addSubview:iv];

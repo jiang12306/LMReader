@@ -33,4 +33,15 @@
  */
 -(void)openViewControllerCalss:(NSString* )classString paramString:(NSString* )paramString;
 
+/** 设置角标红点
+ *  @param showRedDot NO：不显示；YEs：显示
+ *  @param index 当前item的角标 0：书架  1：精选   2：书城  3：我的
+ */
+-(void)setupShowRedDot:(BOOL )showRedDot index:(NSInteger )index;
+
+/** 获取是否有角标红点
+ *  @param index 当前item的角标 0：书架  1：精选   2：书城  3：我的
+ */
+-(BOOL )getShowRedDotWithIndex:(NSInteger )index;
+
 @end

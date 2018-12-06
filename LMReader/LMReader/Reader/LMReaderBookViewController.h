@@ -15,6 +15,7 @@ typedef void (^LMReaderBookViewControllerBlock) (BOOL resetOrder);
 
 @property (nonatomic, assign) UInt32 bookId;
 @property (nonatomic, copy) NSString* bookName;
+@property (nonatomic, copy) NSString* bookCover;
 @property (nonatomic, copy) LMReaderBookViewControllerBlock callBlock;
 
 @property (nonatomic, strong) LMReaderBook* readerBook;

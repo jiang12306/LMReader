@@ -18,6 +18,9 @@
 #import "LMAuthorBookViewController.h"
 #import "LMSearchRelatedModel.h"
 #import "LMSearchAuthorTableViewCell.h"
+#import "LMSearchHelpBottomAlertView.h"
+#import "LMSearchHelpBookAlertView.h"
+#import "LMSearchUserInstructionsView.h"
 
 @interface LMSearchViewController () <UITableViewDelegate, UITableViewDataSource, LMBaseRefreshTableViewDelegate, LMSearchBarViewDelegate>
 
@@ -26,6 +29,8 @@
 @property (nonatomic, strong) NSMutableArray* matchArray;/**<匹配结果数组*/
 @property (nonatomic, strong) UITableView* matchTableView;/**<*/
 @property (nonatomic, strong) NSMutableArray* historyArray;/**<搜索历史*/
+
+@property (nonatomic, strong) LMSearchHelpBottomAlertView* bottomAV;/**<找书提示bottom条*/
 
 @property (nonatomic, strong) LMBaseRefreshTableView* tableView;
 @property (nonatomic, strong) NSMutableArray* authorsArray;//搜索结果作者数组
@@ -98,6 +103,19 @@ static NSString* searchDataKey = @"searchHistoryData";
     [self.view addSubview:self.tableView];
     
     __weak LMSearchViewController* weakSelf = self;
+    self.bottomAV = [[LMSearchHelpBottomAlertView alloc]initWithFrame:CGRectMake(0, self.tableView.frame.origin.y, self.tableView.frame.size.width, 30)];// + self.tableView.frame.size.height - 30
+    self.bottomAV.backgroundColor = [UIColor colorWithRed:240.f/255 green:240.f/255 blue:240.f/255 alpha:1];
+    self.bottomAV.clickBlock = ^(BOOL didClick) {
+        CGFloat spaceX = 40;
+        if (weakSelf.view.frame.size.width <= 320) {
+            spaceX = 20;
+        }
+        LMSearchHelpBookAlertView* av = [[LMSearchHelpBookAlertView alloc]initWithFrame:CGRectMake(0, 0, weakSelf.view.frame.size.width - spaceX * 2, 100)];
+        [av startShow];
+    };
+    [self.view insertSubview:self.bottomAV aboveSubview:self.tableView];
+    self.bottomAV.hidden = YES;
+    
     self.searchBeforeVC = [[LMSearchBeforeViewController alloc]init];
     self.searchBeforeVC.cleanBlock = ^(BOOL didClean) {
         [weakSelf deleteAllSearchHistoryData];
@@ -170,33 +188,66 @@ static NSString* searchDataKey = @"searchHistoryData";
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     if (tableView == self.tableView) {
-        if (self.isRefreshing) {
-            UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
-            vi.backgroundColor = [UIColor whiteColor];
-            return vi;
-        }
-        if (section == 1) {
-            UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0)];
-            vi.backgroundColor = [UIColor whiteColor];
-            return vi;
-        }
-        UIView* vi = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
-        vi.backgroundColor = [UIColor whiteColor];
-        UILabel* lab = [[UILabel alloc]initWithFrame:CGRectMake(20, 0, vi.frame.size.width, vi.frame.size.height)];
-        lab.font = [UIFont systemFontOfSize:18];
+        CGRect viRect = CGRectMake(0, 0, self.view.frame.size.width, 0);
+        CGRect labRect = CGRectMake(20, 20, viRect.size.width, 0);
         NSString* str = @"搜索结果";
-        if (section == 0) {
-            if (self.resultArray.count == 0) {
-                str = @"搜索结果";//@"无相关搜索结果";
+        if (self.isRefreshing) {
+            if (section == 0) {
+                if (self.resultArray.count == 0) {
+                    str = @"无相关搜索结果";
+                    viRect.size.height = 0;
+                    labRect.origin.y = 0;
+                    labRect.size.height = 0;
+                }else {
+                    viRect.size.height = 60 + self.bottomAV.frame.size.height;
+                    labRect.origin.y = self.bottomAV.frame.size.height;
+                    labRect.size.height = viRect.size.height - self.bottomAV.frame.size.height;
+                }
+            }else if (section == 1) {
+                viRect.size.height = 0.01;
+                labRect.size.height = 0.01;
+                str = @"";
+            }else if (section == 2) {
+                if (self.relatedArray.count == 0) {
+                    str = @"暂无相关推荐";
+                    viRect.size.height = 0;
+                    labRect.origin.y = 0;
+                    labRect.size.height = 0;
+                }else {
+                    str = @"相关推荐";
+                    viRect.size.height = 60;
+                    labRect.origin.y = 0;
+                    labRect.size.height = viRect.size.height;
+                }
+            }
+        }else {
+            if (section == 0) {
+                if (self.resultArray.count == 0) {
+                    str = @"无相关搜索结果";
+                }
+                viRect.size.height = 60 + self.bottomAV.frame.size.height;
+                labRect.origin.y = self.bottomAV.frame.size.height;
+                labRect.size.height = viRect.size.height - self.bottomAV.frame.size.height;
+            }else if (section == 1) {
+                viRect.size.height = 0.01;
+                labRect.size.height = 0.01;
+                str = @"";
+            }else if (section == 2) {
+                if (self.relatedArray.count == 0) {
+                    str = @"暂无相关推荐";
+                }else {
+                    str = @"相关推荐";
+                }
+                viRect.size.height = 60;
+                labRect.origin.y = 0;
+                labRect.size.height = viRect.size.height;
             }
         }
-        if (section == 2) {
-            if (self.relatedArray.count == 0) {
-                str = @"相关推荐";//@"暂无相关推荐";
-            }else {
-                str = @"相关推荐";
-            }
-        }
+        
+        UIView* vi = [[UIView alloc]initWithFrame:viRect];
+        vi.backgroundColor = [UIColor whiteColor];
+        UILabel* lab = [[UILabel alloc]initWithFrame:labRect];
+        lab.font = [UIFont systemFontOfSize:18];
         lab.text = str;
         [vi addSubview:lab];
         return vi;
@@ -247,8 +298,23 @@ static NSString* searchDataKey = @"searchHistoryData";
 
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     if (tableView == self.tableView) {
+        if (self.isRefreshing) {
+            if (section == 0) {
+                if (self.authorsArray.count > 0) {
+                    return 60 + self.bottomAV.frame.size.height;
+                }
+            }else if (section == 1) {
+                return 0.01;
+            }else if (section == 2) {
+                if (self.relatedArray.count > 0) {
+                    return 60;
+                }
+            }
+            return 0.01;
+        }
+        
         if (section == 0) {
-            return 60;
+            return 60 + self.bottomAV.frame.size.height;
         }else if (section == 1) {
             return 0.01;
         }else if (section == 2) {
@@ -276,15 +342,17 @@ static NSString* searchDataKey = @"searchHistoryData";
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSInteger section = indexPath.section;
+    NSInteger row = indexPath.row;
     if (tableView == self.tableView) {
-        if (indexPath.section == 0) {
+        if (section == 0) {
             LMSearchAuthorTableViewCell* cell = [self.tableView dequeueReusableCellWithIdentifier:authorCellIdentifier forIndexPath:indexPath];
             if (!cell) {
                 cell = [[LMSearchAuthorTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:authorCellIdentifier];
             }
             [cell showLineView:NO];
             
-            NSString* authorString = [self.authorsArray objectAtIndex:indexPath.row];
+            NSString* authorString = [self.authorsArray objectAtIndex:row];
             [cell setupWithAuthorString:authorString];
             
             return cell;
@@ -295,14 +363,26 @@ static NSString* searchDataKey = @"searchHistoryData";
         }
         
         Book* book;
-        if (indexPath.section == 1) {
-            book = [self.resultArray objectAtIndex:indexPath.row];
-        }else if (indexPath.section == 2) {
-            book = [self.relatedArray objectAtIndex:indexPath.row];
+        if (section == 1) {
+            book = [self.resultArray objectAtIndex:row];
+        }else if (section == 2) {
+            book = [self.relatedArray objectAtIndex:row];
         }
         
         [cell setupContentBook:book cellHeight:self.bookCoverHeight + 20 * 2 ivWidth:self.bookCoverWidth nameFontSize:self.bookNameFontSize briefFontSize:self.bookBriefFontSize];
-        
+        if (row == 0) {
+            [self showBottomAlertView];
+            if ([LMTool shouldShowSearchUserInstructionsView]) {
+                CGFloat naviHeight = 20 + 44;
+                if ([LMTool isBangsScreen]) {
+                    naviHeight = 44 + 44;
+                }
+                LMSearchUserInstructionsView* searchUIV = [[LMSearchUserInstructionsView alloc]init];
+                [searchUIV startShowWithStartPoint:CGPointMake(self.view.frame.size.width, naviHeight + self.bottomAV.frame.size.height)];
+                //
+                [LMTool updateSetShowSearchUserInstructionsView];
+            }
+        }
         return cell;
     }else {
         LMSearchRelatedTableViewCell* cell = [self.matchTableView dequeueReusableCellWithIdentifier:historyCellIdentifier forIndexPath:indexPath];
@@ -310,8 +390,6 @@ static NSString* searchDataKey = @"searchHistoryData";
             cell = [[LMSearchRelatedTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:historyCellIdentifier];
         }
         [cell showLineView:NO];
-        
-        NSInteger row = indexPath.row;
         
         LMSearchRelatedModel* model = [self.matchArray objectAtIndex:row];
         if (model.type == LMSearchRelatedModelAuthor) {
@@ -366,6 +444,7 @@ static NSString* searchDataKey = @"searchHistoryData";
 //
 -(void)loadSearchDataWithPage:(NSInteger )page isRefreshingOrLoadMoreData:(BOOL )loadMore {
     self.isRefreshing = YES;
+    [self.tableView reloadData];
     
     BookSearchReqBuilder* builder = [BookSearchReq builder];
     [builder setPage:(UInt32)page];
@@ -431,6 +510,16 @@ static NSString* searchDataKey = @"searchHistoryData";
         }
         [weakSelf showMBProgressHUDWithText:NETWORKFAILEDALERT];
     }];
+}
+
+//显示底部提示框
+-(void)showBottomAlertView {
+    self.bottomAV.hidden = NO;
+}
+
+//隐藏底部提示框
+-(void)hideBottomAlertView {
+    self.bottomAV.hidden = YES;
 }
 
 #pragma mark -UIScrollViewDelegate

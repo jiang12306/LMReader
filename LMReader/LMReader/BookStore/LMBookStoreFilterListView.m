@@ -9,7 +9,7 @@
 #import "LMBookStoreFilterListView.h"
 #import "AppDelegate.h"
 
-static CGFloat const kPopoverViewMargin = 8.f;        ///< 边距
+static CGFloat const kPopoverViewMargin = 10.f;        ///< 边距
 static CGFloat const kPopoverViewArrowHeight = 13.f;  ///< 箭头高度
 
 float LMPopoverViewDegreesToRadians(float angle) {

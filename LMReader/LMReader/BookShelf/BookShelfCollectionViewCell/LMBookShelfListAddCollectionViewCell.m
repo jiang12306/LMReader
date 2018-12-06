@@ -50,7 +50,7 @@
 }
 
 -(void)setupListAddCellWithItemWidth:(CGFloat)itemWidth itemHeight:(CGFloat)itemHeight {
-    self.addBtn.frame = CGRectMake(20, 10, itemWidth - 20 * 2, itemHeight - 10 * 2);
+    self.addBtn.frame = CGRectMake(20, 20, itemWidth - 20 * 2, itemHeight - 20 * 2);
     self.addIV.frame = CGRectMake((self.addBtn.frame.size.width - 20) / 2 - 35, (self.addBtn.frame.size.height - 20) / 2, 20, 20);
     self.addLab.frame = CGRectMake(self.addIV.frame.origin.x + self.addIV.frame.size.width, self.addIV.frame.origin.y, 70, self.addIV.frame.size.height);
 }

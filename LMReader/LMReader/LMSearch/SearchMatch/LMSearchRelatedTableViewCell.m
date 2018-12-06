@@ -22,6 +22,8 @@
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
     if (!self.coverIV) {
         self.coverIV = [[UIImageView alloc]initWithFrame:CGRectMake(20, 20, 20, 20)];
+        self.coverIV.contentMode = UIViewContentModeScaleAspectFill;
+        self.coverIV.clipsToBounds = YES;
         [self.contentView addSubview:self.coverIV];
     }
     if (!self.textLab) {

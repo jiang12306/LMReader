@@ -111,7 +111,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
             LMReadRecordModel* model = [[LMReadRecordModel alloc]init];
             model.bookId = [[dic objectForKey:@"bookId"] intValue];
             model.name = [dic objectForKey:@"name"];
-            model.chapterId = [[dic objectForKey:@"chapterId"] intValue];
+            model.chapterId = [dic objectForKey:@"chapterId"];
             model.chapterNo = [[dic objectForKey:@"chapterNo"] intValue];
             model.chapterTitle = [dic objectForKey:@"chapterTitle"];
             model.sourceId = [[dic objectForKey:@"sourceId"] intValue];
@@ -119,18 +119,21 @@ static NSString* cellIdentifier = @"cellIdentifier";
             NSDate* date = [dic objectForKey:@"date"];
             model.dateStr = [LMTool convertDateToTime:date];
             model.isCollected = [[LMDatabaseTool sharedDatabaseTool] checkUserBooksIsExistWithBookId:model.bookId];
+            model.coverStr = [dic objectForKey:@"cover"];
             
             NSTimeInterval timeStamp = [date timeIntervalSince1970];
             int timeInt = nowTimeinterval - timeStamp; //时间差
             int hour = timeInt / 3600;//小时
             int day = timeInt / (3600 * 24);
             
-            model.dayInteger = day;
-            if (hour <= currentHour) {
+            if (hour <= currentHour || day < 1) {
+                model.dayInteger = 0;
                 [todayArray addObject:model];
-            }else if (hour > 24 && day == 1) {
+            }else if (hour >= 24 && day == 1) {
+                model.dayInteger = 1;
                 [yesterdayArray addObject:model];
             }else {
+                model.dayInteger = 2;
                 [earlyArray addObject:model];
             }
         }
@@ -254,6 +257,7 @@ static NSString* cellIdentifier = @"cellIdentifier";
     
     LMReaderBookViewController* readerBookVC = [[LMReaderBookViewController alloc]init];
     readerBookVC.bookId = bookId;
+    readerBookVC.bookCover = model.coverStr;
     readerBookVC.bookName = nameStr;
     readerBookVC.callBlock = ^(BOOL resetOrder) {
         //刷新
@@ -301,12 +305,15 @@ static NSString* cellIdentifier = @"cellIdentifier";
 
 -(void)didClickCell:(LMReadRecordTableViewCell* )cell deleteButton:(UIButton* )btn {
     NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
-    NSArray* arr = [self.dataArray objectAtIndex:indexPath.section];
+    NSMutableArray* arr = [self.dataArray objectAtIndex:indexPath.section];
     LMReadRecordModel* model = [arr objectAtIndex:indexPath.row];
     [[LMDatabaseTool sharedDatabaseTool]deleteBookReadRecordWithBookId:model.bookId];
     
-    [self.dataArray removeObjectAtIndex:indexPath.row];
-    [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    [arr removeObject:model];
+    if (arr.count == 0) {
+        [self.dataArray removeObject:arr];
+    }
+    [self.tableView reloadData];
 }
 
 -(void)didClickCell:(LMReadRecordTableViewCell* )cell collectButton:(UIButton* )btn {

@@ -110,7 +110,7 @@ float PopoverViewDegreesToRadians(float angle)
     
     // shadeView
     _contentView = [[LMBaseAlertView alloc] initWithFrame:_keyWindow.bounds];
-    [self setShowShade:NO];
+    [self setShowShade:YES];
     
     // tableView
     _tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
@@ -118,7 +118,7 @@ float PopoverViewDegreesToRadians(float angle)
     _tableView.dataSource = self;
     _tableView.scrollEnabled = NO;
     _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    _tableView.separatorColor = [PopoverViewCell bottomLineColorForStyle:_style];
+    _tableView.separatorColor = [UIColor clearColor];//[PopoverViewCell bottomLineColorForStyle:_style];
     _tableView.backgroundColor = [UIColor clearColor];
     _tableView.estimatedRowHeight = 0.0;
     _tableView.showsVerticalScrollIndicator = NO;
@@ -429,7 +429,9 @@ float PopoverViewDegreesToRadians(float angle)
     PopoverViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPopoverCellReuseId];
     cell.style = _style;
     [cell setAction:_actions[indexPath.row]];
-    [cell showBottomLine: indexPath.row < _actions.count - 1];
+    
+    [cell showBottomLine:NO];
+//    [cell showBottomLine: indexPath.row < _actions.count - 1];
     
     return cell;
 }

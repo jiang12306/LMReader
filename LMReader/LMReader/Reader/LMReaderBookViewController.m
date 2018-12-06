@@ -33,8 +33,11 @@
 #import "LMProfileProtocolViewController.h"
 #import "LMLaunchDetailViewController.h"
 #import "AppDelegate.h"
+#import "LMReaderRecommandViewController.h"
+#import "LMRootViewController.h"
+#import "LMReaderUserInstructionsView.h"
 
-@interface LMReaderBookViewController () <UIPageViewControllerDelegate, UIPageViewControllerDataSource, LMPageViewControllerDelegate, LMContentViewControllerDelegate>
+@interface LMReaderBookViewController () <UIPageViewControllerDelegate, UIPageViewControllerDataSource, LMPageViewControllerDelegate, LMContentViewControllerDelegate, LMReaderRecommandViewControllerDelegate>
 
 @property (nonatomic, strong) UIView* naviBarView;/**<naviBar*/
 @property (nonatomic, strong) UIButton* backBtn;/**<返回 按钮*/
@@ -73,6 +76,51 @@
 @end
 
 @implementation LMReaderBookViewController
+
+
+//阅读完最后一页，切换至最后推荐页
+-(void)exchangePageViewControllerToReaderRecommandViewController {
+    if (self.pageVC) {
+        [self.pageVC removeFromParentViewController];
+        [self.pageVC.view removeFromSuperview];
+        self.pageVC = nil;
+    }
+    
+//    self.changeSourceBtn.hidden = YES;
+    [self setupNaviBarViewHidden:NO];
+    [self setupToolBarViewHidden:YES];
+    [self setupSettingViewHidden:YES];
+    [self setupEditCommentButtonHidden:YES];
+    
+    LMReaderRecommandViewController* recommandVC = [[LMReaderRecommandViewController alloc]init];
+    recommandVC.bookId = self.bookId;
+    recommandVC.delegate = self;
+    [self addChildViewController:recommandVC];
+    [self.view insertSubview:recommandVC.view belowSubview:self.naviBarView];
+    
+    //
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
+#pragma mark -LMReaderRecommandViewControllerDelegate
+-(void)readerRecommandViewControllerDidClickedEditCommentButton {
+    //写书评
+    [self clickedEditCommentButton:nil];
+}
+
+-(void)readerRecommandViewControllerDidClickedBookStoreButton {
+    //跳转至 书城 页面
+    LMRootViewController* rootVC = [LMRootViewController sharedRootViewController];
+    [rootVC backToTabBarControllerWithViewControllerIndex:2];
+}
+
+-(void)readerRecommandViewControllerDidClickedBook:(Book* )clickedBook {
+    if (clickedBook != nil && [clickedBook isKindOfClass:[Book class]]) {
+        LMBookDetailViewController* detailVC = [[LMBookDetailViewController alloc]init];
+        detailVC.bookId = clickedBook.bookId;
+        [self.navigationController pushViewController:detailVC animated:YES];
+    }
+}
 
 #pragma mark -LMContentViewControllerDelegate
 -(void)didClickedAdViewIsBook:(BOOL )isBook bookIdStr:(NSString* )bookIdStr urlStr:(NSString* )urlStr {
@@ -114,8 +162,12 @@
         self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
         
     }else {
-        self.navigationController.navigationBar.barStyle = UIBarStyleDefault;
-        
+        BOOL isHiden = self.naviBarView.frame.origin.y < 0;
+        if (isHiden) {
+            self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+        }else {
+            self.navigationController.navigationBar.barStyle = UIBarStyleDefault;
+        }
     }
     
     [self reloadTopNaviBarViewAndSourceTitleView];
@@ -267,12 +319,10 @@
     [self.brightSlider addGestureRecognizer:sliderTap];
     
     self.editCommentBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width - 10 - 50, self.view.frame.size.height - self.settingView.frame.size.height - 10 - 50, 50, 50)];
-    self.editCommentBtn.backgroundColor = [UIColor colorWithRed:36.f/255 green:36.f/255 blue:36.f/255 alpha:1];
+    self.editCommentBtn.backgroundColor = [UIColor colorWithRed:119.f/255 green:119.f/255 blue:119.f/255 alpha:1];
     self.editCommentBtn.layer.cornerRadius = 25;
     self.editCommentBtn.layer.masksToBounds = YES;
-    self.editCommentBtn.tintColor = THEMEORANGECOLOR;
-    UIImage* editCommentImg = [[UIImage imageNamed:@"editComment"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    [self.editCommentBtn setImage:editCommentImg forState:UIControlStateNormal];
+    [self.editCommentBtn setImage:[UIImage imageNamed:@"editComment"] forState:UIControlStateNormal];
     [self.editCommentBtn setImageEdgeInsets:UIEdgeInsetsMake(13, 13, 13, 13)];
     [self.editCommentBtn addTarget:self action:@selector(clickedEditCommentButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.editCommentBtn];
@@ -338,7 +388,7 @@
                                 Chapter* tempChapter = [arr objectAtIndex:i];
                                 
                                 LMReaderBookChapter* bookChapter = [LMReaderBookChapter convertReaderBookChapterWithChapter:tempChapter];
-                                if (bookChapter.chapterId == self.readerBook.currentChapter.chapterId) {
+                                if ([bookChapter.chapterId isEqualToString:self.readerBook.currentChapter.chapterId]) {
                                     NSInteger tempBookOffset = self.readerBook.currentChapter.offset;
                                     bookChapter.offset = tempBookOffset;
                                     self.readerBook.currentChapter = bookChapter;
@@ -395,51 +445,100 @@
                                 weakSelf.readerBook.parseArr = [NSArray arrayWithArray:bookParseArr];
                                 weakSelf.readerBook.currentParseIndex = parseIndex;
                                 UrlReadParse* parse = [bookParseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
-                                //章节列表
-                                [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
-                                    weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
-                                    LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
-                                    NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
-                                    LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
-                                    realCurrentChapter.chapterId = currentChapter.chapterId;
-                                    realCurrentChapter.sourceId = parse.source.id;
-                                    realCurrentChapter.offset = currentChapter.offset;
-                                    weakSelf.readerBook.currentChapter = realCurrentChapter;
-                                    //章节内容
-                                    [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                                        realCurrentChapter.content = contentStr;
-                                        NSInteger textOffset = realCurrentChapter.offset;
-                                        if (textOffset < 0) {
-                                            textOffset = 0;
-                                        }else if (textOffset >= contentStr.length) {
-                                            textOffset = 0;
-                                        }
-                                        realCurrentChapter.offset = textOffset;
-                                        NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
-                                        weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
-                                        NSInteger pageIndex = 0;
-                                        for (NSInteger i = 0; i < pagesArr.count; i ++) {
-                                            LMReaderBookPage* page = [pagesArr objectAtIndex:i];
-                                            if (page.startLocation >= textOffset) {
-                                                pageIndex = i;
-                                                break;
+                                if ([parse hasApi]) {//json解析
+                                    //章节列表
+                                    [weakSelf initLoadJsonParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                        weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                                        LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                        NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
+                                        LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                        realCurrentChapter.chapterId = currentChapter.chapterId;
+                                        realCurrentChapter.sourceId = parse.source.id;
+                                        realCurrentChapter.offset = currentChapter.offset;
+                                        weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                        
+                                        //章节内容
+                                        [weakSelf initLoadJsonParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                            realCurrentChapter.content = contentStr;
+                                            NSInteger textOffset = realCurrentChapter.offset;
+                                            if (textOffset < 0) {
+                                                textOffset = 0;
+                                            }else if (textOffset >= contentStr.length) {
+                                                textOffset = 0;
                                             }
-                                        }
-                                        weakSelf.readerBook.currentChapter.currentPage = pageIndex;
-                                        weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                            realCurrentChapter.offset = textOffset;
+                                            NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                            NSInteger pageIndex = 0;
+                                            for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                                LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                                if (page.startLocation >= textOffset) {
+                                                    pageIndex = i;
+                                                    break;
+                                                }
+                                            }
+                                            weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                            weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                            
+                                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                            
+                                            [weakSelf hideNetworkLoadingView];
+                                        } failureBlock:^(NSError *error) {
+                                            [weakSelf hideNetworkLoadingView];
+                                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                        }];
                                         
-                                        [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                                        
-                                        [weakSelf hideNetworkLoadingView];
                                     } failureBlock:^(NSError *error) {
                                         [weakSelf hideNetworkLoadingView];
                                         [weakSelf showMBProgressHUDWithText:@"获取失败"];
                                     }];
-                                    
-                                } failureBlock:^(NSError *error) {
-                                    [weakSelf hideNetworkLoadingView];
-                                    [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                                }];
+                                }else {//html解析
+                                    //章节列表
+                                    [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                        weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                                        LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                        NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
+                                        LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                        realCurrentChapter.chapterId = currentChapter.chapterId;
+                                        realCurrentChapter.sourceId = parse.source.id;
+                                        realCurrentChapter.offset = currentChapter.offset;
+                                        weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                        //章节内容
+                                        [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                            realCurrentChapter.content = contentStr;
+                                            NSInteger textOffset = realCurrentChapter.offset;
+                                            if (textOffset < 0) {
+                                                textOffset = 0;
+                                            }else if (textOffset >= contentStr.length) {
+                                                textOffset = 0;
+                                            }
+                                            realCurrentChapter.offset = textOffset;
+                                            NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                            NSInteger pageIndex = 0;
+                                            for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                                LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                                if (page.startLocation >= textOffset) {
+                                                    pageIndex = i;
+                                                    break;
+                                                }
+                                            }
+                                            weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                            weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                            
+                                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                            
+                                            [weakSelf hideNetworkLoadingView];
+                                        } failureBlock:^(NSError *error) {
+                                            [weakSelf hideNetworkLoadingView];
+                                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                        }];
+                                        
+                                    } failureBlock:^(NSError *error) {
+                                        [weakSelf hideNetworkLoadingView];
+                                        [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                    }];
+                                }
                             }else {
                                 [weakSelf hideNetworkLoadingView];
                                 [weakSelf showMBProgressHUDWithText:@"获取失败"];
@@ -468,7 +567,7 @@
                         Chapter* tempChapter = [arr objectAtIndex:i];
                         
                         LMReaderBookChapter* bookChapter = [LMReaderBookChapter convertReaderBookChapterWithChapter:tempChapter];
-                        if (bookChapter.chapterId == self.readerBook.currentChapter.chapterId) {
+                        if ([bookChapter.chapterId isEqualToString:self.readerBook.currentChapter.chapterId]) {
                             NSInteger tempBookOffset = self.readerBook.currentChapter.offset;
                             bookChapter.offset = tempBookOffset;
                             self.readerBook.currentChapter = bookChapter;
@@ -525,51 +624,98 @@
                         weakSelf.readerBook.parseArr = [NSArray arrayWithArray:bookParseArr];
                         weakSelf.readerBook.currentParseIndex = parseIndex;
                         UrlReadParse* parse = [bookParseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
-                        //章节列表
-                        [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
-                            weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
-                            LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
-                            NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
-                            LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
-                            realCurrentChapter.chapterId = currentChapter.chapterId;
-                            realCurrentChapter.sourceId = parse.source.id;
-                            realCurrentChapter.offset = currentChapter.offset;
-                            weakSelf.readerBook.currentChapter = realCurrentChapter;
-                            //章节内容
-                            [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                                realCurrentChapter.content = contentStr;
-                                NSInteger textOffset = realCurrentChapter.offset;
-                                if (textOffset < 0) {
-                                    textOffset = 0;
-                                }else if (textOffset >= contentStr.length) {
-                                    textOffset = 0;
-                                }
-                                realCurrentChapter.offset = textOffset;
-                                NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
-                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
-                                NSInteger pageIndex = 0;
-                                for (NSInteger i = 0; i < pagesArr.count; i ++) {
-                                    LMReaderBookPage* page = [pagesArr objectAtIndex:i];
-                                    if (page.startLocation >= textOffset) {
-                                        pageIndex = i;
-                                        break;
+                        if ([parse hasApi]) {//json解析
+                            //章节列表
+                            [weakSelf initLoadJsonParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                                LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
+                                LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                realCurrentChapter.chapterId = currentChapter.chapterId;
+                                realCurrentChapter.sourceId = parse.source.id;
+                                realCurrentChapter.offset = currentChapter.offset;
+                                weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                //章节内容
+                                [weakSelf initLoadJsonParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                    realCurrentChapter.content = contentStr;
+                                    NSInteger textOffset = realCurrentChapter.offset;
+                                    if (textOffset < 0) {
+                                        textOffset = 0;
+                                    }else if (textOffset >= contentStr.length) {
+                                        textOffset = 0;
                                     }
-                                }
-                                weakSelf.readerBook.currentChapter.currentPage = pageIndex;
-                                weakSelf.readerBook.currentChapter.pageChange = pageIndex;
-                                
-                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                                
-                                [weakSelf hideNetworkLoadingView];
+                                    realCurrentChapter.offset = textOffset;
+                                    NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                    weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                    NSInteger pageIndex = 0;
+                                    for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                        LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                        if (page.startLocation >= textOffset) {
+                                            pageIndex = i;
+                                            break;
+                                        }
+                                    }
+                                    weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                    weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                    
+                                    [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                    
+                                    [weakSelf hideNetworkLoadingView];
+                                } failureBlock:^(NSError *error) {
+                                    [weakSelf hideNetworkLoadingView];
+                                    [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                }];
                             } failureBlock:^(NSError *error) {
-                                [weakSelf hideNetworkLoadingView];
-                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                //取缓存章节列表
+                                NSArray* chaptersList = [LMTool unarchiveNewParseBookCatalogListWithBookId:weakSelf.bookId];
+                                if (chaptersList != nil && chaptersList.count > 0) {
+                                    weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:chaptersList];
+                                    LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                    NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
+                                    LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                    realCurrentChapter.chapterId = currentChapter.chapterId;
+                                    realCurrentChapter.sourceId = parse.source.id;
+                                    realCurrentChapter.offset = currentChapter.offset;
+                                    weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                    //章节内容
+                                    [weakSelf initLoadJsonParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                        realCurrentChapter.content = contentStr;
+                                        NSInteger textOffset = realCurrentChapter.offset;
+                                        if (textOffset < 0) {
+                                            textOffset = 0;
+                                        }else if (textOffset >= contentStr.length) {
+                                            textOffset = 0;
+                                        }
+                                        realCurrentChapter.offset = textOffset;
+                                        NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                        weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                        NSInteger pageIndex = 0;
+                                        for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                            LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                            if (page.startLocation >= textOffset) {
+                                                pageIndex = i;
+                                                break;
+                                            }
+                                        }
+                                        weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                        weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                        
+                                        [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                        
+                                        [weakSelf hideNetworkLoadingView];
+                                    } failureBlock:^(NSError *error) {
+                                        [weakSelf hideNetworkLoadingView];
+                                        [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                    }];
+                                }else {
+                                    [weakSelf hideNetworkLoadingView];
+                                    [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                }
                             }];
-                        } failureBlock:^(NSError *error) {
-                            //取缓存章节列表
-                            NSArray* chaptersList = [LMTool unarchiveNewParseBookCatalogListWithBookId:weakSelf.bookId];
-                            if (chaptersList != nil && chaptersList.count > 0) {
-                                weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:chaptersList];
+                        }else {//html解析
+                            //章节列表
+                            [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
                                 LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
                                 NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
                                 LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
@@ -607,11 +753,54 @@
                                     [weakSelf hideNetworkLoadingView];
                                     [weakSelf showMBProgressHUDWithText:@"获取失败"];
                                 }];
-                            }else {
-                                [weakSelf hideNetworkLoadingView];
-                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                            }
-                        }];
+                            } failureBlock:^(NSError *error) {
+                                //取缓存章节列表
+                                NSArray* chaptersList = [LMTool unarchiveNewParseBookCatalogListWithBookId:weakSelf.bookId];
+                                if (chaptersList != nil && chaptersList.count > 0) {
+                                    weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:chaptersList];
+                                    LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                    NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
+                                    LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                    realCurrentChapter.chapterId = currentChapter.chapterId;
+                                    realCurrentChapter.sourceId = parse.source.id;
+                                    realCurrentChapter.offset = currentChapter.offset;
+                                    weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                    //章节内容
+                                    [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                        realCurrentChapter.content = contentStr;
+                                        NSInteger textOffset = realCurrentChapter.offset;
+                                        if (textOffset < 0) {
+                                            textOffset = 0;
+                                        }else if (textOffset >= contentStr.length) {
+                                            textOffset = 0;
+                                        }
+                                        realCurrentChapter.offset = textOffset;
+                                        NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                        weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                        NSInteger pageIndex = 0;
+                                        for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                            LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                            if (page.startLocation >= textOffset) {
+                                                pageIndex = i;
+                                                break;
+                                            }
+                                        }
+                                        weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                        weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                        
+                                        [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                        
+                                        [weakSelf hideNetworkLoadingView];
+                                    } failureBlock:^(NSError *error) {
+                                        [weakSelf hideNetworkLoadingView];
+                                        [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                    }];
+                                }else {
+                                    [weakSelf hideNetworkLoadingView];
+                                    [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                }
+                            }];
+                        }
                     }else {
                         [weakSelf hideNetworkLoadingView];
                         [weakSelf showMBProgressHUDWithText:@"获取失败"];
@@ -631,8 +820,8 @@
         self.readerBook.currentChapter = currentBookChapter;
         
         LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-        [tool queryBookReadRecordWithBookId:self.bookId recordBlock:^(BOOL hasRecord, UInt32 chapterId, UInt32 sourceId, NSInteger offset) {
-            self.readerBook.currentChapter.chapterId = 0;
+        [tool queryBookReadRecordWithBookId:self.bookId recordBlock:^(BOOL hasRecord, NSString* chapterId, UInt32 sourceId, NSInteger offset) {
+            self.readerBook.currentChapter.chapterId = @"0";
             self.readerBook.currentChapter.offset = offset;
             if (hasRecord) {
                 self.readerBook.currentChapter.chapterId = chapterId;
@@ -660,13 +849,14 @@
                         [LMTool archiveBookCatalogListWithBookId:weakSelf.bookId catalogList:apiRes.body];//保存章节目录
                         
                         if (arr != nil && arr.count > 0) {//旧解析方式
+                            weakSelf.readerBook.isNew = NO;
                             NSInteger tempCurrentIndex = 0;
                             NSMutableArray* bookChapterArr = [NSMutableArray array];
                             for (NSInteger i = 0; i < arr.count; i ++) {
                                 Chapter* tempChapter = [arr objectAtIndex:i];
                                 
                                 LMReaderBookChapter* bookChapter = [LMReaderBookChapter convertReaderBookChapterWithChapter:tempChapter];
-                                if (bookChapter.chapterId == self.readerBook.currentChapter.chapterId) {
+                                if ([bookChapter.chapterId isEqualToString:self.readerBook.currentChapter.chapterId]) {
                                     NSInteger tempBookOffset = self.readerBook.currentChapter.offset;
                                     bookChapter.offset = tempBookOffset;
                                     self.readerBook.currentChapter = bookChapter;
@@ -723,51 +913,100 @@
                                 weakSelf.readerBook.parseArr = [NSArray arrayWithArray:bookParseArr];
                                 weakSelf.readerBook.currentParseIndex = parseIndex;
                                 UrlReadParse* parse = [bookParseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
-                                //章节列表
-                                [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
-                                    weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
-                                    LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
-                                    NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
-                                    LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
-                                    realCurrentChapter.chapterId = currentChapter.chapterId;
-                                    realCurrentChapter.sourceId = parse.source.id;
-                                    realCurrentChapter.offset = currentChapter.offset;
-                                    weakSelf.readerBook.currentChapter = realCurrentChapter;
-                                    //章节内容
-                                    [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                                        realCurrentChapter.content = contentStr;
-                                        NSInteger textOffset = realCurrentChapter.offset;
-                                        if (textOffset < 0) {
-                                            textOffset = 0;
-                                        }else if (textOffset >= contentStr.length) {
-                                            textOffset = 0;
-                                        }
-                                        realCurrentChapter.offset = textOffset;
-                                        NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
-                                        weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
-                                        NSInteger pageIndex = 0;
-                                        for (NSInteger i = 0; i < pagesArr.count; i ++) {
-                                            LMReaderBookPage* page = [pagesArr objectAtIndex:i];
-                                            if (page.startLocation >= textOffset) {
-                                                pageIndex = i;
-                                                break;
+                                //Chiang
+                                if ([parse hasApi]) {
+                                    [self initLoadJsonParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                        weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                                        LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                        NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
+                                        LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                        realCurrentChapter.chapterId = currentChapter.chapterId;
+                                        realCurrentChapter.sourceId = parse.source.id;
+                                        realCurrentChapter.offset = currentChapter.offset;
+                                        weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                        
+                                        //章节内容
+                                        [weakSelf initLoadJsonParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                            realCurrentChapter.content = contentStr;
+                                            NSInteger textOffset = realCurrentChapter.offset;
+                                            if (textOffset < 0) {
+                                                textOffset = 0;
+                                            }else if (textOffset >= contentStr.length) {
+                                                textOffset = 0;
                                             }
-                                        }
-                                        weakSelf.readerBook.currentChapter.currentPage = pageIndex;
-                                        weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                            realCurrentChapter.offset = textOffset;
+                                            NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                            NSInteger pageIndex = 0;
+                                            for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                                LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                                if (page.startLocation >= textOffset) {
+                                                    pageIndex = i;
+                                                    break;
+                                                }
+                                            }
+                                            weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                            weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                            
+                                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                            
+                                            [weakSelf hideNetworkLoadingView];
+                                        } failureBlock:^(NSError *error) {
+                                            [weakSelf hideNetworkLoadingView];
+                                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                        }];
                                         
-                                        [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                                        
-                                        [weakSelf hideNetworkLoadingView];
                                     } failureBlock:^(NSError *error) {
                                         [weakSelf hideNetworkLoadingView];
                                         [weakSelf showMBProgressHUDWithText:@"获取失败"];
                                     }];
-                                    
-                                } failureBlock:^(NSError *error) {
-                                    [weakSelf hideNetworkLoadingView];
-                                    [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                                }];
+                                }else {
+                                    //章节列表
+                                    [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                        weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                                        LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                        NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
+                                        LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                        realCurrentChapter.chapterId = currentChapter.chapterId;
+                                        realCurrentChapter.sourceId = parse.source.id;
+                                        realCurrentChapter.offset = currentChapter.offset;
+                                        weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                        //章节内容
+                                        [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                            realCurrentChapter.content = contentStr;
+                                            NSInteger textOffset = realCurrentChapter.offset;
+                                            if (textOffset < 0) {
+                                                textOffset = 0;
+                                            }else if (textOffset >= contentStr.length) {
+                                                textOffset = 0;
+                                            }
+                                            realCurrentChapter.offset = textOffset;
+                                            NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                            NSInteger pageIndex = 0;
+                                            for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                                LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                                if (page.startLocation >= textOffset) {
+                                                    pageIndex = i;
+                                                    break;
+                                                }
+                                            }
+                                            weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                            weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                            
+                                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                            
+                                            [weakSelf hideNetworkLoadingView];
+                                        } failureBlock:^(NSError *error) {
+                                            [weakSelf hideNetworkLoadingView];
+                                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                        }];
+                                        
+                                    } failureBlock:^(NSError *error) {
+                                        [weakSelf hideNetworkLoadingView];
+                                        [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                    }];
+                                }
                             }else {
                                 [weakSelf hideNetworkLoadingView];
                                 [weakSelf showMBProgressHUDWithText:@"获取失败"];
@@ -796,7 +1035,7 @@
                         Chapter* tempChapter = [arr objectAtIndex:i];
                         
                         LMReaderBookChapter* bookChapter = [LMReaderBookChapter convertReaderBookChapterWithChapter:tempChapter];
-                        if (bookChapter.chapterId == self.readerBook.currentChapter.chapterId) {
+                        if ([bookChapter.chapterId isEqualToString:self.readerBook.currentChapter.chapterId]) {
                             NSInteger tempBookOffset = self.readerBook.currentChapter.offset;
                             bookChapter.offset = tempBookOffset;
                             self.readerBook.currentChapter = bookChapter;
@@ -853,51 +1092,98 @@
                         weakSelf.readerBook.parseArr = [NSArray arrayWithArray:bookParseArr];
                         weakSelf.readerBook.currentParseIndex = parseIndex;
                         UrlReadParse* parse = [bookParseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
-                        //章节列表
-                        [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
-                            weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
-                            LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
-                            NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
-                            LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
-                            realCurrentChapter.chapterId = currentChapter.chapterId;
-                            realCurrentChapter.sourceId = parse.source.id;
-                            realCurrentChapter.offset = currentChapter.offset;
-                            weakSelf.readerBook.currentChapter = realCurrentChapter;
-                            //章节内容
-                            [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                                realCurrentChapter.content = contentStr;
-                                NSInteger textOffset = realCurrentChapter.offset;
-                                if (textOffset < 0) {
-                                    textOffset = 0;
-                                }else if (textOffset >= contentStr.length) {
-                                    textOffset = 0;
-                                }
-                                realCurrentChapter.offset = textOffset;
-                                NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
-                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
-                                NSInteger pageIndex = 0;
-                                for (NSInteger i = 0; i < pagesArr.count; i ++) {
-                                    LMReaderBookPage* page = [pagesArr objectAtIndex:i];
-                                    if (page.startLocation >= textOffset) {
-                                        pageIndex = i;
-                                        break;
+                        if ([parse hasApi]) {//json解析
+                            //章节列表
+                            [weakSelf initLoadJsonParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                                LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
+                                LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                realCurrentChapter.chapterId = currentChapter.chapterId;
+                                realCurrentChapter.sourceId = parse.source.id;
+                                realCurrentChapter.offset = currentChapter.offset;
+                                weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                //章节内容
+                                [weakSelf initLoadJsonParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                    realCurrentChapter.content = contentStr;
+                                    NSInteger textOffset = realCurrentChapter.offset;
+                                    if (textOffset < 0) {
+                                        textOffset = 0;
+                                    }else if (textOffset >= contentStr.length) {
+                                        textOffset = 0;
                                     }
-                                }
-                                weakSelf.readerBook.currentChapter.currentPage = pageIndex;
-                                weakSelf.readerBook.currentChapter.pageChange = pageIndex;
-                                
-                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                                
-                                [weakSelf hideNetworkLoadingView];
+                                    realCurrentChapter.offset = textOffset;
+                                    NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                    weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                    NSInteger pageIndex = 0;
+                                    for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                        LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                        if (page.startLocation >= textOffset) {
+                                            pageIndex = i;
+                                            break;
+                                        }
+                                    }
+                                    weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                    weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                    
+                                    [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                    
+                                    [weakSelf hideNetworkLoadingView];
+                                } failureBlock:^(NSError *error) {
+                                    [weakSelf hideNetworkLoadingView];
+                                    [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                }];
                             } failureBlock:^(NSError *error) {
-                                [weakSelf hideNetworkLoadingView];
-                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                //取缓存章节列表
+                                NSArray* chaptersList = [LMTool unarchiveNewParseBookCatalogListWithBookId:weakSelf.bookId];
+                                if (chaptersList != nil && chaptersList.count > 0) {
+                                    weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:chaptersList];
+                                    LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                    NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
+                                    LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                    realCurrentChapter.chapterId = currentChapter.chapterId;
+                                    realCurrentChapter.sourceId = parse.source.id;
+                                    realCurrentChapter.offset = currentChapter.offset;
+                                    weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                    //章节内容
+                                    [weakSelf initLoadJsonParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                        realCurrentChapter.content = contentStr;
+                                        NSInteger textOffset = realCurrentChapter.offset;
+                                        if (textOffset < 0) {
+                                            textOffset = 0;
+                                        }else if (textOffset >= contentStr.length) {
+                                            textOffset = 0;
+                                        }
+                                        realCurrentChapter.offset = textOffset;
+                                        NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                        weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                        NSInteger pageIndex = 0;
+                                        for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                            LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                            if (page.startLocation >= textOffset) {
+                                                pageIndex = i;
+                                                break;
+                                            }
+                                        }
+                                        weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                        weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                        
+                                        [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                        
+                                        [weakSelf hideNetworkLoadingView];
+                                    } failureBlock:^(NSError *error) {
+                                        [weakSelf hideNetworkLoadingView];
+                                        [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                    }];
+                                }else {
+                                    [weakSelf hideNetworkLoadingView];
+                                    [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                }
                             }];
-                        } failureBlock:^(NSError *error) {
-                            //取缓存章节列表
-                            NSArray* chaptersList = [LMTool unarchiveNewParseBookCatalogListWithBookId:weakSelf.bookId];
-                            if (chaptersList != nil && chaptersList.count > 0) {
-                                weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:chaptersList];
+                        }else {//html解析
+                            //章节列表
+                            [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                                weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
                                 LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
                                 NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
                                 LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
@@ -935,11 +1221,54 @@
                                     [weakSelf hideNetworkLoadingView];
                                     [weakSelf showMBProgressHUDWithText:@"获取失败"];
                                 }];
-                            }else {
-                                [weakSelf hideNetworkLoadingView];
-                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                            }
-                        }];
+                            } failureBlock:^(NSError *error) {
+                                //取缓存章节列表
+                                NSArray* chaptersList = [LMTool unarchiveNewParseBookCatalogListWithBookId:weakSelf.bookId];
+                                if (chaptersList != nil && chaptersList.count > 0) {
+                                    weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:chaptersList];
+                                    LMReaderBookChapter* currentChapter = weakSelf.readerBook.currentChapter;
+                                    NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:currentChapter];//当前章节角标
+                                    LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                                    realCurrentChapter.chapterId = currentChapter.chapterId;
+                                    realCurrentChapter.sourceId = parse.source.id;
+                                    realCurrentChapter.offset = currentChapter.offset;
+                                    weakSelf.readerBook.currentChapter = realCurrentChapter;
+                                    //章节内容
+                                    [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                        realCurrentChapter.content = contentStr;
+                                        NSInteger textOffset = realCurrentChapter.offset;
+                                        if (textOffset < 0) {
+                                            textOffset = 0;
+                                        }else if (textOffset >= contentStr.length) {
+                                            textOffset = 0;
+                                        }
+                                        realCurrentChapter.offset = textOffset;
+                                        NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                        weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                        NSInteger pageIndex = 0;
+                                        for (NSInteger i = 0; i < pagesArr.count; i ++) {
+                                            LMReaderBookPage* page = [pagesArr objectAtIndex:i];
+                                            if (page.startLocation >= textOffset) {
+                                                pageIndex = i;
+                                                break;
+                                            }
+                                        }
+                                        weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                        weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                        
+                                        [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                        
+                                        [weakSelf hideNetworkLoadingView];
+                                    } failureBlock:^(NSError *error) {
+                                        [weakSelf hideNetworkLoadingView];
+                                        [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                    }];
+                                }else {
+                                    [weakSelf hideNetworkLoadingView];
+                                    [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                                }
+                            }];
+                        }
                     }else {
                         [weakSelf hideNetworkLoadingView];
                         [weakSelf showMBProgressHUDWithText:@"获取失败"];
@@ -1107,13 +1436,13 @@
                         currentIndex = i;
                         break;
                     }else {//再判断chapterId是否相同
-                        if (bookChapter.chapterId == currentChapter.chapterId) {
+                        if ([bookChapter.chapterId isEqualToString:currentChapter.chapterId]) {
                             currentIndex = i;
                             break;
                         }
                     }
                 }else {
-                    if (bookChapter.chapterId == currentChapter.chapterId) {
+                    if ([bookChapter.chapterId isEqualToString: currentChapter.chapterId]) {
                         currentIndex = i;
                         break;
                     }
@@ -1158,6 +1487,9 @@
                         weakSelf.isCollected = YES;
                     }else {
                         weakSelf.isCollected = NO;
+                    }
+                    if (weakSelf.bookCover == nil || weakSelf.bookCover.length == 0) {
+                        weakSelf.bookCover = res.book.pic;
                     }
                     NSArray* arr = res.relateBooks;
                     if (arr.count > 0) {
@@ -1316,6 +1648,82 @@
     }];
 }
 
+//Chiang json解析章节列表
+-(void)initLoadJsonParseBookChaptersWithUrlReadParse:(UrlReadParse* )parse successBlock:(void (^) (NSArray* listArray))successBlock failureBlock:(void (^) (NSError* error))failureBlock {
+    [self showNetworkLoadingView];
+    __weak LMReaderBookViewController* weakSelf = self;
+    NSString* urlStr = parse.listUrl;
+    [[LMNetworkTool sharedNetworkTool]AFNetworkPostWithURLString:urlStr successBlock:^(NSData *successData) {
+        @try {
+            NSError* jsonError = nil;
+            NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:successData options:NSJSONReadingMutableLeaves error:&jsonError];
+            if (jsonError != nil || dic == nil || [dic isKindOfClass:[NSNull class]] || dic.count == 0) {
+                [self reportParseErrorWithSourceId:parse.source.id chapterName:nil];//上报
+                failureBlock(nil);
+            }
+            
+            NSArray* tempArr = [LMTool jsonParseChapterListWithParse:parse originalDic:dic];
+            
+            if (tempArr.count > 0) {
+                successBlock(tempArr);
+                //保存新解析方式下章节列表
+                [LMTool archiveNewParseBookCatalogListWithBookId:weakSelf.bookId catalogList:tempArr];
+            }else {
+                [self reportParseErrorWithSourceId:parse.source.id chapterName:nil];//上报
+                failureBlock(nil);
+            }
+        } @catch (NSException *exception) {
+            [self reportParseErrorWithSourceId:parse.source.id chapterName:nil];//上报
+            failureBlock(nil);
+        } @finally {
+            
+        }
+    } failureBlock:^(NSError *failureError) {
+        failureBlock(nil);
+    }];
+}
+
+//Chiang json解析章节内容
+-(void)initLoadJsonParseChapterContentWithBookChapter:(LMReaderBookChapter* )bookChapter UrlReadParse:(UrlReadParse* )parse successBlock:(void (^) (NSString* contentStr))successBlock failureBlock:(void (^) (NSError* error))failureBlock {
+    UInt32 bookId = self.bookId;
+    NSString* chapterId = bookChapter.chapterId;
+    if ([LMTool isExistBookTextWithBookId:self.bookId chapterId:chapterId]) {//有缓存，取缓存
+        NSString* queryText = [LMTool queryBookTextWithBookId:self.bookId chapterId:chapterId];
+        NSString* chapterText = [LMTool replaceSeveralNewLineWithOneNewLineWithText:queryText];
+        if (chapterText != nil && ![chapterText isKindOfClass:[NSNull class]] && chapterText.length > 0) {
+            successBlock(chapterText);
+            return;
+        }
+    }
+    NSString* urlStr = bookChapter.url;
+    [[LMNetworkTool sharedNetworkTool]AFNetworkPostWithURLString:urlStr successBlock:^(NSData *successData) {
+        @try {
+            NSError* jsonError = nil;
+            NSDictionary* dic = [NSJSONSerialization JSONObjectWithData:successData options:NSJSONReadingMutableLeaves error:&jsonError];
+            if (jsonError != nil || dic == nil || [dic isKindOfClass:[NSNull class]] || dic.count == 0) {
+                [self reportParseErrorWithSourceId:parse.source.id chapterName:nil];//上报
+                failureBlock(nil);
+            }
+            NSString* totalContentStr = [LMTool jsonParseChapterContentWithParse:parse originalDic:dic];
+            if (totalContentStr != nil && ![totalContentStr isKindOfClass:[NSNull class]]) {
+                [LMTool saveBookTextWithBookId:bookId chapterId:chapterId bookText:totalContentStr];//保存
+                
+                successBlock(totalContentStr);
+            }else {
+                [self reportParseErrorWithSourceId:parse.source.id chapterName:bookChapter.title];//上报
+                failureBlock(nil);
+            }
+        } @catch (NSException *exception) {
+            [self reportParseErrorWithSourceId:parse.source.id chapterName:bookChapter.title];//上报
+            failureBlock(nil);
+        } @finally {
+            
+        }
+    } failureBlock:^(NSError *failureError) {
+        failureBlock(failureError);
+    }];
+}
+
 //新解析方式 加载章节列表
 -(void)initLoadNewParseBookChaptersWithUrlReadParse:(UrlReadParse* )parse successBlock:(void (^) (NSArray* listArray))successBlock failureBlock:(void (^) (NSError* error))failureBlock {
     [self showNetworkLoadingView];
@@ -1348,7 +1756,7 @@
                 
                 bookChapter.url = bookChapterUrlStr;
                 bookChapter.title = element.content;
-                bookChapter.chapterId = i - listOffset;
+                bookChapter.chapterId = [NSString stringWithFormat:@"%ld", i - listOffset];
                 [listArr addObject:bookChapter];
             }
             if (listArr.count > 0) {
@@ -1373,7 +1781,7 @@
 //新解析方式 根据章节取内容
 -(void)initLoadNewParseChapterContentWithBookChapter:(LMReaderBookChapter* )bookChapter UrlReadParse:(UrlReadParse* )parse successBlock:(void (^) (NSString* contentStr))successBlock failureBlock:(void (^) (NSError* error))failureBlock {
     UInt32 bookId = self.bookId;
-    UInt32 chapterId = (UInt32 )bookChapter.chapterId;
+    NSString* chapterId = bookChapter.chapterId;
     if ([LMTool isExistBookTextWithBookId:self.bookId chapterId:chapterId]) {//有缓存，取缓存
         NSString* queryText = [LMTool queryBookTextWithBookId:self.bookId chapterId:chapterId];
         NSString* chapterText = [LMTool filterUselessStringWithText:queryText filterArr:parse.source.filter];
@@ -1421,7 +1829,7 @@
     NSString* tempTitleStr = currentChapter.title;
     UInt32 bookId = self.bookId;
     UInt32 chapterNo = (UInt32 )currentChapter.chapterNo;
-    UInt32 chapterId = (UInt32 )currentChapter.chapterId;
+    NSString* chapterId = currentChapter.chapterId;
     UInt32 sourceId = (UInt32 )currentChapter.sourceId;
     if (queryCache) {
         if (currentChapter.sourcesArr.count > 0) {//有源
@@ -1568,6 +1976,22 @@
         [self saveReaderRecorder];
     }
     
+    //如果已经阅读完该书
+    BOOL isReadEnd = NO;
+    for (UIViewController* subVC in self.childViewControllers) {
+        if ([subVC isKindOfClass:[LMReaderRecommandViewController class]]) {
+            isReadEnd = YES;
+            break;
+        }
+    }
+    if (isReadEnd) {
+        [UIScreen mainScreen].brightness = self.brightness;
+        [self notifyChangeSourceViewControllerDeleteCache];
+        [self dismissViewControllerAnimated:YES completion:nil];
+        return;
+    }
+    
+    //未加入书架，且获取到相关推荐，弹窗提示
     if (self.isCollected == NO && self.relatedArray != nil && self.relatedArray.count > 0) {
         __weak LMReaderBookViewController* weakSelf = self;
         LMReaderRelatedBookAlertView* bookAV = [[LMReaderRelatedBookAlertView alloc]init];
@@ -1667,6 +2091,14 @@
 }
 
 -(void)clickedRightBarButton:(UIButton* )sender {
+    BOOL isRecommandVC = NO;
+    for (UIViewController* subVC in self.childViewControllers) {
+        if ([subVC isKindOfClass:[LMReaderRecommandViewController class]]) {
+            isRecommandVC = YES;
+            break;
+        }
+    }
+    
     __weak LMReaderBookViewController* weakSelf = self;
     NSMutableArray* actionArray = [NSMutableArray array];
     PopoverAction* briefAction = [PopoverAction actionWithTitle:@"简介" handler:^(PopoverAction *action) {
@@ -1724,10 +2156,19 @@
         commentDetailVC.bookName = self.bookName;
         [self.navigationController pushViewController:commentDetailVC animated:YES];
     }];
-    [actionArray addObject:briefAction];
-    [actionArray addObject:shareAction];
-    [actionArray addObject:commentAction];
-    
+    if (isRecommandVC) {
+        PopoverAction* shelfAction = [PopoverAction actionWithTitle:@"书架" handler:^(PopoverAction *action) {
+            LMRootViewController* rootVC = [LMRootViewController sharedRootViewController];
+            [rootVC backToTabBarControllerWithViewControllerIndex:0];
+        }];
+        
+        [actionArray addObject:shelfAction];
+        [actionArray addObject:shareAction];
+    }else {
+        [actionArray addObject:briefAction];
+        [actionArray addObject:shareAction];
+        [actionArray addObject:commentAction];
+    }
     PopoverView *popoverView = [PopoverView popoverView];
     popoverView.style = PopoverViewStyleDefault;
     popoverView.hideAfterTouchOutside = YES;
@@ -1762,45 +2203,87 @@
                 
                 [weakSelf uploadChangeSourceWithSourceId:parse.source.id];//上传换源id
                 
-                //章节列表
-                [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
-                    weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
-                    NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
-                    LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
-                    realCurrentChapter.sourceId = parse.source.id;
-                    realCurrentChapter.offset = 0;
-                    weakSelf.readerBook.currentChapter = realCurrentChapter;
-                    //章节内容
-                    [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                        realCurrentChapter.content = contentStr;
-                        NSInteger textOffset = 0;//换源之后，切换到第一页
-                        NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
-                        weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
-                        NSInteger pageIndex = 0;
-                        weakSelf.readerBook.currentChapter.currentPage = pageIndex;
-                        weakSelf.readerBook.currentChapter.pageChange = pageIndex;
-                        
-                        [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                        
-                        self.sourceTV.hidden = NO;//换源成功，显示sourceTitleView
-                        
-                        [weakSelf hideNetworkLoadingView];
-                        [weakSelf showMBProgressHUDWithText:@"换源成功"];
+                if ([parse hasApi]) {//json解析
+                    //章节列表
+                    [weakSelf initLoadJsonParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                        weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                        NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
+                        LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                        realCurrentChapter.sourceId = parse.source.id;
+                        realCurrentChapter.offset = 0;
+                        weakSelf.readerBook.currentChapter = realCurrentChapter;
+                        //章节内容
+                        [weakSelf initLoadJsonParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                            realCurrentChapter.content = contentStr;
+                            NSInteger textOffset = 0;//换源之后，切换到第一页
+                            NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                            NSInteger pageIndex = 0;
+                            weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                            weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                            
+                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                            
+                            self.sourceTV.hidden = NO;//换源成功，显示sourceTitleView
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf showMBProgressHUDWithText:@"换源成功"];
+                        } failureBlock:^(NSError *error) {
+                            
+                            self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                            [weakSelf showMBProgressHUDWithText:@"换源失败"];
+                        }];
                     } failureBlock:^(NSError *error) {
-                        
                         self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
                         
                         [weakSelf hideNetworkLoadingView];
                         [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                        [weakSelf showMBProgressHUDWithText:@"换源失败"];
+                        [weakSelf showMBProgressHUDWithText:@"获取失败，请尝试切换其它源"];
                     }];
-                } failureBlock:^(NSError *error) {
-                    self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
-                    
-                    [weakSelf hideNetworkLoadingView];
-                    [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                    [weakSelf showMBProgressHUDWithText:@"获取失败，请尝试切换其它源"];
-                }];
+                }else {//html解析
+                    //章节列表
+                    [weakSelf initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                        weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                        NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
+                        LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                        realCurrentChapter.sourceId = parse.source.id;
+                        realCurrentChapter.offset = 0;
+                        weakSelf.readerBook.currentChapter = realCurrentChapter;
+                        //章节内容
+                        [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                            realCurrentChapter.content = contentStr;
+                            NSInteger textOffset = 0;//换源之后，切换到第一页
+                            NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                            NSInteger pageIndex = 0;
+                            weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                            weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                            
+                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                            
+                            self.sourceTV.hidden = NO;//换源成功，显示sourceTitleView
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf showMBProgressHUDWithText:@"换源成功"];
+                        } failureBlock:^(NSError *error) {
+                            
+                            self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                            [weakSelf showMBProgressHUDWithText:@"换源失败"];
+                        }];
+                    } failureBlock:^(NSError *error) {
+                        self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
+                        
+                        [weakSelf hideNetworkLoadingView];
+                        [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                        [weakSelf showMBProgressHUDWithText:@"获取失败，请尝试切换其它源"];
+                    }];
+                }
             }
         };
     }else {
@@ -1883,21 +2366,39 @@
                     }else {
                         weakSelf.readerBook.currentChapter.pagesArr = nil;
                         UrlReadParse* parse = [weakSelf.readerBook.parseArr objectAtIndex:weakSelf.readerBook.currentParseIndex];
-                        [weakSelf initLoadNewParseChapterContentWithBookChapter:weakSelf.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                            weakSelf.readerBook.currentChapter.content = contentStr;
-                            NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
-                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
-                            
-                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                            
-                            [weakSelf hideNetworkLoadingView];
-                            [weakSelf showMBProgressHUDWithText:@"切换成功"];
-                        } failureBlock:^(NSError *error) {
-                            [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                            
-                            [weakSelf hideNetworkLoadingView];
-                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                        }];
+                        if ([parse hasApi]) {//json解析
+                            [weakSelf initLoadJsonParseChapterContentWithBookChapter:weakSelf.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                weakSelf.readerBook.currentChapter.content = contentStr;
+                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
+                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                                
+                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"切换成功"];
+                            } failureBlock:^(NSError *error) {
+                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                            }];
+                        }else {//html解析
+                            [weakSelf initLoadNewParseChapterContentWithBookChapter:weakSelf.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                weakSelf.readerBook.currentChapter.content = contentStr;
+                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
+                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                                
+                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"切换成功"];
+                            } failureBlock:^(NSError *error) {
+                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                            }];
+                        }
                     }
                 }
             };
@@ -2068,7 +2569,7 @@
                 }else {
                     sourceId = (UInt32 )weakSelf.readerBook.currentChapter.sourceId;
                 }
-                NSString* infoStr = [NSString stringWithFormat:@"%@[bid:%d][sid:%d]", text, weakSelf.bookId, sourceId];
+                NSString* infoStr = [NSString stringWithFormat:@"%@[bid:%u][sid:%d]", text, weakSelf.bookId, sourceId];
                 UInt32 typeInt = 0;
                 FeedbackReqBuilder* builder = [FeedbackReq builder];
                 [builder setType:typeInt];
@@ -2240,33 +2741,53 @@
                         [self setupPageViewControllerWithCurrentChapter:bookChapter];
                         
                         [self hideNetworkLoadingView];
-//                        [self showMBProgressHUDWithText:@"切换成功"];
                         return nil;
                     }else {
                         __weak LMReaderBookViewController* weakSelf = self;
                         
                         self.readerBook.currentChapter.pagesArr = nil;
                         UrlReadParse* parse = [self.readerBook.parseArr objectAtIndex:self.readerBook.currentParseIndex];
-                        [self initLoadNewParseChapterContentWithBookChapter:self.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                            weakSelf.readerBook.currentChapter.content = contentStr;
-                            NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
-                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
-                            LMReaderBookPage* lastPage = bookChapter.pagesArr.lastObject;
-                            NSInteger lastIndex = bookChapter.pagesArr.count - 1;
-                            weakSelf.readerBook.currentChapter.offset = lastPage.startLocation;
-                            weakSelf.readerBook.currentChapter.currentPage = lastIndex;
-                            weakSelf.readerBook.currentChapter.pageChange = lastIndex;
-                            
-                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                            
-                            [weakSelf hideNetworkLoadingView];
-//                            [weakSelf showMBProgressHUDWithText:@"切换成功"];
-                        } failureBlock:^(NSError *error) {
-                            [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                            
-                            [weakSelf hideNetworkLoadingView];
-                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                        }];
+                        if ([parse hasApi]) {
+                            [self initLoadJsonParseChapterContentWithBookChapter:self.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                weakSelf.readerBook.currentChapter.content = contentStr;
+                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
+                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                                LMReaderBookPage* lastPage = bookChapter.pagesArr.lastObject;
+                                NSInteger lastIndex = bookChapter.pagesArr.count - 1;
+                                weakSelf.readerBook.currentChapter.offset = lastPage.startLocation;
+                                weakSelf.readerBook.currentChapter.currentPage = lastIndex;
+                                weakSelf.readerBook.currentChapter.pageChange = lastIndex;
+                                
+                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                
+                                [weakSelf hideNetworkLoadingView];
+                            } failureBlock:^(NSError *error) {
+                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                            }];
+                        }else {
+                            [self initLoadNewParseChapterContentWithBookChapter:self.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                weakSelf.readerBook.currentChapter.content = contentStr;
+                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
+                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                                LMReaderBookPage* lastPage = bookChapter.pagesArr.lastObject;
+                                NSInteger lastIndex = bookChapter.pagesArr.count - 1;
+                                weakSelf.readerBook.currentChapter.offset = lastPage.startLocation;
+                                weakSelf.readerBook.currentChapter.currentPage = lastIndex;
+                                weakSelf.readerBook.currentChapter.pageChange = lastIndex;
+                                
+                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                
+                                [weakSelf hideNetworkLoadingView];
+                            } failureBlock:^(NSError *error) {
+                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                            }];
+                        }
                     }
                 }else {
                     [self showNetworkLoadingView];
@@ -2281,7 +2802,6 @@
                         [self setupPageViewControllerWithCurrentChapter:bookChapter];
                         
                         [self hideNetworkLoadingView];
-//                        [self showMBProgressHUDWithText:@"切换成功"];
                         return nil;
                     }else {
                         __weak LMReaderBookViewController* weakSelf = self;
@@ -2298,7 +2818,6 @@
                             [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
                             
                             [weakSelf hideNetworkLoadingView];
-//                            [weakSelf showMBProgressHUDWithText:@"切换成功"];
                         } failureBlock:^(NSError *error) {
                             [weakSelf setupPageViewControllerWithCurrentChapter:nil];
                             
@@ -2373,14 +2892,20 @@
                     NewestChapter* newestChapter = [tool queryNewestChapterWithBookId:self.bookId];
                     if ([newestChapter.newestChapterTitle isEqualToString:self.readerBook.currentChapter.title]) {//当前源最新章节等于更新章节标题，不用换源
                         [self hideNetworkLoadingView];
-                        [self showMBProgressHUDWithText:@"最后一页了"];
+                        //[self showMBProgressHUDWithText:@"最后一页了"];
+                        
+                        //
+                        [self exchangePageViewControllerToReaderRecommandViewController];
                         
                         return nil;
                     }
                     NSArray* newestSourceArr = newestChapter.sources;
                     if (newestSourceArr.count == 0) {
                         [self hideNetworkLoadingView];
-                        [self showMBProgressHUDWithText:@"最后一页了"];
+                        //[self showMBProgressHUDWithText:@"最后一页了"];
+                        
+                        //
+                        [self exchangePageViewControllerToReaderRecommandViewController];
                         
                         return nil;
                     }
@@ -2389,7 +2914,10 @@
                     UInt32 newestIndex = firstSource.id;
                     if (newestIndex == self.readerBook.currentChapter.sourceId) {
                         [self hideNetworkLoadingView];
-                        [self showMBProgressHUDWithText:@"最后一页了"];
+                        //[self showMBProgressHUDWithText:@"最后一页了"];
+                        
+                        //
+                        [self exchangePageViewControllerToReaderRecommandViewController];
                         
                         return nil;
                     }
@@ -2409,56 +2937,107 @@
                     [self uploadChangeSourceWithSourceId:parse.source.id];//上传换源id
                     
                     __weak LMReaderBookViewController* weakSelf = self;
-                    //章节列表
-                    [self initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
-                        weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
-                        NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
-                        if (chapterIndex < weakSelf.readerBook.chaptersArr.count - 1) {//下一章节角标
-                            chapterIndex ++;
-                        }
-                        LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
-                        realCurrentChapter.sourceId = parse.source.id;
-                        realCurrentChapter.offset = 0;
-                        weakSelf.readerBook.currentChapter = realCurrentChapter;
-                        //章节内容
-                        [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                            realCurrentChapter.content = contentStr;
-                            NSInteger textOffset = 0;//换源之后，切换到第一页
-                            NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
-                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
-                            NSInteger pageIndex = 0;
-                            weakSelf.readerBook.currentChapter.currentPage = pageIndex;
-                            weakSelf.readerBook.currentChapter.pageChange = pageIndex;
-                            
-                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                            
-                            self.sourceTV.hidden = NO;//换源成功，显示sourceTitleView
-                            
-                            [weakSelf hideNetworkLoadingView];
-                            [weakSelf hideEmptyLabel];
-                            [weakSelf showMBProgressHUDWithText:@"换源成功"];
+                    if ([parse hasApi]) {//json解析
+                        //章节列表
+                        [self initLoadJsonParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                            weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                            NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
+                            if (chapterIndex < weakSelf.readerBook.chaptersArr.count - 1) {//下一章节角标
+                                chapterIndex ++;
+                            }
+                            LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                            realCurrentChapter.sourceId = parse.source.id;
+                            realCurrentChapter.offset = 0;
+                            weakSelf.readerBook.currentChapter = realCurrentChapter;
+                            //章节内容
+                            [weakSelf initLoadJsonParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                realCurrentChapter.content = contentStr;
+                                NSInteger textOffset = 0;//换源之后，切换到第一页
+                                NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                NSInteger pageIndex = 0;
+                                weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                
+                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                
+                                self.sourceTV.hidden = NO;//换源成功，显示sourceTitleView
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf hideEmptyLabel];
+                                [weakSelf showMBProgressHUDWithText:@"换源成功"];
+                            } failureBlock:^(NSError *error) {
+                                
+                                self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf hideEmptyLabel];
+                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                                [weakSelf showMBProgressHUDWithText:@"换源失败"];
+                            }];
                         } failureBlock:^(NSError *error) {
-                            
                             self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
                             
                             [weakSelf hideNetworkLoadingView];
                             [weakSelf hideEmptyLabel];
                             [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                            [weakSelf showMBProgressHUDWithText:@"换源失败"];
+                            [weakSelf showMBProgressHUDWithText:@"获取失败，请尝试切换其它源"];
                         }];
-                    } failureBlock:^(NSError *error) {
-                        self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
-                        
-                        [weakSelf hideNetworkLoadingView];
-                        [weakSelf hideEmptyLabel];
-                        [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                        [weakSelf showMBProgressHUDWithText:@"获取失败，请尝试切换其它源"];
-                    }];
+                    }else {//html解析
+                        //章节列表
+                        [self initLoadNewParseBookChaptersWithUrlReadParse:parse successBlock:^(NSArray *listArray) {
+                            weakSelf.readerBook.chaptersArr = [NSArray arrayWithArray:listArray];
+                            NSInteger chapterIndex = [weakSelf queryCurrentChapterIndexWithChaptersArray:weakSelf.readerBook.chaptersArr currentChapter:weakSelf.readerBook.currentChapter];//当前章节角标
+                            if (chapterIndex < weakSelf.readerBook.chaptersArr.count - 1) {//下一章节角标
+                                chapterIndex ++;
+                            }
+                            LMReaderBookChapter* realCurrentChapter = [weakSelf.readerBook.chaptersArr objectAtIndex:chapterIndex];
+                            realCurrentChapter.sourceId = parse.source.id;
+                            realCurrentChapter.offset = 0;
+                            weakSelf.readerBook.currentChapter = realCurrentChapter;
+                            //章节内容
+                            [weakSelf initLoadNewParseChapterContentWithBookChapter:realCurrentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                realCurrentChapter.content = contentStr;
+                                NSInteger textOffset = 0;//换源之后，切换到第一页
+                                NSArray* pagesArr = [weakSelf cutBookPageWithChapterContent:contentStr offset:textOffset];//把章节切页
+                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArr];
+                                NSInteger pageIndex = 0;
+                                weakSelf.readerBook.currentChapter.currentPage = pageIndex;
+                                weakSelf.readerBook.currentChapter.pageChange = pageIndex;
+                                
+                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                
+                                self.sourceTV.hidden = NO;//换源成功，显示sourceTitleView
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf hideEmptyLabel];
+                                [weakSelf showMBProgressHUDWithText:@"换源成功"];
+                            } failureBlock:^(NSError *error) {
+                                
+                                self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf hideEmptyLabel];
+                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                                [weakSelf showMBProgressHUDWithText:@"换源失败"];
+                            }];
+                        } failureBlock:^(NSError *error) {
+                            self.sourceTV.hidden = YES;//换源失败，隐藏sourceTitleView
+                            
+                            [weakSelf hideNetworkLoadingView];
+                            [weakSelf hideEmptyLabel];
+                            [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                            [weakSelf showMBProgressHUDWithText:@"获取失败，请尝试切换其它源"];
+                        }];
+                    }
                     
                     [self showEmptyLabelWithCenterPoint:CGPointMake(self.view.center.x, self.view.center.y + 100) text:@"其它源有更新，正在为你切换"];
                     
                 }else {
-                    [self showMBProgressHUDWithText:@"最后一页了"];
+                    //[self showMBProgressHUDWithText:@"最后一页了"];
+                    
+                    //
+                    [self exchangePageViewControllerToReaderRecommandViewController];
                 }
                 return nil;
             }else {
@@ -2478,33 +3057,53 @@
                         [self setupPageViewControllerWithCurrentChapter:bookChapter];
                         
                         [self hideNetworkLoadingView];
-//                        [self showMBProgressHUDWithText:@"切换成功"];
                         return nil;
                     }else {
                         __weak LMReaderBookViewController* weakSelf = self;
                         
                         self.readerBook.currentChapter.pagesArr = nil;
                         UrlReadParse* parse = [self.readerBook.parseArr objectAtIndex:self.readerBook.currentParseIndex];
-                        [self initLoadNewParseChapterContentWithBookChapter:self.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                            weakSelf.readerBook.currentChapter.content = contentStr;
-                            NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
-                            weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
-                            LMReaderBookPage* firstPage = bookChapter.pagesArr.firstObject;
-                            NSInteger firstIndex = 0;
-                            weakSelf.readerBook.currentChapter.offset = firstPage.startLocation;
-                            weakSelf.readerBook.currentChapter.currentPage = firstIndex;
-                            weakSelf.readerBook.currentChapter.pageChange = firstIndex;
-                            
-                            [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
-                            
-                            [weakSelf hideNetworkLoadingView];
-//                            [weakSelf showMBProgressHUDWithText:@"切换成功"];
-                        } failureBlock:^(NSError *error) {
-                            [weakSelf setupPageViewControllerWithCurrentChapter:nil];
-                            
-                            [weakSelf hideNetworkLoadingView];
-                            [weakSelf showMBProgressHUDWithText:@"获取失败"];
-                        }];
+                        if ([parse hasApi]) {
+                            [self initLoadJsonParseChapterContentWithBookChapter:self.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                weakSelf.readerBook.currentChapter.content = contentStr;
+                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
+                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                                LMReaderBookPage* firstPage = bookChapter.pagesArr.firstObject;
+                                NSInteger firstIndex = 0;
+                                weakSelf.readerBook.currentChapter.offset = firstPage.startLocation;
+                                weakSelf.readerBook.currentChapter.currentPage = firstIndex;
+                                weakSelf.readerBook.currentChapter.pageChange = firstIndex;
+                                
+                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                
+                                [weakSelf hideNetworkLoadingView];
+                            } failureBlock:^(NSError *error) {
+                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                            }];
+                        }else {
+                            [self initLoadNewParseChapterContentWithBookChapter:self.readerBook.currentChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                weakSelf.readerBook.currentChapter.content = contentStr;
+                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:weakSelf.readerBook.currentChapter.offset];//把章节切页
+                                weakSelf.readerBook.currentChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                                LMReaderBookPage* firstPage = bookChapter.pagesArr.firstObject;
+                                NSInteger firstIndex = 0;
+                                weakSelf.readerBook.currentChapter.offset = firstPage.startLocation;
+                                weakSelf.readerBook.currentChapter.currentPage = firstIndex;
+                                weakSelf.readerBook.currentChapter.pageChange = firstIndex;
+                                
+                                [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
+                                
+                                [weakSelf hideNetworkLoadingView];
+                            } failureBlock:^(NSError *error) {
+                                [weakSelf setupPageViewControllerWithCurrentChapter:nil];
+                                
+                                [weakSelf hideNetworkLoadingView];
+                                [weakSelf showMBProgressHUDWithText:@"获取失败"];
+                            }];
+                        }
                     }
                 }else {
                     [self showNetworkLoadingView];
@@ -2519,7 +3118,6 @@
                         [self setupPageViewControllerWithCurrentChapter:bookChapter];
                         
                         [self hideNetworkLoadingView];
-//                        [self showMBProgressHUDWithText:@"切换成功"];
                         return nil;
                     }else {
                         __weak LMReaderBookViewController* weakSelf = self;
@@ -2536,7 +3134,6 @@
                             [weakSelf setupPageViewControllerWithCurrentChapter:weakSelf.readerBook.currentChapter];//显示
                             
                             [weakSelf hideNetworkLoadingView];
-//                            [weakSelf showMBProgressHUDWithText:@"切换成功"];
                         } failureBlock:^(NSError *error) {
                             [weakSelf setupPageViewControllerWithCurrentChapter:nil];
                             
@@ -2562,13 +3159,23 @@
                         __weak LMReaderBookViewController* weakSelf = self;
                         if (self.readerBook.isNew) {
                             UrlReadParse* parse = [self.readerBook.parseArr objectAtIndex:self.readerBook.currentParseIndex];
-                            [self initLoadNewParseChapterContentWithBookChapter:nextChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
-                                nextChapter.content = contentStr;
-                                NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:0];//把章节切页
-                                nextChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
-                            } failureBlock:^(NSError *error) {
-                                
-                            }];
+                            if ([parse hasApi]) {
+                                [self initLoadJsonParseChapterContentWithBookChapter:nextChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                    nextChapter.content = contentStr;
+                                    NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:0];//把章节切页
+                                    nextChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                                } failureBlock:^(NSError *error) {
+                                    
+                                }];
+                            }else {
+                                [self initLoadNewParseChapterContentWithBookChapter:nextChapter UrlReadParse:parse successBlock:^(NSString *contentStr) {
+                                    nextChapter.content = contentStr;
+                                    NSArray* pagesArray = [weakSelf cutBookPageWithChapterContent:contentStr offset:0];//把章节切页
+                                    nextChapter.pagesArr = [NSArray arrayWithArray:pagesArray];
+                                } failureBlock:^(NSError *error) {
+                                    
+                                }];
+                            }
                         }else {
                             [self loadOldParseChapterContentWithCurrentChapter:nextChapter shouldQueryCache:YES successBlock:^(NSString *contentStr) {
                                 nextChapter.content = contentStr;
@@ -2772,6 +3379,12 @@
     //保存阅读记录
     [self saveReaderRecorder];
     
+    for (UIViewController* subVC in self.childViewControllers) {
+        if ([subVC isKindOfClass:[LMReaderRecommandViewController class]]) {
+            [subVC removeFromParentViewController];
+            [subVC.view removeFromSuperview];
+        }
+    }
     //初始化设置pageVC
     if (!self.pageVC) {
         self.pageVC = [[LMPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStylePageCurl navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal options:nil];//@{UIPageViewControllerOptionSpineLocationKey : @1}
@@ -2782,6 +3395,28 @@
         self.pageVC.view.frame = self.view.bounds;
         [self addChildViewController:self.pageVC];
         [self.view insertSubview:self.pageVC.view belowSubview:self.naviBarView];
+        
+        if ([LMTool shouldShowReaderUserInstructionsView]) {
+            [self setupNaviBarViewHidden:NO];
+            [self setupToolBarViewHidden:NO];
+            [self setupSettingViewHidden:YES];
+            [self setupEditCommentButtonHidden:NO];
+            [self setupSourceTitleViewHidden:NO];
+            //
+            [self setNeedsStatusBarAppearanceUpdate];
+            
+            CGFloat topHeight = 20 + 44 - 10;
+            CGFloat bottomHeight = 49 - 6;
+            if ([LMTool isBangsScreen]) {
+                topHeight = 44 + 44 - 10;
+                bottomHeight = 83 - 6;
+            }
+            LMReaderUserInstructionsView* readUIV = [[LMReaderUserInstructionsView alloc]init];
+            [readUIV setUpChangeSourcePoint:CGPointMake(self.changeSourceBtn.frame.origin.x + self.changeSourceBtn.frame.size.width / 2, topHeight) nightPoint:CGPointMake(self.nightToolBtn.frame.origin.x + self.nightToolBtn.frame.size.width / 2, self.view.frame.size.height - bottomHeight)];
+            [readUIV setUpCommentPoint:CGPointMake(self.editCommentBtn.frame.origin.x + self.editCommentBtn.frame.size.width / 2, self.editCommentBtn.frame.origin.y) SettingPoint:CGPointMake(self.setToolBtn.frame.origin.x + self.setToolBtn.frame.size.width / 2, self.view.frame.size.height - bottomHeight)];
+            [readUIV setUpErrorPoint:CGPointMake(self.feedbackToolBtn.frame.origin.x + self.feedbackToolBtn.frame.size.width / 2, self.view.frame.size.height - bottomHeight)];
+            [readUIV startShow];
+        }
     }
     BOOL isEmpty = YES;
     NSArray* pagesArray = currentChapter.pagesArr;
@@ -2868,7 +3503,7 @@
         
         LMReaderBookPage* bookPage = [bookChapter.pagesArr objectAtIndex:bookChapter.currentPage];
         LMDatabaseTool* tool = [LMDatabaseTool sharedDatabaseTool];
-        [tool saveBookReadRecordWithBookId:self.bookId bookName:self.bookName chapterId:(UInt32 )bookChapter.chapterId chapterNo:(UInt32 )bookChapter.chapterNo chapterTitle:bookChapter.title sourceId:sourceId offset:bookPage.startLocation progressStr:progressStr];
+        [tool saveBookReadRecordWithBookId:self.bookId bookName:self.bookName chapterId:bookChapter.chapterId chapterNo:(UInt32 )bookChapter.chapterNo chapterTitle:bookChapter.title sourceId:sourceId offset:bookPage.startLocation progressStr:progressStr coverStr:self.bookCover];
     }
 }
 
@@ -2930,19 +3565,43 @@
 }
 
 -(void)clickedEditCommentButton:(UIButton* )sender {
+    NSInteger toWhich = 0;
+    if (sender == nil) {
+        toWhich = 1;
+    }
+    __weak LMReaderBookViewController* weakSelf = self;
     LoginedRegUser* regUser = [LMTool getLoginedRegUser];
     if (regUser != nil) {
         LMBookEditCommentViewController* editCommentVC = [[LMBookEditCommentViewController alloc]init];
         editCommentVC.bookId = self.bookId;
+        if (toWhich) {//从最后一章节最后页的“写评论”进入，评论完之后跳到书评列表界面
+            editCommentVC.commentBlock = ^(BOOL didComment) {
+                if (didComment) {
+                    LMBookCommentDetailViewController* commentDetailVC = [[LMBookCommentDetailViewController alloc]init];
+                    commentDetailVC.bookId = weakSelf.bookId;
+                    commentDetailVC.bookName = weakSelf.bookName;
+                    [weakSelf.navigationController pushViewController:commentDetailVC animated:YES];
+                }
+            };
+        }
         [self.navigationController pushViewController:editCommentVC animated:YES];
         return;
     }else {
-        __weak LMReaderBookViewController* weakSelf = self;
         LMLoginAlertView* loginAV = [[LMLoginAlertView alloc]init];
         loginAV.loginBlock = ^(BOOL didLogined) {
             if (didLogined) {
                 LMBookEditCommentViewController* editCommentVC = [[LMBookEditCommentViewController alloc]init];
                 editCommentVC.bookId = weakSelf.bookId;
+                if (toWhich) {//从最后一章节最后页的“写评论”进入，评论完之后跳到书评列表界面
+                    editCommentVC.commentBlock = ^(BOOL didComment) {
+                        if (didComment) {
+                            LMBookCommentDetailViewController* commentDetailVC = [[LMBookCommentDetailViewController alloc]init];
+                            commentDetailVC.bookId = weakSelf.bookId;
+                            commentDetailVC.bookName = weakSelf.bookName;
+                            [weakSelf.navigationController pushViewController:commentDetailVC animated:YES];
+                        }
+                    };
+                }
                 [weakSelf.navigationController pushViewController:editCommentVC animated:YES];
             }
         };

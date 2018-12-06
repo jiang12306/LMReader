@@ -10,12 +10,4 @@
 
 @interface LMProfileTableViewCell : LMBaseArrowTableViewCell
 
-@property (nonatomic, strong) UILabel* nameLab;//label
-@property (nonatomic, strong) UIImageView* coverIV;//imageView
-
-@property (nonatomic, strong) UILabel* markLab;//mark label
-@property (nonatomic, strong) UIImageView* markIV;//mark imageView
-
--(void)setupShowArrowIV:(BOOL )showArrow showMarkLabel:(BOOL )showMarkLab showMarkIV:(BOOL )showMarkIV;
-
 @end
